@@ -207,4 +207,3 @@ Viết message rõ ràng để bạn bè hiểu:
 ❌ **Tệ**:
 - "fix"
 - "update"
-- "asdfgh"
