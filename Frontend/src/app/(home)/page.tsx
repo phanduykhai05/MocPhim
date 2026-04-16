@@ -1,0 +1,22 @@
+import React from 'react';
+import HeroSection from '@/app/(home)/components/Hero';
+import TopMovies from '@/app/(home)/components/TopMovies';
+import SeoContent from '@/app/(home)/components/SeoContent';
+import Footer from '@/app/(home)/components/Footer';
+
+export default function HomePage() {
+  return (
+    <div className="min-h-screen bg-[#191B24] font-sans text-white selection:bg-[#764ba2] selection:text-white">
+      {/* Ẩn thẻ H1 cho SEO */}
+      <h1 className="sr-only">Xem Phim Online Miễn Phí Vietsub HD - RoPhim 2026</h1>
+      
+      <main className="max-w-[1900px] mx-auto">
+        <HeroSection />
+        <TopMovies />
+        <SeoContent />
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

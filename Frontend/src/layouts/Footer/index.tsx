@@ -1,0 +1,36 @@
+import FooterBrand from "@/layouts/Footer/components/FooterBrand";
+import FooterNav from "@/layouts/Footer/components/FooterNav";
+import FooterAbout from "@/layouts/Footer/components/FooterAbout";
+import FooterBottom from "@/layouts/Footer/components/FooterBottom";
+import images from "@/assets/images";
+import Image from "next/image";
+export default function Footer() {
+    return (
+        <footer className="relative overflow-hidden bg-[#0F111A] text-[#a0a4b8] font-sans border-t border-[#1f2333]">
+            {/* Background Decoration */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] opacity-[3] pointer-events-none block z-0">
+                <Image src={images.Footericon} alt="Footer Icon" className="w-full h-full object-contain" />
+            </div>
+
+            {/* Main Container */}
+            <div className="max-w-[1900px] w-full mx-auto px-5 xl:px-[50px] relative z-10">
+                <div className="flex flex-col xl:flex-row xl:items-end justify-between py-8 xl:py-12 gap-8 xl:min-h-[400px]">
+                    {/* Left Section */}
+                    <div className="flex flex-col flex-grow">
+                        {/* Brand */}
+                        <FooterBrand />
+
+                        {/* Navigation */}
+                        <FooterNav />
+
+                        {/* About */}
+                        <FooterAbout />
+                    </div>
+
+                    {/* Right Section - Bottom */}
+                    <FooterBottom />
+                </div>
+            </div>
+        </footer>
+    );
+}
