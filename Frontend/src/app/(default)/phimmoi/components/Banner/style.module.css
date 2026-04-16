@@ -1,0 +1,82 @@
+/* Sử dụng :global để ghi đè class của Swiper trong CSS Module */
+.bannerContainer :global(.swiper-pagination) {
+  position: absolute !important;
+  bottom: 20% !important;
+  right: 10% !important;
+  left: auto !important;
+  width: auto !important;
+  display: flex !important;
+  gap: 10px;
+  z-index: 50;
+}
+
+.bannerContainer :global(.custom-thumb) {
+  width: 85px !important;
+  height: 55px !important;
+  background-size: cover;
+  background-position: center;
+  border-radius: 4px;
+  opacity: 0.4;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 !important;
+}
+
+.bannerContainer :global(.custom-thumb:hover) {
+  opacity: 0.8;
+}
+
+.bannerContainer :global(.swiper-pagination-bullet-active.custom-thumb) {
+  opacity: 1;
+  border-color: #fecf59;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+  .bannerContainer :global(.swiper-pagination) {
+    display: none !important;
+  }
+}
+
+/* Animations */
+.bannerContainer :global(.swiper-slide-active h2) {
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+.bannerContainer :global(.swiper-slide-active h3) {
+  animation: fadeInUp 0.8s ease 0.2s forwards;
+  opacity: 0;
+}
+
+.bannerContainer :global(.swiper-slide-active p) {
+  animation: fadeInUp 0.8s ease 0.4s forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.bannerContainer {
+  position: relative;
+}
+
+.bannerContainer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 200px;
+  z-index: 20;
+  pointer-events: none;
+  background: rgb(25, 27, 36);
+  background: linear-gradient(0deg, rgba(25, 27, 36, 1) 0%, rgba(25, 27, 36, 0) 100%);
+}

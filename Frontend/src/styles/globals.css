@@ -2,7 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 @import "tailwindcss";
-
+@layer utilities {
+  /* Ẩn thanh cuộn nhưng vẫn cho phép lướt */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
 :root {
   --font-roboto: var(--font-roboto);
   --font-sora: var(--font-sora);
