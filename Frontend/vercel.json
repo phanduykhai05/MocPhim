@@ -1,14 +1,3 @@
 {
-  "builds": [
-    {
-      "src": "Frontend/package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "Frontend/$1"
-    }
-  ]
+  "framework": "nextjs"
 }
