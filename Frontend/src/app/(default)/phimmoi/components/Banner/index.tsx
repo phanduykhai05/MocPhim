@@ -14,13 +14,15 @@ import { FAKE_MOVIES } from './components/data/movie';
 
 const Banner = () => {
   return (
-    <section id="top_slide" className={`w-full bg-[#0a0a0a] relative ${styles.bannerContainer}`}>
+    <section id="top_slide" className={`w-full bg-[#191b24] relative ${styles.bannerContainer}`}>
       <Swiper
         modules={[Autoplay, EffectFade, Pagination]}
         effect="fade"
         loop={true}
-        speed={1000}
-        autoplay={{ delay: 6000, disableOnInteraction: false }}
+        speed={700}
+        watchSlidesProgress={true}
+        autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+        fadeEffect={{ crossFade: true }}
         pagination={{
           clickable: true,
           renderBullet: (index, className) => {

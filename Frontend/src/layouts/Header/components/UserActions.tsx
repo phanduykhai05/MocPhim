@@ -3,9 +3,11 @@
 import { useState, useRef } from "react";
 import { motion } from "motion/react";
 import MagnifierIcon from "@/components/icon/magnifier-icon";
+import AuthPopup from "@/layouts/Header/components/AuthPopup";
 
 const UserActions = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAuthPopupOpen, setIsAuthPopupOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const iconRef = useRef(null);
 
@@ -51,6 +53,7 @@ const UserActions = () => {
       <div className="hidden lg:flex items-center gap-4 ml-auto">
         <motion.button
           aria-label="Đăng nhập"
+          onClick={() => setIsAuthPopupOpen(true)}
           className="flex items-center justify-center gap-2 bg-[#f8f9fa] text-[#212529] py-3 px-5 rounded-full font-semibold hover:bg-[#e2e6ea] transition-colors shadow-md"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -85,6 +88,11 @@ const UserActions = () => {
           </div>
         </div>
       )}
+
+      <AuthPopup
+        isOpen={isAuthPopupOpen}
+        onClose={() => setIsAuthPopupOpen(false)}
+      />
     </>
   );
 };

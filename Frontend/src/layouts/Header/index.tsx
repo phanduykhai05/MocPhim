@@ -5,7 +5,7 @@ import Navigation from '@/layouts/Header/components/Navigation';
 import UserActions from '@/layouts/Header/components/UserActions';
 import Image from "next/image";
 import images from "@/assets/images";
-
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -46,9 +46,8 @@ const Header = () => {
         <SearchBar />
         <Navigation />
         
-        {/* Lấp đầy khoảng trống thừa */}
         <div className="flex-grow hidden lg:block"></div>
-        
+        <AnimatedThemeToggler />
         <UserActions />
       </div>
     </header>
