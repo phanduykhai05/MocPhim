@@ -41,7 +41,8 @@ const Header = () => {
           height={40} 
           loading="eager"
           priority
-          className="object-contain w-auto h-auto" 
+          className="object-contain w-auto h-auto"
+          style={{ width: "auto", height: "auto" }}
         />
         <SearchBar />
         <Navigation />

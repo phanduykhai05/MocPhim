@@ -22,6 +22,8 @@ const HeroSection: React.FC = () => {
               alt="RoPhim - Xem phim online miễn phí" 
               width={200} 
               height={60} 
+              className="w-auto h-auto"
+              style={{ width: "auto", height: "auto" }}
               decoding="async" 
             />
           </a>

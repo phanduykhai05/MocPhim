@@ -39,6 +39,8 @@ const Preloader: React.FC = () => {
           alt="RoPhim Logo" 
           width={360} 
           height={100} 
+          className="w-auto h-auto"
+          style={{ width: "auto", height: "auto" }}
         />
         
         <div className="text-[1.5rem] leading-[1.6] text-white/20 font-semibold text-center max-w-[950px] px-4">
