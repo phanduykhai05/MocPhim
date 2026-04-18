@@ -2,7 +2,7 @@ import React from 'react';
 
 export const AvailableVersions = () => {
   return (
-    <div className="px-6 lg:px-10 py-8">
+    <div className="px-0 lg:px-10 py-8">
       <h2 className="text-2xl font-semibold text-white mb-6">Các bản chiếu</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         

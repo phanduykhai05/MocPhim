@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import TopicCard from '@/app/(default)/phimmoi/components/Topics/components/TopicCard';
 import { TOPICS_DATA } from './data';
+import { Highlighter } from "@/components/ui/highlighter"
 
 const TopicGrid = () => {
   const [showAll, setShowAll] = useState(false);
@@ -13,10 +14,10 @@ const TopicGrid = () => {
   const remainingCount = TOPICS_DATA.length - initialDisplayCount;
 
   return (
-    <section className="w-full max-w-[1900px] mx-auto px-4 md:px-[50px] py-0 relative z-10 overflow-hidden">
+    <section className="w-full max-w-[1900px] mx-auto px-4 md:px-[50px] py-0 relative z-10 overflow-hidden md:mt-[-80px] z-30 mt-[-50px]">
       <div className="flex items-center gap-4 mb-6">
         <h2 className="text-2xl md:text-[2rem] font-semibold text-white drop-shadow-[0_2px_1px_rgba(0,0,0,0.3)]">
-          Bạn đang quan tâm gì?
+          <Highlighter action="underline" iterations={1} animationDuration={1000}>{`Bạn đang quan tâm gì?`}</Highlighter>
         </h2>
       </div>
 

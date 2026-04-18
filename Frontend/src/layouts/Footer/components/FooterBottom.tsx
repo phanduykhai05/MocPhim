@@ -20,8 +20,8 @@ export default function FooterBottom() {
 
     return (
         <>
-            <div className="flex mt-6 xl:mt-0 flex-col gap-4 xl:flex-row xl:gap-0 justify-center md:justify-between xl:justify-end w-full items-center">
-                <div className="text-[13px] text-[#63677a]">
+            <div className="mt-6 xl:mt-auto w-full flex items-center justify-center xl:self-end">
+                <div className="text-[13px] text-[#63677a] text-center w-full">
                     © {currentYear} MocPhim. All rights reserved.
                 </div>
             </div>

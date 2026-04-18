@@ -27,8 +27,19 @@ export default function Footer() {
                         <FooterAbout />
                     </div>
 
-                    {/* Right Section - Bottom */}
-                    <FooterBottom />
+                    {/* Right Section */}
+                    <div className="w-full xl:w-auto xl:min-w-[260px] flex flex-col xl:h-full xl:justify-between xl:self-stretch">
+                        <div className="space-y-0.5 text-center text-[14px] leading-relaxed text-[#85899b] xl:text-left xl:self-start">
+                            <p><i>--------Developer--------</i></p>
+                            <p>FullStack Phan Duy Khai</p>
+                            <p>BackEnd Vo Ho Vinh Khang.</p>
+                            <p>TestTer Tran Thi Bich Ngoc</p>
+                            <p>BA Nguyen Gia Huy</p>
+                            <p><i>--------Developer--------</i></p>
+                        </div>
+
+                        <FooterBottom />
+                    </div>
                 </div>
             </div>
         </footer>

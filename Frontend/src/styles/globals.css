@@ -4,6 +4,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "swiper/css";
+@import "swiper/css/navigation";
 
 @custom-variant dark (&:is(.dark *));
 @layer utilities {

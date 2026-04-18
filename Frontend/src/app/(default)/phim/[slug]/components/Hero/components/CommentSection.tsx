@@ -2,7 +2,7 @@ import React from 'react';
 
 export const CommentSection = () => {
   return (
-    <div className="px-6 lg:px-10 py-8 mt-4">
+    <div className="px-0 lg:px-10 py-8 mt-4">
       {/* Header Comment */}
       <div className="flex items-center gap-4 mb-6">
         <h3 className="text-xl font-semibold text-white flex items-center gap-2">
