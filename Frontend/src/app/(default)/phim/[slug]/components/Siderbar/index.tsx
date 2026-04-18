@@ -1,7 +1,7 @@
 import React from 'react';
 import { MovieDetailInfo } from '@/app/(default)/phim/[slug]/components/Siderbar/components/MovieDetailInfo';
 import { TopWeeklyMovies } from '@/app/(default)/phim/[slug]/components/Siderbar/components/TopWeeklyMovies';
-
+import { MovieActors } from '@/app/(default)/phim/[slug]/components/Siderbar/components/MovieActors';
 export const Sidebar = () => {
   return (
     <div className="w-full lg:w-[440px] shrink-0 flex flex-col p-6 lg:p-10 
@@ -12,11 +12,12 @@ export const Sidebar = () => {
       
       {/* Thông tin phim */}
       <MovieDetailInfo />
-      
+      <MovieActors />
       {/* Top phim tuần - Ẩn trên Mobile */}
       <div className="hidden lg:block">
         <hr className="my-8 border-white/10" />
         <TopWeeklyMovies />
+
       </div>
 
     </div>

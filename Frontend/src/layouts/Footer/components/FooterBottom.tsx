@@ -25,26 +25,44 @@ export default function FooterBottom() {
                     © {currentYear} MocPhim. All rights reserved.
                 </div>
             </div>
-            {showScrollTop && (
-                <button
-                    onClick={handleScrollTop}
-                    aria-label="Lên đầu trang"
-                    className="fixed bottom-6 right-6 w-11 h-11 flex items-center justify-center bg-[#1a1e29] border border-[#2d3142] rounded-lg text-[#a0a4b8] hover:text-white hover:bg-[#2d3142] transition-colors z-50"
+            
+            {/* Luôn render button nhưng kiểm soát hiển thị bằng CSS.
+              Dùng pointer-events-none để không bấm nhầm khi nó đang ẩn.
+            */}
+            <button
+                onClick={handleScrollTop}
+                aria-label="Lên đầu trang"
+                className={`
+                    fixed right-6 w-[64px] h-[64px] flex flex-col items-center justify-center gap-0.5 
+                    bg-white rounded-2xl text-black shadow-xl hover:bg-gray-200 z-50
+                    transition-all duration-500 ease-out
+                    ${showScrollTop 
+                        ? "bottom-6 opacity-100 translate-y-0 pointer-events-auto" 
+                        : "bottom-6 opacity-0 translate-y-10 pointer-events-none"
+                    }
+                `}
+            >
+                {/* Icon mũi tên nét dày giống ảnh */}
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="3"
+                    stroke="currentColor"
+                    className="w-5 h-5"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        viewBox="0 0 16 16"
-                    >
-                        <path
-                            fillRule="evenodd"
-                            d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"
-                        />
-                    </svg>
-                </button>
-            )}
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"
+                    />
+                </svg>
+                
+                {/* Chữ in đậm và chia làm 2 dòng */}
+                <span className="text-[10px] font-bold uppercase leading-tight text-center tracking-wide">
+                    Đầu <br /> Trang
+                </span>
+            </button>
         </>
     );
 }
