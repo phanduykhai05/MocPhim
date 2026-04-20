@@ -1,39 +1,47 @@
 import React from 'react';
-
+import { Play, Heart, Share, MessageCircle } from 'lucide-react';
 export const MovieActionBar = () => {
   return (
     <div className="relative p-6 lg:p-8 flex flex-col lg:flex-row items-center gap-6 justify-between border-b border-white/5">
       {/* Hiệu ứng Glow góc phải trên (chuyển từ ::before) */}
       <div 
-        className="absolute top-[-80px] right-0 w-[150px] h-[100px] bg-no-repeat bg-center bg-contain pointer-events-none z-10"
+        className="absolute top-[-80px] right-0 w-[150px] h-[100px] pointer-events-none z-10"
         style={{
-          backgroundImage: "url('https://media-public.canva.com/8uu8E/MAGzUS8uu8E/1/tl.png')",
-          filter: "hue-rotate(330deg) saturate(0.6) brightness(1.3)"
+          background: 'radial-gradient(circle at top right, rgba(254, 207, 89, 0.55) 0%, rgba(255, 241, 204, 0.28) 38%, rgba(255, 241, 204, 0) 72%)'
         }}
       />
 
-      {/* Nút Xem Ngay */}
-      <a href="#" className="w-full lg:w-auto flex-shrink-0 flex items-center justify-center gap-3 text-[18px] font-medium px-8 min-h-[60px] rounded-full text-white transition-all duration-300 hover:opacity-90 shadow-[0_4px_12px_rgba(244,114,182,0.25)] bg-gradient-to-br from-[#d94f8e] to-[#f472b6]">
-        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 384 512" height="1em" width="1em">
-          <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"></path>
+      {/* Nút Xem Ngay - kiểu is-coming */}
+      <a
+        href="#"
+        className="relative w-full lg:w-auto flex-shrink-0 flex items-center justify-center gap-3 text-[16px] font-semibold pt-2.5 pb-[calc(0.5rem+22px)] px-6 border-0 rounded-xl overflow-hidden h-auto text-[#0f172a] transition-all duration-300 hover:opacity-95 shadow-[0_8px_26px_rgba(0,0,0,0.28)]"
+        style={{ background: 'linear-gradient(39deg, rgba(254, 207, 89, 1) 0%, rgba(255, 241, 204, 1) 100%)' }}
+      >
+        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 576 512" className="w-7 h-7 text-[#0f172a]">
+          <path d="M0 128C0 92.7 28.7 64 64 64l256 0c35.3 0 64 28.7 64 64l0 256c0 35.3-28.7 64-64 64L64 448c-35.3 0-64-28.7-64-64L0 128zM559.1 99.8c10.4 5.6 16.9 16.4 16.9 28.2l0 256c0 11.8-6.5 22.6-16.9 28.2s-23 5-32.9-1.6l-96-64L416 337.1l0-17.1 0-128 0-17.1 14.2-9.5 96-64c9.8-6.5 22.4-7.2 32.9-1.6z"></path>
         </svg>
-        <span>Xem Ngay</span>
+        <span className="whitespace-nowrap text-[16px] leading-none text-[#111827]">Xem Trailer</span>
+        <div className="absolute left-0 right-0 bottom-0 flex items-center justify-center text-center text-[11px] leading-6 bg-[#f1f1f1] text-black">Phim sắp ra mắt</div>
       </a>
 
       {/* Nhóm tương tác (Yêu thích, Thêm vào, Chia sẻ...) - Cuộn ngang trên mobile */}
       <div className="flex-grow flex items-center justify-between w-full overflow-x-auto pb-2 lg:pb-0 hide-scrollbar gap-4">
         <div className="flex items-center gap-2 lg:gap-4 flex-nowrap">
           {[
-            { name: 'Yêu thích', icon: 'M47.6 300.4L228.3 469.1c7.5 7... (Lược SVG để code gọn)' },
-            // { name: 'Thêm vào', icon: 'M256 80c0-17.7... (Lược SVG)' },
-            // { name: 'Chia sẻ', icon: 'M16.3628 0.651489... (Lược SVG)' },
-            { name: 'Bình luận', icon: 'M14.499 0.5H6... (Lược SVG)' },
-          ].map((item, idx) => (
-            <button key={idx} className="flex items-center gap-2 text-sm text-white/90 hover:text-white hover:bg-white/10 p-2.5 rounded-lg transition whitespace-nowrap select-none">
-              <div className="w-4 h-4 bg-gray-400 rounded-sm"></div> {/* Thay thế bằng thẻ SVG thật của bạn */}
-              <span>{item.name}</span>
-            </button>
-          ))}
+            { name: 'Yêu thích', icon: Heart },
+            { name: 'Thêm vào', icon: Play },
+            { name: 'Chia sẻ', icon: Share },
+            { name: 'Bình luận', icon: MessageCircle },
+          ].map((item, idx) => {
+            const Icon = item.icon;
+
+            return (
+              <button key={idx} className="flex items-center gap-2 text-sm text-white/90 hover:text-white hover:bg-white/10 p-2.5 rounded-lg transition whitespace-nowrap select-none">
+                <Icon size={16} strokeWidth={2} className="text-white/90" />
+                <span>{item.name}</span>
+              </button>
+            );
+          })}
         </div> 
 
         {/* Điểm đánh giá */}

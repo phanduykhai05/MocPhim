@@ -36,11 +36,8 @@ const Preloader: React.FC = () => {
       <div className="w-full max-w-[800px] flex flex-col gap-8 justify-center items-center text-[3em] leading-[1.4] text-white/20 font-semibold animate-logo-load">
         <Image 
           src={images.logo} 
-          alt="RoPhim Logo" 
-          width={360} 
-          height={100} 
-          className="w-auto h-auto"
-          style={{ width: "auto", height: "auto" }}
+          alt="RoPhim Logo"
+          className="w-full max-w-[520px] h-auto"
         />
         
         <div className="text-[1.5rem] leading-[1.6] text-white/20 font-semibold text-center max-w-[950px] px-4">

@@ -3,11 +3,14 @@ import React, { useState, useEffect } from 'react';
 import SearchBar from '@/layouts/Header/components/SearchBar';
 import Navigation from '@/layouts/Header/components/Navigation';
 import UserActions from '@/layouts/Header/components/UserActions';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Image from "next/image";
 import images from "@/assets/images";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
 
   // Xử lý đổi màu nền header khi cuộn trang
   useEffect(() => {
@@ -34,16 +37,28 @@ const Header = () => {
         </button>
 
         {/* Các component đã chia */}
-        <Image 
-          src={images.logo} 
-          alt="MocPhim Logo" 
-          width={120} 
-          height={40} 
-          loading="eager"
-          priority
-          className="object-contain w-auto h-auto"
-          style={{ width: "auto", height: "auto" }}
-        />
+        <Link
+          href="/phimmoi"
+          aria-label="Về trang phim mới"
+          className="shrink-0"
+          onClick={(e) => {
+            if (pathname === '/phimmoi') {
+              e.preventDefault();
+              window.location.reload();
+            }
+          }}
+        >
+          <Image 
+            src={images.logo} 
+            alt="MocPhim Logo" 
+            width={120} 
+            height={40} 
+            loading="eager"
+            priority
+            className="object-contain w-auto h-auto"
+            style={{ width: "auto", height: "auto" }}
+          />
+        </Link>
         <SearchBar />
         <Navigation />
         

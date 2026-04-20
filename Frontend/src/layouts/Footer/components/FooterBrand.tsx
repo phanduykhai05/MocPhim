@@ -27,8 +27,8 @@ export default function FooterBrand() {
             {/* Logo & Social */}
             <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-10 mb-8 justify-center md:justify-start items-center md:items-center">
                 <Link href="/phimmoi" className="block flex-shrink-0 hover:opacity-80 transition-opacity">
-                    <img
-                        src="https://rophims.vip/wp-content/themes/rophim/assets/images/logo.svg"
+                    <Image 
+                        src={images.logo}
                         alt="RoPhim"
                         className="h-[48px] md:h-[60px] w-auto"
                         loading="lazy"

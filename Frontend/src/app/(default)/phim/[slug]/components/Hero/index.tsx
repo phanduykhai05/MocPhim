@@ -6,7 +6,7 @@ import { CommentSection } from '@/app/(default)/phim/[slug]/components/Hero/comp
 
 export const MovieMainContent = () => {
   return (
-    <div className="flex-grow flex flex-col bg-[#191b24]/60 backdrop-blur-[20px] rounded-2xl lg:rounded-[3rem_1.25rem_1.25rem_1.25rem] overflow-hidden lg:ml-[-33px] ml-0">
+    <div className="flex-grow flex flex-col bg-[#191b24]/60 backdrop-blur-[20px] rounded-r-2xl rounded-l-none lg:rounded-[0_1.25rem_1.25rem_0] overflow-hidden lg:ml-[-33px] ml-0">
       
       {/* 1. Thanh Hành động (Xem, Like, Share) */}
       <MovieActionBar />
