@@ -25,8 +25,8 @@ export const MovieActionBar = () => {
         <div className="flex items-center gap-2 lg:gap-4 flex-nowrap">
           {[
             { name: 'Yêu thích', icon: 'M47.6 300.4L228.3 469.1c7.5 7... (Lược SVG để code gọn)' },
-            { name: 'Thêm vào', icon: 'M256 80c0-17.7... (Lược SVG)' },
-            { name: 'Chia sẻ', icon: 'M16.3628 0.651489... (Lược SVG)' },
+            // { name: 'Thêm vào', icon: 'M256 80c0-17.7... (Lược SVG)' },
+            // { name: 'Chia sẻ', icon: 'M16.3628 0.651489... (Lược SVG)' },
             { name: 'Bình luận', icon: 'M14.499 0.5H6... (Lược SVG)' },
           ].map((item, idx) => (
             <button key={idx} className="flex items-center gap-2 text-sm text-white/90 hover:text-white hover:bg-white/10 p-2.5 rounded-lg transition whitespace-nowrap select-none">
@@ -34,7 +34,7 @@ export const MovieActionBar = () => {
               <span>{item.name}</span>
             </button>
           ))}
-        </div>
+        </div> 
 
         {/* Điểm đánh giá */}
         <div className="flex-shrink-0 flex items-center gap-2 bg-[#3556b6] rounded-full px-3 py-1.5 text-white cursor-pointer select-none">
