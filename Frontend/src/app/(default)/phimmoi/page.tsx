@@ -2,7 +2,7 @@ import Banner from "@/app/(default)/phimmoi/components/Banner";
 import Topics from "@/app/(default)/phimmoi/components/Topics";
 import { TopSeriesList } from "@/app/(default)/phimmoi/components/TopseriCard";
 import { DottedMap, type Marker } from "@/components/ui/dotted-map";
-
+import { NewUpdateList } from "@/app/(default)/phimmoi/components/MovieUpdate";
 type VietnamMarker = Marker & {
   overlay: {
     label: string;
@@ -37,6 +37,7 @@ export default function PhimMoi() {
     <div className="min-h-screen overflow-x-hidden bg-[#191B24] font-sans text-white selection:bg-[#764ba2] selection:text-white">
       <Banner />
       <Topics />
+      <NewUpdateList />
       <TopSeriesList />
       <div className="relative z-30 isolate -mt-6 h-[220px] w-full overflow-hidden sm:h-[280px] md:mt-0 md:h-[400px]">
         <DottedMap<VietnamMarker>
