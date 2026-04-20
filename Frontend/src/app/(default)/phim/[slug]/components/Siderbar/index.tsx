@@ -8,7 +8,8 @@ export const Sidebar = () => {
                     bg-transparent lg:bg-[#191b24]/60 
                     lg:backdrop-blur-[40px] 
                     rounded-2xl lg:rounded-[1.25rem_3rem_1.25rem_1.25rem]
-                    border-none lg:border lg:border-white/5"> 
+                    border-none lg:border lg:border-white/5
+                    mt-[-180px]"> 
       
       {/* Thông tin phim */}
       <MovieDetailInfo />

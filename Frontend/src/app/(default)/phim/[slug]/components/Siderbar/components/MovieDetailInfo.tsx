@@ -10,7 +10,7 @@ export const MovieDetailInfo = () => {
       {/* Thumbnail */}
       <div className="flex flex-col">
   {/* Container bọc ảnh: Tăng từ 120px lên 180px, căn giữa bằng mx-auto */}
-  <div className="w-[290px] lg:w-[200px] xl:w-[360px] mx-auto lg:mx-0 mb-6 shrink-0 rounded-2xl overflow-hidden aspect-[2/3] relative bg-[#191b24] shadow-2xl">
+  <div className="w-[290px] lg:w-[350px] xl:w-[360px] mx-auto lg:mx-0 mb-6 shrink-0 rounded-2xl overflow-hidden aspect-[2/3] relative bg-[#191b24] shadow-2xl">
     <img 
       src="https://rophims.vip/wp-content/uploads/2026/04/huyen-thoai-aang-tiet-khi-su-cuoi-cung-48635-thumb.jpg" 
       alt="Huyền Thoại Aang" 

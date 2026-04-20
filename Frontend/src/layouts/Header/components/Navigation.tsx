@@ -1,6 +1,6 @@
 const Navigation = () => {
   return (
-    <nav className="hidden lg:flex items-center gap-6 text-white text-[15px] font-medium">
+    <nav className="hidden lg:flex items-center gap-4 text-white text-[13px] font-medium">
       <a href="/chu-de" className="hover:text-gray-300 transition-colors capitalize">Chủ Đề</a>
       
       {/* Dropdown Thể loại */}
