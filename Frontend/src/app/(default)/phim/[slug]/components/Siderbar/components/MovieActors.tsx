@@ -1,60 +1,70 @@
 import React from 'react';
+import { PersonData } from '@/lib/api/movie';
 
-export const MovieActors = () => {
-  // Dữ liệu diễn viên mẫu từ HTML của bạn
-  const actors = [
-    {
-      name: 'Guy Pearce',
-      url: '/dien-vien/guy-pearce',
-      image: 'https://image.tmdb.org/t/p/w500/vTqk6Nh3WgqPubkS23eOlMAwmwa.jpg'
-    },
-    {
-      name: 'Carrie-Anne Moss',
-      url: '/dien-vien/carrie-anne-moss',
-      image: 'https://image.tmdb.org/t/p/w500/gc7JwuLDD0kXHUlGx5vWzdlqSIT.jpg'
-    },
-    {
-      name: 'Joe Pantoliano',
-      url: '/dien-vien/joe-pantoliano',
-      image: 'https://image.tmdb.org/t/p/w500/3OHUI3nX4SYGGItDk3xqeIvWtIf.jpg'
-    }
-  ];
+interface MovieActorsProps {
+  peoples: PersonData[] | null;
+  profileBase: string;
+  actors: string[];
+}
+
+export const MovieActors = ({ peoples, profileBase, actors }: MovieActorsProps) => {
+  // Prefer peoples data (has images), fallback to plain actor names
+  const hasPeoples = peoples && peoples.length > 0;
+  const castList = hasPeoples
+    ? peoples.filter((p) => p.known_for_department === 'Acting').slice(0, 9)
+    : null;
+
+  if (!hasPeoples && (!actors || actors.length === 0)) return null;
 
   return (
     <div className="mt-8">
-      {/* Header "Diễn viên" */}
       <h3 className="text-[1.6em] font-semibold text-white mb-4 flex items-center gap-4 min-h-[40px]">
         Diễn viên
       </h3>
 
-      {/* Danh sách diễn viên (Grid 3 cột) */}
-      <div className="grid grid-cols-3 gap-x-2.5 gap-y-6">
-        {actors.map((actor, index) => (
-          <div key={index} className="flex flex-col items-center text-center gap-3">
-            
-            {/* Ảnh Avatar tròn 80px */}
-            <a 
-              href={actor.url} 
-              className="w-[80px] h-[80px] rounded-full overflow-hidden relative bg-[#191b24] flex-shrink-0 block hover:opacity-80 transition-opacity"
-            >
-              <img 
-                loading="lazy" 
-                alt={actor.name} 
-                src={actor.image} 
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </a>
-
-            {/* Tên diễn viên (line-clamp-2 để cắt chữ nếu quá dài giống class lim-2) */}
-            <div className="w-full">
-              <h4 className="mb-1 text-sm font-medium text-white/90 hover:text-[#f472b6] transition-colors line-clamp-2 leading-tight">
-                <a href={actor.url}>{actor.name}</a>
-              </h4>
-            </div>
-
-          </div>
-        ))}
-      </div>
+      {castList ? (
+        <div className="grid grid-cols-3 gap-x-2.5 gap-y-6">
+          {castList.map((person) => {
+            const imageUrl = person.profile_path
+              ? `${profileBase}${person.profile_path}`
+              : '';
+            return (
+              <div key={person.tmdb_people_id} className="flex flex-col items-center text-center gap-3">
+                <div className="w-[80px] h-[80px] rounded-full overflow-hidden relative bg-[#2a2d3a] flex-shrink-0">
+                  {imageUrl ? (
+                    <img
+                      loading="lazy"
+                      alt={person.name}
+                      src={imageUrl}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-2xl text-gray-500">
+                      👤
+                    </div>
+                  )}
+                </div>
+                <div className="w-full">
+                  <h4 className="mb-0.5 text-sm font-medium text-white/90 hover:text-[#f472b6] transition-colors line-clamp-2 leading-tight">
+                    {person.name}
+                  </h4>
+                  {person.character && (
+                    <p className="text-xs text-gray-500 line-clamp-1">{person.character}</p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {actors.slice(0, 12).map((name, idx) => (
+            <span key={idx} className="px-2.5 py-1 bg-white/5 rounded text-sm text-gray-300 border border-white/10">
+              {name}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

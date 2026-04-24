@@ -4,7 +4,7 @@ import MovieHorizontalCard from '@/app/(default)/phimmoi/components/HappyMovie/c
 import { MovieHorizontal } from '@/app/(default)/phimmoi/components/HappyMovie/components/types/movie';
 
 // Mock data lấy từ HTML của bạn
-const mockMovies: MovieHorizontal[] = [
+const FALLBACK_MOVIES: MovieHorizontal[] = [
   {
     id: '1',
     title: 'Bố Già Trở Lại',
@@ -38,7 +38,13 @@ const mockMovies: MovieHorizontal[] = [
   }
 ];
 
-export default function MovieTheatersSection() {
+interface HappyMovieProps {
+  movies?: MovieHorizontal[];
+}
+
+export default function MovieTheatersSection({ movies }: HappyMovieProps) {
+  const list = movies && movies.length > 0 ? movies : FALLBACK_MOVIES;
+
   return (
     // fadeIn effect & Container
     <div className="w-full px-5 lg:px-[50px] mx-auto max-w-[1900px] relative animate-[fadeInUp_0.5s_ease-out_forwards]">
@@ -60,7 +66,7 @@ export default function MovieTheatersSection() {
 
           {/* Wrapper chứa Cards - Dùng scroll ngang native để hiển thị */}
           <div className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory w-full">
-            {mockMovies.map((movie) => (
+            {list.map((movie) => (
               <div key={movie.id} className="snap-start">
                 <MovieHorizontalCard movie={movie} />
               </div>

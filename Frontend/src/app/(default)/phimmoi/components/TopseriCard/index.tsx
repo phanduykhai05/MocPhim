@@ -5,7 +5,54 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { TopSeriesCard } from "@/app/(default)/phimmoi/components/TopseriCard/components/TopSeriesCard";
 
-export const TopSeriesList = () => {
+interface TopSeriesMovie {
+  title: string;
+  alias: string;
+  slug: string;
+  thumb: string;
+  episodeText: string;
+  badges: { type: "pd" | "lt" | "tm"; text: string }[];
+}
+
+interface TopSeriesListProps {
+  movies?: TopSeriesMovie[];
+}
+
+const FALLBACK_MOVIES: TopSeriesMovie[] = [
+  {
+    title: "One Piece",
+    alias: "Đảo Hải Tặc, Vua Hải Tặc, OP",
+    slug: "one-piece",
+    thumb: "https://rophims.vip/wp-content/uploads/2026/04/one-piece-39120-thumb-149.jpg",
+    episodeText: "Tập 1157",
+    badges: [
+      { type: "pd" as const, text: "1157" },
+      { type: "lt" as const, text: "1157" },
+    ],
+  },
+  {
+    title: "Nguyệt Lân Ỷ Kỷ",
+    alias: "Veil of Shadows",
+    slug: "nguyet-lan-y-ky",
+    thumb: "https://rophims.vip/wp-content/uploads/2026/04/nguyet-lan-y-ky-38622-thumb-196.jpg",
+    episodeText: "Tập 29",
+    badges: [{ type: "pd" as const, text: "29" }],
+  },
+  {
+    title: "Trục Ngọc",
+    alias: "Pursuit Of Jade",
+    slug: "truc-ngoc",
+    thumb: "https://rophims.vip/wp-content/uploads/2026/03/truc-ngoc-23313-thumb-4.jpg",
+    episodeText: "Hoàn Tất (40/40)",
+    badges: [
+      { type: "pd" as const, text: "HT" },
+      { type: "tm" as const, text: "HT" },
+    ],
+  },
+];
+
+export const TopSeriesList = ({ movies }: TopSeriesListProps) => {
+  const topMovies = movies && movies.length > 0 ? movies : FALLBACK_MOVIES;
   const swiperRef = React.useRef<any>(null);
   const [isMounted, setIsMounted] = React.useState(false);
 
@@ -49,7 +96,7 @@ export const TopSeriesList = () => {
   }, []);
 
   // Dữ liệu mẫu bóc từ HTML
-  const topMovies = [
+  const topMovies2 = [
     {
       title: "One Piece",
       alias: "Đảo Hải Tặc, Vua Hải Tặc, OP",
@@ -81,7 +128,7 @@ export const TopSeriesList = () => {
       ],
     },
     // ... bạn map nốt data còn lại
-  ];
+  ]; // unused - kept for reference, replaced by topMovies above
 
   return (
     <div className="w-full max-w-[1900px] px-4 md:px-[50px] mx-auto relative mb-10">

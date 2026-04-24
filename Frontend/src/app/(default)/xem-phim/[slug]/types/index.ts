@@ -1,11 +1,14 @@
 export type WatchEpisode = {
   number: number;
   name: string;
+  slug: string;
+  linkEmbed: string;
 };
 
 export type WatchServer = {
   id: number;
   name: string;
+  episodes: WatchEpisode[];
 };
 
 export type WatchMovie = {
@@ -17,13 +20,10 @@ export type WatchMovie = {
   duration: string;
   description: string;
   poster: string;
-  ageRating: string;
   imdbScore: number;
-  sectionLabel: string;
   genres: string[];
   country: string;
   status: string;
   casts: string[];
-  episodes: WatchEpisode[];
   servers: WatchServer[];
 };

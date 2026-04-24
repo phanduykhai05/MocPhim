@@ -2,24 +2,48 @@ import React from 'react';
 import Background from '@/app/(default)/phim/[slug]/components/Backgroud';
 import Sidebar from '@/app/(default)/phim/[slug]/components/Siderbar';
 import Hero from '@/app/(default)/phim/[slug]/components/Hero';
-const MovieDetailTemplatePage = () => {
-    return (
-        <div className='bg-[#191b24]'>
-            <Background />
-            {/* class pah nnay theo style nayf  */}
-            <div className='relative z-9 pt-0 pb-10'>
-                <div className='w-full max-w-[1640px] px-5 mx-auto mt-[-580px] md:mt-[-450px] relative z-3 flex flex-col lg:flex-row gap-4 lg:gap-8 justify-between items-start lg:items-stretch'>
-                    <div className='w-full lg:w-auto'>
-                        <Sidebar />
-                    </div>
-                    <div className='w-full relative z-3'>
-                        <Hero />
-                    </div>
-                </div>
+import {
+  MovieDetailResult,
+  PeoplesData,
+  MoviesImagesData,
+  KeywordsData,
+  MovieListItem,
+  getMovieThumb,
+} from '@/lib/api/movie';
 
-            </div>
+interface MovieDetailTemplateProps {
+  movieData: MovieDetailResult;
+  peoples: PeoplesData | null;
+  images: MoviesImagesData | null;
+  keywords: KeywordsData | null;
+  topMovies: { items: MovieListItem[]; cdnImage: string } | null;
+}
+
+const MovieDetailTemplatePage = ({
+  movieData,
+  peoples,
+  images,
+  keywords,
+  topMovies,
+}: MovieDetailTemplateProps) => {
+  const { item, cdnImage } = movieData;
+  const backdropUrl = getMovieThumb(item.poster_url || item.thumb_url, cdnImage);
+
+  return (
+    <div className='bg-[#191b24]'>
+      <Background backdropUrl={backdropUrl} />
+      <div className='relative z-9 pt-0 pb-10'>
+        <div className='w-full max-w-[1640px] px-5 mx-auto mt-[-580px] md:mt-[-450px] relative z-3 flex flex-col lg:flex-row gap-4 lg:gap-8 justify-between items-start lg:items-stretch'>
+          <div className='w-full lg:w-auto'>
+            <Sidebar movie={item} cdnImage={cdnImage} peoples={peoples} topMovies={topMovies} />
+          </div>
+          <div className='w-full relative z-3'>
+            <Hero movie={item} cdnImage={cdnImage} images={images} keywords={keywords} />
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default MovieDetailTemplatePage;

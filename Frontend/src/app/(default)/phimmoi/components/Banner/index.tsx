@@ -10,9 +10,15 @@ import 'swiper/css/pagination';
 
 import styles from "./style.module.css";
 import SlideElements from './components/SlideElements';
-import { FAKE_MOVIES } from './components/data/movie';
+import { FAKE_MOVIES, type Movie } from './components/data/movie';
 
-const Banner = () => {
+interface BannerProps {
+  movies?: Movie[];
+}
+
+const Banner = ({ movies }: BannerProps) => {
+  const slides = movies && movies.length > 0 ? movies : FAKE_MOVIES;
+
   return (
     <section id="top_slide" className={`w-full bg-[#191b24] relative ${styles.bannerContainer}`}>
       <Swiper
@@ -26,13 +32,12 @@ const Banner = () => {
         pagination={{
           clickable: true,
           renderBullet: (index, className) => {
-            // Class custom-thumb sẽ được gán trực tiếp vào đây
-            return `<span class="${className} custom-thumb" style="background-image: url('${FAKE_MOVIES[index].poster}')"></span>`;
+            return `<span class="${className} custom-thumb" style="background-image: url('${slides[index]?.poster ?? ""}')"></span>`;
           },
         }}
         className="top-slide-main"
       >
-        {FAKE_MOVIES.map((movie) => (
+        {slides.map((movie) => (
           <SwiperSlide key={movie.id}>
             <SlideElements movie={movie} />
           </SwiperSlide>

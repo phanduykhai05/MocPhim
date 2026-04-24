@@ -1,8 +1,31 @@
 import React from 'react';
 import MovieList from '@/app/(home)/components/MovieList';
-import { topPhimLe, topPhimBo } from '@/app/(home)/components/data/mockData';
+import { Movie } from '@/app/(home)/components/types';
+import { fetchMovieList, getMovieThumb, MovieListItem } from '@/lib/api/movie';
 
-export default function TopMovies() {
+const mapToHomeMovie = (items: MovieListItem[], cdnImage: string): Movie[] => {
+  return items.slice(0, 5).map((movie, index) => ({
+    id: movie._id,
+    rank: index + 1,
+    title: movie.name,
+    originalTitle: movie.origin_name,
+    year: String(movie.year),
+    quality: movie.quality,
+    lang: movie.lang,
+    image: getMovieThumb(movie.thumb_url, cdnImage),
+    link: `/phim/${movie.slug}`,
+  }));
+};
+
+export default async function TopMovies() {
+  const [singleData, seriesData] = await Promise.all([
+    fetchMovieList({ slug: 'phim-le', sort_field: 'modified_time', sort_type: 'desc' }),
+    fetchMovieList({ slug: 'phim-bo', sort_field: 'modified_time', sort_type: 'desc' }),
+  ]);
+
+  const topPhimLe = singleData ? mapToHomeMovie(singleData.items, singleData.cdnImage) : [];
+  const topPhimBo = seriesData ? mapToHomeMovie(seriesData.items, seriesData.cdnImage) : [];
+
   return (
     <div className="py-10 bg-[#191B24]">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto px-4">

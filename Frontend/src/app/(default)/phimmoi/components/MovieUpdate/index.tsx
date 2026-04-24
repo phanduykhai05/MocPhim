@@ -3,7 +3,14 @@
 import React from "react";
 import { NewUpdateCard } from "@/app/(default)/phimmoi/components/MovieUpdate/components/NewUpdateCard";
 
-const movies = [
+interface UpdateMovie {
+  title: string;
+  slug: string;
+  thumb: string;
+  badge: string;
+}
+
+const FALLBACK_MOVIES: UpdateMovie[] = [
   {
     title: "Nữ Luật Sư Lidia Poët (Phần 3)",
     slug: "nu-luat-su-lidia-poet-phan-3",
@@ -114,7 +121,13 @@ const movies = [
   },
 ];
 
-export const NewUpdateList = () => {
+interface NewUpdateListProps {
+  movies?: UpdateMovie[];
+}
+
+export const NewUpdateList = ({ movies }: NewUpdateListProps) => {
+  const list = movies && movies.length > 0 ? movies : FALLBACK_MOVIES;
+
   return (
     <div className="relative w-full max-w-[1808px] mx-auto px-4 md:px-[60px] animate-fade-in-up">
       {/* Header */}
@@ -134,7 +147,7 @@ export const NewUpdateList = () => {
 
       {/* Grid */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-x-4 gap-y-2">
-        {movies.map((movie) => (
+        {list.map((movie) => (
           <NewUpdateCard key={movie.slug} {...movie} />
         ))}
       </div>

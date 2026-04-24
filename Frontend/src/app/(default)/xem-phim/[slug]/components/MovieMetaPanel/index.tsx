@@ -17,7 +17,6 @@ const MovieMetaPanel = ({ movie }: MovieMetaPanelProps) => {
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
             <span className="rounded bg-[#f1c84f] px-2 py-1 font-semibold text-black">IMDb {movie.imdbScore}</span>
-            <span className="rounded bg-white/10 px-2 py-1 text-white/85">{movie.ageRating}</span>
             <span className="rounded bg-white/10 px-2 py-1 text-white/85">{movie.quality}</span>
             <span className="rounded bg-white/10 px-2 py-1 text-white/85">{movie.duration}</span>
           </div>

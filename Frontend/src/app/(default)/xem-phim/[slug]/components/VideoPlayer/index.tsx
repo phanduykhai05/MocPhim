@@ -6,9 +6,10 @@ type VideoPlayerProps = {
   movieTitle: string;
   episode: number;
   server: number;
+  embedUrl: string;
 };
 
-const VideoPlayer = ({ movieSlug, movieTitle, episode, server }: VideoPlayerProps) => {
+const VideoPlayer = ({ movieSlug, movieTitle, episode, server, embedUrl }: VideoPlayerProps) => {
   return (
     <section className="relative z-10 w-full">
       <div className="mb-4 flex items-center gap-2 lg:px-10">
@@ -35,15 +36,21 @@ const VideoPlayer = ({ movieSlug, movieTitle, episode, server }: VideoPlayerProp
             </button>
           </div>
 
-          <iframe
-            id="embed-player"
-            title={`${movieTitle} - Tập ${episode}`}
-            allow="autoplay; encrypted-media; picture-in-picture"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-            src="https://api.thiaphim.net/embed/470576"
-            className="absolute inset-0 h-full w-full border-0"
-          />
+          {embedUrl ? (
+            <iframe
+              id="embed-player"
+              title={`${movieTitle} - Tập ${episode}`}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              src={embedUrl}
+              className="absolute inset-0 h-full w-full border-0"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-white/60 text-sm">
+              Nguồn phát đang được cập nhật.
+            </div>
+          )}
         </div>
 
         <div className="flex h-16 w-full items-center gap-3 overflow-x-auto rounded-b-xl bg-[#08080a] px-5 text-xs text-white/90">
