@@ -1,16 +1,19 @@
 import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { MovieHorizontal } from '@/app/(default)/phimmoi/components/HappyMovie/components/types/movie'; // Điều chỉnh path phù hợp
 
 interface Props {
   movie: MovieHorizontal;
+  priority?: boolean;
 }
 
-export default function MovieHorizontalCard({ movie }: Props) {
+export default function MovieHorizontalCard({ movie, priority = false }: Props) {
   return (
-    <div className="w-[408px] shrink-0 mr-4 select-none group">
+    <div className="w-full select-none group">
       <div className="relative">
         {/* Cover Poster Hoz */}
-        <a 
+        <Link 
           href={`/phim/${movie.slug}`}
           className="block w-full relative h-0 pb-[45%] rounded-lg overflow-hidden bg-gray-800"
         >
@@ -28,31 +31,37 @@ export default function MovieHorizontalCard({ movie }: Props) {
             </div>
           )}
 
-          <img 
+          <Image
             alt={movie.title}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
             src={movie.posterUrl}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1440px) 33vw, 25vw"
+            quality={72}
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
           />
-        </a>
+        </Link>
 
         {/* Nội dung bên dưới cover */}
         <div className="p-4 relative z-10 flex gap-5 items-start">
           {/* Vertical Thumbnail đè lên poster */}
           <div className="w-[80px] shrink-0 -mt-[60px]">
-            <a 
+            <Link 
               href={`/phim/${movie.slug}`}
               className="block w-full relative h-0 pb-[150%] rounded-lg overflow-hidden bg-gray-800 shadow-[0_0_10px_5px_rgba(0,0,0,0.1)]"
             >
-              <img 
+              <Image
                 alt={movie.title}
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
                 src={movie.thumbUrl}
+                fill
+                sizes="80px"
+                quality={65}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
               />
-            </a>
+            </Link>
           </div>
 
           {/* Thông tin Text */}

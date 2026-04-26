@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto, Sora, Geist } from "next/font/google";
 import "@/styles/globals.css";
 import ScrollToTop from "@/components/ScrollToTop";
+import ThemeInitializer from "@/components/ThemeInitializer";
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
@@ -32,22 +33,8 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="vi" className={cn(sora.variable, roboto.variable, "font-sans", geist.variable)} suppressHydrationWarning>
-            <head>
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                            try {
-                                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                                    document.documentElement.classList.add('dark');
-                                } else {
-                                    document.documentElement.classList.remove('dark');
-                                }
-                            } catch (_) {}
-                        `,
-                    }}
-                />
-            </head>
             <body className="antialiased">
+                <ThemeInitializer />
                 <ScrollToTop />
                 {children}
             </body>

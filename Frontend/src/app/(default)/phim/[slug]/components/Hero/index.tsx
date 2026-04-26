@@ -27,6 +27,10 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords }: HeroProp
   const servers = movie.episodes ?? [];
   const currentServer = servers[selectedServerIdx];
   const currentEp = currentServer?.server_data?.[selectedEpIdx];
+  const currentEmbedSrc = currentEp?.link_embed?.trim() || null;
+  const trailerEmbedSrc = movie.trailer_url?.trim()
+    ? movie.trailer_url.replace('watch?v=', 'embed/')
+    : null;
 
   return (
     <div className="flex-grow flex flex-col bg-[#191b24]/60 backdrop-blur-[20px] rounded-r-2xl rounded-l-none lg:rounded-[0_1.25rem_1.25rem_0] overflow-hidden lg:ml-[-33px] ml-0">
@@ -56,19 +60,19 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords }: HeroProp
         {activeTab === 'episodes' && (
           <div className="px-6 lg:px-10 py-8">
             {/* iframe player */}
-            {currentEp ? (
+            {currentEp && currentEmbedSrc ? (
               <div className="w-full aspect-video rounded-xl overflow-hidden bg-black mb-8">
                 <iframe
-                  src={currentEp.link_embed}
+                  src={currentEmbedSrc}
                   allowFullScreen
                   className="w-full h-full border-0"
                   title={`${movie.name} - Tập ${currentEp.name}`}
                 />
               </div>
-            ) : movie.trailer_url ? (
+            ) : trailerEmbedSrc ? (
               <div className="w-full aspect-video rounded-xl overflow-hidden bg-black mb-8">
                 <iframe
-                  src={movie.trailer_url.replace('watch?v=', 'embed/')}
+                  src={trailerEmbedSrc}
                   allowFullScreen
                   className="w-full h-full border-0"
                   title={`${movie.name} - Trailer`}

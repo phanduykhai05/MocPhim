@@ -1,24 +1,32 @@
 import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface NewUpdateCardProps {
   title: string;
   slug: string;
   thumb: string;
   badge: string; // e.g. "Vietsub HD", "Vietsub Full HD"
+  priority?: boolean;
 }
 
-export const NewUpdateCard = ({ title, slug, thumb, badge }: NewUpdateCardProps) => {
+export const NewUpdateCard = ({ title, slug, thumb, badge, priority = false }: NewUpdateCardProps) => {
   return (
     <div className="group w-full">
       {/* Thumbnail */}
       <div className="relative w-full rounded-[6px] overflow-hidden bg-[#25252b]" style={{ paddingTop: "135.74%" }}>
-        <a href={`/phim/${slug}`} title={title} className="absolute inset-0 w-full h-full block overflow-hidden">
+        <Link href={`/phim/${slug}`} title={title} className="absolute inset-0 w-full h-full block overflow-hidden">
           
           {/* Ảnh */}
-          <img
+          <Image
             src={thumb}
             alt={title}
-            loading="lazy"
+            fill
+            sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 12vw"
+            quality={70}
+            priority={priority}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
             referrerPolicy="no-referrer"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 rounded-[6px]"
           />
@@ -43,18 +51,18 @@ export const NewUpdateCard = ({ title, slug, thumb, badge }: NewUpdateCardProps)
               ▶
             </span>
           </span>
-        </a>
+        </Link>
       </div>
 
       {/* Title */}
       <div className="pt-2">
-        <a
+        <Link
           href={`/phim/${slug}`}
           title={title}
           className="block text-white/90 font-normal leading-[26px] h-[26px] overflow-hidden text-ellipsis whitespace-nowrap text-sm hover:text-[#f472b6] transition-colors"
         >
           {title}
-        </a>
+        </Link>
       </div>
     </div>
   );

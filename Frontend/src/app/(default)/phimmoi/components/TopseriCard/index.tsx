@@ -199,7 +199,7 @@ export const TopSeriesList = ({ movies }: TopSeriesListProps) => {
             >
               {topMovies.map((movie, index) => (
                 <SwiperSlide key={index}>
-                  <TopSeriesCard index={index} movie={movie} />
+                  <TopSeriesCard index={index} movie={movie} priority={index < 2} />
                 </SwiperSlide>
               ))}
             </Swiper>

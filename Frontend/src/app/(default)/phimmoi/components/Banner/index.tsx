@@ -32,14 +32,14 @@ const Banner = ({ movies }: BannerProps) => {
         pagination={{
           clickable: true,
           renderBullet: (index, className) => {
-            return `<span class="${className} custom-thumb" style="background-image: url('${slides[index]?.poster ?? ""}')"></span>`;
+            return `<span class="${className} custom-thumb" style="background-image: url('${slides[index]?.poster ?? ""}')" aria-label="Chuyển đến slide ${index + 1}"></span>`;
           },
         }}
         className="top-slide-main"
       >
-        {slides.map((movie) => (
+        {slides.map((movie, index) => (
           <SwiperSlide key={movie.id}>
-            <SlideElements movie={movie} />
+            <SlideElements movie={movie} priority={index === 0} />
           </SwiperSlide>
         ))}
       </Swiper>

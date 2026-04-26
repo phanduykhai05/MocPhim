@@ -1,4 +1,6 @@
 import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface TopSeriesCardProps {
   index: number;
@@ -10,9 +12,10 @@ interface TopSeriesCardProps {
     episodeText: string;
     badges: { type: "pd" | "lt" | "tm"; text: string }[];
   };
+  priority?: boolean;
 }
 
-export const TopSeriesCard = ({ index, movie }: TopSeriesCardProps) => {
+export const TopSeriesCard = ({ index, movie, priority = false }: TopSeriesCardProps) => {
   const isReversed = index % 2 === 1;
 
   // Polygon phức tạp từ CSS cũ của bạn
@@ -29,7 +32,7 @@ export const TopSeriesCard = ({ index, movie }: TopSeriesCardProps) => {
   return (
     <div className="flex flex-col gap-3 relative w-full group">
       {/* Thumbnail phim */}
-      <a
+      <Link
         href={`/phim/${movie.slug}`}
         className="relative w-full aspect-[2/3] rounded-xl overflow-hidden block bg-[#191b24]"
         style={{
@@ -44,10 +47,15 @@ export const TopSeriesCard = ({ index, movie }: TopSeriesCardProps) => {
           className="absolute inset-0 bg-white/5 z-10"
           style={{ clipPath: cardClipPath }}
         />
-        <img
+        <Image
           alt={`Xem Phim ${movie.title}`}
-          loading="lazy"
           src={movie.thumb}
+          fill
+          sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 16vw"
+          quality={70}
+          priority={priority}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 "
           style={{
             clipPath: cardClipPath,
@@ -77,7 +85,7 @@ export const TopSeriesCard = ({ index, movie }: TopSeriesCardProps) => {
             </div>
           ))}
         </div>
-      </a>
+      </Link>
 
       {/* Thông tin Phim & Số Top */}
       <div className="pl-[66px] relative text-left isolate flex flex-col gap-1">
@@ -88,9 +96,9 @@ export const TopSeriesCard = ({ index, movie }: TopSeriesCardProps) => {
 
         {/* Tên phim */}
         <h4 className="text-white text-base font-normal line-clamp-1 m-0 relative z-0">
-          <a href={`/phim/${movie.slug}`} className="hover:text-[#f472b6] transition-colors">
+          <Link href={`/phim/${movie.slug}`} className="hover:text-[#f472b6] transition-colors">
             {movie.title}
-          </a>
+          </Link>
         </h4>
 
         {/* Tên tiếng Anh/Bí danh */}

@@ -147,8 +147,8 @@ export const NewUpdateList = ({ movies }: NewUpdateListProps) => {
 
       {/* Grid */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-x-4 gap-y-2">
-        {list.map((movie) => (
-          <NewUpdateCard key={movie.slug} {...movie} />
+        {list.map((movie, index) => (
+          <NewUpdateCard key={movie.slug} {...movie} priority={index < 4} />
         ))}
       </div>
     </div>

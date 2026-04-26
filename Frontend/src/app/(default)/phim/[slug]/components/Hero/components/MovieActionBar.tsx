@@ -38,13 +38,12 @@ export const MovieActionBar = ({ movie }: MovieActionBarProps) => {
         </a>
       ) : hasEpisodes ? (
         <a
-          href="#episodes"
-          onClick={(e) => { e.preventDefault(); document.getElementById('player-section')?.scrollIntoView({ behavior: 'smooth' }); }}
+          href={`/xem-phim/${movie.slug}`}
           className="relative w-full lg:w-auto flex-shrink-0 flex items-center justify-center gap-3 text-[16px] font-semibold py-3 px-8 border-0 rounded-xl overflow-hidden text-white transition-all duration-300 hover:opacity-95 shadow-[0_8px_26px_rgba(0,0,0,0.28)] cursor-pointer"
           style={{ background: 'linear-gradient(39deg, #e11d48 0%, #f472b6 100%)' }}
         >
           <Play className="w-6 h-6" fill="white" />
-          <span>Xem Ngay</span>
+          <span>Xem Trên Màn Hình Lớn</span>
         </a>
       ) : (
         <a

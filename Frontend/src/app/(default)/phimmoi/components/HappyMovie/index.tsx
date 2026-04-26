@@ -1,4 +1,9 @@
+"use client";
+
 import React from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Mousewheel, Navigation } from 'swiper/modules';
+import 'swiper/css';
 import SectionHeader from '@/app/(default)/phimmoi/components/HappyMovie/components/SectionHeader';
 import MovieHorizontalCard from '@/app/(default)/phimmoi/components/HappyMovie/components/MovieHorizontalCard';
 import { MovieHorizontal } from '@/app/(default)/phimmoi/components/HappyMovie/components/types/movie';
@@ -56,22 +61,40 @@ export default function MovieTheatersSection({ movies }: HappyMovieProps) {
         />
 
         <div className="relative group">
-          {/* Nút Navigation trái/phải (Sẽ hoạt động nếu gắn JS/Swiper logic) */}
-          <button aria-label="Xem trước" className="absolute left-0 top-1/3 -translate-y-1/2 -translate-x-full z-20 p-2 text-white opacity-50 hover:opacity-100 hidden lg:block">
+          {/* Nút Navigation Swiper */}
+          <button
+            aria-label="Xem trước"
+            id="happy-movie-prev"
+            className="absolute left-0 top-1/3 -translate-y-1/2 -translate-x-full z-20 p-2 text-white opacity-50 hover:opacity-100 hidden lg:block"
+          >
             <svg width="24" height="24" viewBox="0 0 16 16" fill="none"><path d="M10.3335 12.6667L5.66683 8.00004L10.3335 3.33337" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"></path></svg>
           </button>
-          <button aria-label="Xem tiếp" className="absolute right-0 top-1/3 -translate-y-1/2 translate-x-full z-20 p-2 text-white opacity-50 hover:opacity-100 hidden lg:block">
+          <button
+            aria-label="Xem tiếp"
+            id="happy-movie-next"
+            className="absolute right-0 top-1/3 -translate-y-1/2 translate-x-full z-20 p-2 text-white opacity-50 hover:opacity-100 hidden lg:block"
+          >
             <svg width="24" height="24" viewBox="0 0 16 16" fill="none"><path d="M5.66675 3.33341L10.3334 8.00008L5.66675 12.6667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"></path></svg>
           </button>
 
-          {/* Wrapper chứa Cards - Dùng scroll ngang native để hiển thị */}
-          <div className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory w-full">
-            {list.map((movie) => (
-              <div key={movie.id} className="snap-start">
-                <MovieHorizontalCard movie={movie} />
-              </div>
+          {/* Wrapper chứa Cards - dùng Swiper giống TopSeries */}
+          <Swiper
+            modules={[Navigation, Mousewheel]}
+            navigation={{
+              prevEl: '#happy-movie-prev',
+              nextEl: '#happy-movie-next',
+            }}
+            mousewheel={{ forceToAxis: true }}
+            spaceBetween={16}
+            slidesPerView="auto"
+            className="!overflow-visible"
+          >
+            {list.map((movie, index) => (
+              <SwiperSlide key={movie.id} className="!w-[408px]">
+                <MovieHorizontalCard movie={movie} priority={index === 0} />
+              </SwiperSlide>
             ))}
-          </div>
+          </Swiper>
           
         </div>
       </div>
