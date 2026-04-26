@@ -1,209 +1,221 @@
-# Frontend Setup (Next.js + pnpm)
+# MocPhim Project Documentation
 
-## 📌 Requirements
-Trước khi chạy project, hãy đảm bảo máy bạn đã cài:
+## Tổng quan
+Dự án MocPhim bao gồm hai phần chính: **Frontend** và **Backend**. Frontend được xây dựng bằng Next.js và TypeScript, trong khi Backend được phát triển bằng Java Spring Boot. Hai phần này giao tiếp với nhau thông qua các API RESTful để cung cấp trải nghiệm người dùng mượt mà và hiệu quả.
 
-- **Node.js** (khuyến nghị v18+ hoặc v20+)
-- **pnpm**
+## Cấu trúc chi tiết dự án
 
-Kiểm tra phiên bản:
-```bash
-node -v
-pnpm -v
+### Frontend
+Frontend là giao diện người dùng của ứng dụng, chịu trách nhiệm hiển thị nội dung và xử lý tương tác của người dùng. Dưới đây là cấu trúc chi tiết của thư mục Frontend:
+
 ```
-📥 Clone Project
-```bash
-git clone https://github.com/phanduykhai05/MocPhim.git
-cd Frontend
-```
-📦 Install Dependencies
-
-Cài đặt thư viện bằng pnpm:
-```bash
-pnpm install
-```
-
-▶️ Run Development Server
-
-Chạy project ở môi trường dev:
-```bash
-pnpm dev
-```
-Sau đó mở trình duyệt tại:
-```bash
-http://localhost:3000
-```
-🏗 Build Production
-
-Build project để deploy:
-```bash
-pnpm build
-```
-🚀 Start Production
-
-Sau khi build xong, chạy production:
-```bash
-pnpm start
-```
-🧹 Fix lỗi thường gặp
-❌ Lỗi: Cannot find module 'next/dist/bin/next'
-
-Nguyên nhân: chưa cài dependency đầy đủ.
-
-Fix:
-```bash
-rm -rf node_modules .next pnpm-lock.yaml
-pnpm install
-pnpm dev
-```
-(Windows CMD)
-```bash
-rmdir /s /q node_modules
-rmdir /s /q .next
-del pnpm-lock.yaml
-pnpm install
-pnpm dev
+Frontend/
+├── public/                # Tài nguyên tĩnh (hình ảnh, font chữ, favicon, v.v.)
+├── src/
+│   ├── app/              # Các trang chính và layout của ứng dụng
+│   │   ├── (default)/    # Layout mặc định và các trang con
+│   │   ├── phimmoi/      # Trang hiển thị danh sách phim mới
+│   │   ├── xem-phim/     # Trang phát phim theo slug
+│   │   ├── admin/        # Trang quản trị
+│   ├── components/       # Các thành phần giao diện tái sử dụng (icon, UI, Preloader, v.v.)
+│   ├── constants/        # Các hằng số toàn cục (ví dụ: URL API, giá trị mặc định)
+│   ├── hooks/            # Custom React hooks (ví dụ: useScrollPosition)
+│   ├── layouts/          # Các layout chính (Header, Footer, Sidebar)
+│   ├── lib/              # Hàm tiện ích và tích hợp API (ví dụ: home.ts, movie.ts)
+│   ├── styles/           # CSS toàn cục (globals.css)
+│   ├── types/            # Định nghĩa kiểu TypeScript (ví dụ: MovieItem, Swiper CSS)
+│   └── utils/            # Các hàm hỗ trợ (ví dụ: helpers.ts)
+├── package.json          # Metadata và dependencies của dự án
+├── tsconfig.json         # Cấu hình TypeScript
+├── tailwind.config.js    # Cấu hình Tailwind CSS
+└── README.md             # Tài liệu dự án
 ```
 
----
+### Backend
+Backend là API server, chịu trách nhiệm xử lý logic nghiệp vụ, quản lý dữ liệu và cung cấp API cho Frontend. Dưới đây là cấu trúc chi tiết của thư mục Backend:
 
-## ⚡ Hướng Dẫn Push Code Nhanh Lên Dev
-
-### Cách 1: Push nhanh (sau khi thay đổi code)
-```bash
-git add .
-git commit -m "Update: [mô tả thay đổi]"
-git push origin dev
+```
+Backend/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   ├── mocphim/com/backend_web/
+│   │   │   │   ├── config/          # Cấu hình ứng dụng (CORS, Redis, v.v.)
+│   │   │   │   ├── controller/      # Các controller xử lý request từ Frontend
+│   │   │   │   ├── dto/             # Các lớp DTO (Data Transfer Object) để truyền dữ liệu
+│   │   │   │   ├── entity/          # Các entity ánh xạ với database
+│   │   │   │   ├── exception/       # Xử lý ngoại lệ toàn cục
+│   │   │   │   ├── repository/      # Các interface làm việc với database
+│   │   │   │   ├── scheduler/       # Các tác vụ định kỳ (ví dụ: đồng bộ dữ liệu phim)
+│   │   │   │   └── service/         # Các lớp xử lý logic nghiệp vụ
+│   │   ├── resources/               # File cấu hình ứng dụng (application.properties)
+│   └── test/                        # Các bài kiểm thử
+├── pom.xml                          # Cấu hình Maven
+└── README.md                        # Tài liệu dự án
 ```
 
-### Cách 2: One-liner (gõ nhanh)
-```bash
-git add . && git commit -m "Update" && git push origin dev
+## Giao tiếp giữa Frontend và Backend
+Frontend và Backend giao tiếp thông qua các API RESTful. Dưới đây là danh sách các API chính và cách sử dụng:
+
+### 1. **Lấy danh sách phim**
+- **URL**: `http://103.229.53.17/api/movies`
+- **Phương thức**: `GET`
+- **Mô tả**: Lấy danh sách các bộ phim.
+- **Tham số**:
+  - `page` (tùy chọn): Số trang.
+  - `limit` (tùy chọn): Số lượng phim trên mỗi trang.
+- **Phản hồi**:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Tên phim",
+      "description": "Mô tả phim",
+      "poster": "URL hình ảnh",
+      "rating": 8.5
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "totalPages": 10
+  }
+}
 ```
 
-### Cách 3: Push mà không cần commit message dài
-```bash
-git add .
-git commit -m "."
-git push origin dev
+### 2. **Lấy chi tiết phim**
+- **URL**: `http://103.229.53.17/api/movies/:id`
+- **Phương thức**: `GET`
+- **Mô tả**: Lấy thông tin chi tiết của một bộ phim.
+- **Tham số**:
+  - `id` (bắt buộc): ID của bộ phim.
+- **Phản hồi**:
+```json
+{
+  "id": 1,
+  "title": "Tên phim",
+  "description": "Mô tả phim",
+  "poster": "URL hình ảnh",
+  "rating": 8.5,
+  "episodes": [
+    {
+      "id": 101,
+      "title": "Tập 1",
+      "url": "URL phát phim"
+    }
+  ]
+}
 ```
 
----
-
-## 📚 Hướng Dẫn Git Cơ Bản Cho Người Mới Bắt Đầu
-
-### 1️⃣ **Lần đầu: Clone Project**
-```bash
-git clone https://github.com/phanduykhai05/MocPhim.git
-cd MocPhim/Frontend
+### 3. **Xác thực người dùng**
+- **URL**: `http://103.229.53.17/api/auth/login`
+- **Phương thức**: `POST`
+- **Mô tả**: Đăng nhập người dùng.
+- **Tham số**:
+  - `email` (bắt buộc): Email của người dùng.
+  - `password` (bắt buộc): Mật khẩu.
+- **Phản hồi**:
+```json
+{
+  "token": "JWT token",
+  "user": {
+    "id": 1,
+    "name": "Tên người dùng",
+    "email": "Email người dùng"
+  }
+}
 ```
 
-### 2️⃣ **Check trạng thái trước khi làm việc**
-```bash
-git status
-```
-Xem những file nào đã thay đổi.
+## Hướng dẫn triển khai trên Ubuntu Server
 
-### 3️⃣ **Lưu thay đổi (Commit)**
+### Cài đặt các yêu cầu
+1. **Cài đặt Node.js và pnpm**:
+   ```bash
+   curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+   sudo apt-get install -y nodejs
+   npm install -g pnpm
+   ```
+2. **Cài đặt Java JDK 17**:
+   ```bash
+   sudo apt update
+   sudo apt install openjdk-17-jdk
+   ```
+3. **Cài đặt Maven**:
+   ```bash
+   sudo apt install maven
+   ```
+4. **Cài đặt Nginx**:
+   ```bash
+   sudo apt install nginx
+   ```
 
-**Bước 1**: Thêm file vào staging area
-```bash
-git add .
-```
-_(Dấu `.` có nghĩa là thêm tất cả file thay đổi)_
+### Triển khai Frontend
+1. Build ứng dụng:
+   ```bash
+   pnpm build
+   ```
+2. Copy thư mục `.next` lên server.
+3. Cấu hình Nginx để phục vụ ứng dụng:
+   - Tạo file cấu hình Nginx:
+     ```bash
+     sudo nano /etc/nginx/sites-available/mocphim-frontend
+     ```
+   - Thêm nội dung sau:
+     ```nginx
+     server {
+         listen 80;
+         server_name 103.229.53.17;
 
-**Bước 2**: Commit (lưu thay đổi)
-```bash
-git commit -m "Mô tả thay đổi của bạn"
-```
+         root /path/to/frontend/.next;
+         index index.html;
 
-**Ví dụ**:
-```bash
-git commit -m "Fix footer logo display"
-git commit -m "Add navigation menu"
-git commit -m "Update API endpoint"
-```
+         location / {
+             try_files $uri /index.html;
+         }
+     }
+     ```
+   - Kích hoạt cấu hình:
+     ```bash
+     sudo ln -s /etc/nginx/sites-available/mocphim-frontend /etc/nginx/sites-enabled/
+     sudo systemctl restart nginx
+     ```
 
-### 4️⃣ **Push lên GitHub (tải code lên server)**
-```bash
-git push origin dev
-```
+### Triển khai Backend
+1. Build ứng dụng:
+   ```bash
+   ./mvnw package
+   ```
+2. Chạy file JAR:
+   ```bash
+   java -jar target/backend-web-0.0.1-SNAPSHOT.jar
+   ```
+3. Cấu hình Nginx để reverse proxy đến cổng 8080:
+   - Tạo file cấu hình Nginx:
+     ```bash
+     sudo nano /etc/nginx/sites-available/mocphim-backend
+     ```
+   - Thêm nội dung sau:
+     ```nginx
+     server {
+         listen 80;
+         server_name 103.229.53.17;
 
-### 5️⃣ **Pull code từ GitHub (lấy code từ server)**
-```bash
-git pull origin dev
-```
-Chạy lệnh này trước khi bắt đầu làm việc để lấy code mới nhất.
+         location /api/ {
+             proxy_pass http://localhost:8080/;
+             proxy_set_header Host $host;
+             proxy_set_header X-Real-IP $remote_addr;
+             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+         }
+     }
+     ```
+   - Kích hoạt cấu hình:
+     ```bash
+     sudo ln -s /etc/nginx/sites-available/mocphim-backend /etc/nginx/sites-enabled/
+     sudo systemctl restart nginx
+     ```
 
-### 6️⃣ **Tạo nhánh riêng (nếu cần)**
-```bash
-git checkout -b feature/ten-feature
-```
-Sau làm xong:
-```bash
-git push origin feature/ten-feature
-```
+## Đóng góp
+Mọi đóng góp đều được hoan nghênh! Vui lòng fork repository và tạo pull request cho các thay đổi.
 
----
-
-## 🔄 **Quy Trình Làm Việc Hàng Ngày (Recommended)**
-
-### Sáng - Bắt đầu làm việc:
-```bash
-git pull origin dev
-```
-
-### Giữa ngày - Lưu thay đổi:
-```bash
-git add .
-git commit -m "Thay đổi gì vậy?"
-git push origin dev
-```
-
-### Cuối ngày - Push cuối cùng:
-```bash
-git add .
-git commit -m "Final update"
-git push origin dev
-```
-
----
-
-## ⚠️ **Tình Huống Thường Gặp**
-
-### ❌ Tôi commit sai rồi, phải làm sao?
-```bash
-git reset HEAD~1
-```
-(Hủy commit cuối cùng nhưng giữ code)
-
-### ❌ Tôi làm sai rồi, muốn quay lại phiên bản cũ?
-```bash
-git checkout .
-```
-(Hủy tất cả thay đổi chưa commit)
-
-### ❌ Conflict khi pull code
-```bash
-git status
-```
-Sửa file conflict, rồi:
-```bash
-git add .
-git commit -m "Resolve conflict"
-git push origin dev
-```
-
----
-
-## 🎯 **Commit Message Tips**
-Viết message rõ ràng để bạn bè hiểu:
-
-✅ **Tốt**:
-- "Fix footer background opacity"
-- "Add hero section animations"
-- "Update API response handling"
-
-❌ **Tệ**:
-- "fix"
-- "update"
+## Giấy phép
+Dự án này được cấp phép theo giấy phép MIT.
