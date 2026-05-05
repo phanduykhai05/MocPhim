@@ -8,7 +8,7 @@ export default function RootLayout({
 }>) {
     return (
         
-        <div className="flex flex-col min-h-screen"> 
+        <div className="flex flex-col min-h-screen bg-[#191B24]"> 
             <Preloader />
             <Header />
                 <main className="flex-grow">

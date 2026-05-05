@@ -89,7 +89,7 @@ function toHappyMovies(items: ApiMovie[], cdn: string): MovieHorizontal[] {
 export default async function PhimMoi() {
   const homeData = await fetchHomeData();
   const items = homeData?.items ?? [];
-  const cdn = homeData?.cdnImage ?? "https://img.ophim.live";
+  const cdn = homeData?.cdnImage ?? process.env.NEXT_PUBLIC_CDN_IMAGE!;
 
   const bannerMovies = toBannerMovies(items, cdn);
   const updateMovies = toUpdateMovies(items, cdn);

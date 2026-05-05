@@ -1,5 +1,5 @@
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://103.229.53.17/api/v1';
-const CDN = process.env.APP_DOMAIN_CDN_IMAGE || 'https://img.ophim.live';
+const API = process.env.NEXT_PUBLIC_API_URL!;
+const CDN = process.env.NEXT_PUBLIC_CDN_IMAGE!;
 
 export function getMovieThumb(thumb_url: string, cdn = CDN): string {
   if (!thumb_url) return '';

@@ -16,48 +16,6 @@ import {
 import { ConfigProvider, Dropdown, Badge, App } from "antd";
 import viVN from "antd/locale/vi_VN";
 
-const route = {
-  path: "/admin",
-  routes: [
-    {
-      path: "/admin/dashboard",
-      name: "Tổng quan",
-      icon: <DashboardOutlined />,
-    },
-    {
-      name: "Nội dung",
-      icon: <VideoCameraOutlined />,
-      routes: [
-        {
-          path: "/admin/phim",
-          name: "Quản lý Phim",
-          icon: <VideoCameraOutlined />,
-        },
-        {
-          path: "/admin/the-loai",
-          name: "Thể loại",
-          icon: <TagsOutlined />,
-        },
-        {
-          path: "/admin/binh-luan",
-          name: "Bình luận",
-          icon: <CommentOutlined />,
-        },
-      ],
-    },
-    {
-      path: "/admin/nguoi-dung",
-      name: "Người dùng",
-      icon: <UserOutlined />,
-    },
-    {
-      path: "/admin/cai-dat",
-      name: "Cài đặt",
-      icon: <SettingOutlined />,
-    },
-  ],
-};
-
 export default function AdminLayout({
   children,
 }: {
@@ -67,6 +25,50 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+
+  const route = {
+    path: "/admin",
+    routes: [
+      {
+        path: "/admin/dashboard",
+        name: "Tổng quan",
+        icon: <DashboardOutlined />,
+      },
+      {
+        path: "/admin/noi-dung",
+        key: "noi-dung",
+        name: "Nội dung",
+        icon: <VideoCameraOutlined />,
+        routes: [
+          {
+            path: "/admin/phim",
+            name: "Quản lý Phim",
+            icon: <VideoCameraOutlined />,
+          },
+          {
+            path: "/admin/the-loai",
+            name: "Thể loại",
+            icon: <TagsOutlined />,
+          },
+          {
+            path: "/admin/binh-luan",
+            name: "Bình luận",
+            icon: <CommentOutlined />,
+          },
+        ],
+      },
+      {
+        path: "/admin/nguoi-dung",
+        name: "Người dùng",
+        icon: <UserOutlined />,
+      },
+      {
+        path: "/admin/cai-dat",
+        name: "Cài đặt",
+        icon: <SettingOutlined />,
+      },
+    ],
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -93,13 +95,14 @@ export default function AdminLayout({
             onCollapse={setCollapsed}
             siderWidth={216}
             layout="mix"
+            splitMenus={false}
             fixSiderbar
             fixedHeader
             menuItemRender={(item, dom) => (
               <a
                 onClick={(e) => {
                   e.preventDefault();
-                  if (item.path) router.push(item.path);
+                  if (item.path && !item.routes?.length) router.push(item.path);
                 }}
                 href={item.path}
               >
