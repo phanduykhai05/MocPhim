@@ -133,7 +133,11 @@ export const NewUpdateList = ({ movies }: NewUpdateListProps) => {
       {/* Header */}
       <div className="flex items-center mt-[10px] mb-4">
         <h4 className="text-[22px] leading-[32px] font-bold text-white/90 m-0 flex items-center gap-2">
-          <a href="#" className="flex items-center gap-2 hover:text-white transition-colors">
+          <a
+            href="/phimmoi/full-movies"
+            className="flex items-center gap-2 hover:text-white transition-colors"
+            style={{ cursor: "pointer" }}
+          >
             <span>Mới Update</span>
             <span className="text-sm font-normal text-white/50 ml-2 flex items-center gap-1">
               Xem thêm
