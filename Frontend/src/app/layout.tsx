@@ -3,6 +3,7 @@ import { Roboto, Sora, Geist } from "next/font/google";
 import "@/styles/globals.css";
 import ScrollToTop from "@/components/ScrollToTop";
 import ThemeInitializer from "@/components/ThemeInitializer";
+import SecurityGuard from "@/components/SecurityGuard";
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
@@ -35,6 +36,7 @@ export default function RootLayout({
         <html lang="vi" className={cn(sora.variable, roboto.variable, "font-sans", geist.variable)} suppressHydrationWarning>
             <body className="antialiased">
                 <ThemeInitializer />
+                <SecurityGuard />
                 <ScrollToTop />
                 {children}
             </body>

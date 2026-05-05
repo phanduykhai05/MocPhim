@@ -45,7 +45,7 @@ const positionLabel: Record<AdItem["position"], string> = {
 };
 
 export default function QuangCaoPage() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const { message } = App.useApp();
   const [createOpen, setCreateOpen] = useState(false);
   const [ads, setAds] = useState<AdItem[]>(mockAds);
@@ -117,6 +117,10 @@ export default function QuangCaoPage() {
           columns={columns}
           dataSource={ads}
           request={async () => ({ data: ads, success: true, total: ads.length })}
+          search={{ labelWidth: 100 }}
+          form={{
+            labelCol: { flex: "0 0 100px" },
+          }}
           toolBarRender={() => [
             <Button key="add" type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
               Thêm mã quảng cáo

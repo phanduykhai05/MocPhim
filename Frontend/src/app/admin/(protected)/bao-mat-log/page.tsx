@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   PageContainer,
   ProCard,
@@ -11,6 +11,11 @@ import {
 } from "@ant-design/pro-components";
 import type { ProColumns } from "@ant-design/pro-components";
 import { App, Tag } from "antd";
+import {
+  DEFAULT_SECURITY_SETTINGS,
+  loadSecuritySettings,
+  saveSecuritySettings,
+} from "@/lib/security-settings";
 
 type LoginLog = {
   id: number;
@@ -120,41 +125,75 @@ const backupColumns: ProColumns<BackupLog>[] = [
 
 export default function BaoMatLogPage() {
   const { message } = App.useApp();
+  const [formInitialValues, setFormInitialValues] = useState({
+    enable2FA: false,
+    detectAnomaly: true,
+    backupSchedule: "daily",
+    backupRetention: "30",
+    ...DEFAULT_SECURITY_SETTINGS,
+  });
+
+  useEffect(() => {
+    const runtimeSecuritySettings = loadSecuritySettings();
+    setFormInitialValues((prev) => ({ ...prev, ...runtimeSecuritySettings }));
+  }, []);
 
   return (
     <PageContainer title="Bảo mật & log" subTitle="Log đăng nhập, phát hiện bất thường và backup dữ liệu">
       <ProCard ghost gutter={[16, 16]} direction="column">
         <ProCard title="Cấu hình bảo mật" bordered>
           <ProForm
+            key={JSON.stringify(formInitialValues)}
             layout="vertical"
-            initialValues={{
-              enable2FA: false,
-              detectAnomaly: true,
-              backupSchedule: "daily",
-              backupRetention: "30",
-            }}
+            initialValues={formInitialValues}
             onFinish={async (values) => {
+              saveSecuritySettings({
+                enableClientProtection: Boolean(values.enableClientProtection),
+                blockDevToolsKeyShortcuts: Boolean(values.blockDevToolsKeyShortcuts),
+                blockContextMenu: Boolean(values.blockContextMenu),
+                blockViewSourceShortcut: Boolean(values.blockViewSourceShortcut),
+                blockCopySelection: Boolean(values.blockCopySelection),
+                blockPrintShortcut: Boolean(values.blockPrintShortcut),
+                blockSaveShortcut: Boolean(values.blockSaveShortcut),
+                blurWhenTabHidden: Boolean(values.blurWhenTabHidden),
+                frameBustProtection: Boolean(values.frameBustProtection),
+              });
               console.log(values);
-              message.success("Đã lưu cấu hình bảo mật");
+              message.success("Đã lưu cấu hình bảo mật và áp dụng ngay");
             }}
             submitter={{ searchConfig: { submitText: "Lưu cấu hình" } }}
           >
-            <ProFormSwitch name="enable2FA" label="Bắt buộc 2FA cho tài khoản admin" />
-            <ProFormSwitch name="detectAnomaly" label="Bật phát hiện truy cập bất thường" />
-            <ProFormSelect
-              name="backupSchedule"
-              label="Lịch backup"
-              options={[
-                { label: "Mỗi ngày", value: "daily" },
-                { label: "Mỗi 12 giờ", value: "12h" },
-                { label: "Mỗi tuần", value: "weekly" },
-              ]}
-            />
-            <ProFormSelect
-              name="backupRetention"
-              label="Lưu bản backup (ngày)"
-              options={["7", "15", "30", "60", "90"].map((v) => ({ label: `${v} ngày`, value: v }))}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-1">
+              <ProFormSwitch name="enable2FA" label="Bắt buộc 2FA cho tài khoản admin" />
+              <ProFormSwitch name="detectAnomaly" label="Bật phát hiện truy cập bất thường" />
+              <ProFormSwitch name="enableClientProtection" label="Bật bảo vệ frontend" />
+              <ProFormSwitch name="blockDevToolsKeyShortcuts" label="Chặn F12 / Ctrl+Shift+I/J/C/K" />
+              <ProFormSwitch name="blockViewSourceShortcut" label="Chặn Ctrl+U (view source)" />
+              <ProFormSwitch name="blockContextMenu" label="Chặn chuột phải (context menu)" />
+              <ProFormSwitch name="blockCopySelection" label="Chặn copy/cut/select text" />
+              <ProFormSwitch name="blockPrintShortcut" label="Chặn Ctrl+P (in trang)" />
+              <ProFormSwitch name="blockSaveShortcut" label="Chặn Ctrl+S (save trang)" />
+              <ProFormSwitch name="blurWhenTabHidden" label="Làm mờ nội dung khi tab bị ẩn" />
+              <ProFormSwitch name="frameBustProtection" label="Chống nhúng iframe trái phép" />
+            </div>
+            <ProForm.Group>
+              <ProFormSelect
+                width="sm"
+                name="backupSchedule"
+                label="Lịch backup"
+                options={[
+                  { label: "Mỗi ngày", value: "daily" },
+                  { label: "Mỗi 12 giờ", value: "12h" },
+                  { label: "Mỗi tuần", value: "weekly" },
+                ]}
+              />
+              <ProFormSelect
+                width="sm"
+                name="backupRetention"
+                label="Lưu bản backup (ngày)"
+                options={["7", "15", "30", "60", "90"].map((v) => ({ label: `${v} ngày`, value: v }))}
+              />
+            </ProForm.Group>
           </ProForm>
         </ProCard>
 
