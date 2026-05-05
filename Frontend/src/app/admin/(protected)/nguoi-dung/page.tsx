@@ -39,7 +39,7 @@ const roleMap: Record<string, { text: string; color: string }> = {
 };
 
 export default function NguoiDungPage() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const [createOpen, setCreateOpen] = useState(false);
   const { message } = App.useApp();
 
@@ -136,7 +136,7 @@ export default function NguoiDungPage() {
   ];
 
   return (
-    <PageContainer title="Quản lý Người dùng">
+    <PageContainer title="Danh sách user" subTitle="Quản lý danh sách tài khoản người dùng hệ thống">
       <ProTable<User>
         actionRef={actionRef}
         rowKey="id"

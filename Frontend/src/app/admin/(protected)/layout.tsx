@@ -103,6 +103,23 @@ export default function AdminLayout({
         path: "/admin/nguoi-dung",
         name: "Người dùng",
         icon: <UserOutlined />,
+        routes: [
+          {
+            path: "/admin/nguoi-dung",
+            name: "Danh sách user",
+            icon: <UserOutlined />,
+          },
+          {
+            path: "/admin/nguoi-dung/phan-quyen",
+            name: "Phân quyền",
+            icon: <UserOutlined />,
+          },
+          {
+            path: "/admin/nguoi-dung/khoa-tai-khoan",
+            name: "Khóa tài khoản",
+            icon: <UserOutlined />,
+          },
+        ],
       },
       {
         path: "/admin/cai-dat",
