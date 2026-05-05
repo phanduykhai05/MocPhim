@@ -12,6 +12,13 @@ import {
   BellOutlined,
   TagsOutlined,
   CommentOutlined,
+  AppstoreOutlined,
+  NotificationOutlined,
+  CloudDownloadOutlined,
+  SafetyOutlined,
+  ExperimentOutlined,
+  WalletOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { ConfigProvider, Dropdown, Badge, App } from "antd";
 import viVN from "antd/locale/vi_VN";
@@ -51,11 +58,46 @@ export default function AdminLayout({
             icon: <TagsOutlined />,
           },
           {
+            path: "/admin/danh-muc",
+            name: "Danh mục / Taxonomy",
+            icon: <AppstoreOutlined />,
+          },
+          {
             path: "/admin/binh-luan",
             name: "Bình luận",
             icon: <CommentOutlined />,
           },
         ],
+      },
+      {
+        path: "/admin/quang-cao",
+        name: "Quảng cáo",
+        icon: <NotificationOutlined />,
+      },
+      {
+        path: "/admin/import-crawl",
+        name: "Import / Crawl phim",
+        icon: <CloudDownloadOutlined />,
+      },
+      {
+        path: "/admin/bao-mat-log",
+        name: "Bảo mật & log",
+        icon: <SafetyOutlined />,
+      },
+      {
+        path: "/admin/tinh-nang-nang-cao",
+        name: "Nâng cao",
+        icon: <ExperimentOutlined />,
+      },
+      {
+        path: "/admin/doanh-thu-donate",
+        name: "Doanh thu & donate",
+        icon: <WalletOutlined />,
+      },
+      {
+        path: "/admin/seo-sitemap",
+        name: "SEO & sitemap",
+        icon: <SearchOutlined />,
       },
       {
         path: "/admin/nguoi-dung",
@@ -102,7 +144,8 @@ export default function AdminLayout({
               <a
                 onClick={(e) => {
                   e.preventDefault();
-                  if (item.path && !item.routes?.length) router.push(item.path);
+                  const hasChildren = Array.isArray((item as { routes?: unknown[] }).routes) && ((item as { routes?: unknown[] }).routes?.length ?? 0) > 0;
+                  if (item.path && !hasChildren) router.push(item.path);
                 }}
                 href={item.path}
               >

@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import images from "@/assets/images";
 
 export type BadgeItem = { type: "pd" | "lt" | "tm"; text: string };
 
@@ -40,6 +41,17 @@ export const NewUpdateCard = ({ title, originName, slug, thumb, badges, priority
             referrerPolicy="no-referrer"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 rounded-[6px]"
           />
+
+          {/* Logo watermark */}
+          <span className="absolute top-2 left-2 z-[10] pointer-events-none opacity-80">
+            <Image
+              src={images.logo}
+              alt="MocPhim watermark"
+              width={56}
+              height={20}
+              className="h-auto w-[56px] object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+            />
+          </span>
 
           {/* Dotted overlay */}
           <span className="absolute inset-0 z-[1] pointer-events-none bg-[url('/images/dotted.png')] bg-repeat opacity-20" />
