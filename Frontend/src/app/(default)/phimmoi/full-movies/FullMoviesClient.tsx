@@ -11,7 +11,7 @@ interface Movie {
   slug: string;
   title: string;
   thumb: string;
-  badge: string;
+  badges: { type: "pd" | "lt" | "tm"; text: string }[];
 }
 
 interface Pagination {
@@ -36,7 +36,7 @@ export default function FullMoviesClient() {
         slug: item.slug,
         title: item.title,
         thumb: `${CDN}/uploads/movies/${item.slug}-thumb.jpg`,
-        badge: "HD",
+        badges: [],
       }));
 
       setMovies(mapped);
@@ -81,7 +81,7 @@ export default function FullMoviesClient() {
   }
 
   return (
-    <div className="relative w-full max-w-[1808px] mx-auto px-4 md:px-[60px] animate-fade-in-up">
+    <div className="relative w-full max-w-[1808px] mx-auto px-4 md:px-5 animate-fade-in-up lg:pt-20 pt-16">
       {/* Header */}
       <div className="flex items-center justify-between mt-[10px] mb-4">
         <h4 className="text-[22px] leading-[32px] font-bold text-white/90 m-0">

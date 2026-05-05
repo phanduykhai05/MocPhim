@@ -31,16 +31,27 @@ function toBannerMovies(items: ApiMovie[], cdn: string): Movie[] {
 }
 
 function toUpdateMovies(items: ApiMovie[], cdn: string) {
-  return items.map((item) => ({
-    title: item.name,
-    slug: item.slug,
-    thumb: getThumbUrl(item.thumb_url, cdn),
-    badge: `${item.lang} · ${item.quality}`,
-  }));
+  return items.map((item) => {
+    const epShort = parseEpisodeShort(item.episode_current);
+    const lang = item.lang.toLowerCase();
+    const badges: { type: "pd" | "lt" | "tm"; text: string }[] = [];
+    if (lang.includes("vietsub")) badges.push({ type: "pd", text: epShort });
+    if (lang.includes("thuyết minh")) badges.push({ type: "tm", text: epShort });
+    if (lang.includes("lồng tiếng")) badges.push({ type: "lt", text: epShort });
+    if (badges.length === 0) badges.push({ type: "pd", text: epShort });
+    return {
+      title: item.name,
+      originName: item.origin_name,
+      slug: item.slug,
+      thumb: getThumbUrl(item.thumb_url, cdn),
+      badges,
+    };
+  });
 }
 
 function parseEpisodeShort(ep: string): string {
   if (/hoàn tất/i.test(ep)) return "HT";
+  if (/^full$/i.test(ep.trim())) return "Full";
   const m = ep.match(/tập\s*(\d+)/i);
   if (m) return m[1];
   if (/trailer/i.test(ep)) return "TR";

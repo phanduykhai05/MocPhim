@@ -68,7 +68,7 @@ export const TopSeriesCard = ({ index, movie, priority = false }: TopSeriesCardP
         />
 
         {/* Pin Badge (PĐ, LT, TM) */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20 flex justify-between items-stretch rounded-t-[4px] overflow-hidden shadow-[0_0_5px_2px_rgba(0,0,0,0.1)] whitespace-nowrap">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20 flex justify-between items-stretch rounded-t-[4px] overflow-hidden shadow-[0_0_5px_2px_rgba(0,0,0,0.1)] whitespace-nowrap" >
           {movie.badges.map((badge, i) => (
             <div
               key={i}
@@ -80,8 +80,8 @@ export const TopSeriesCard = ({ index, movie, priority = false }: TopSeriesCardP
                   : "bg-green-600" // Cho Thuyết Minh (TM) nếu có
               }`}
             >
-              <span>{badge.type === "pd" ? "PĐ." : badge.type === "lt" ? "LT." : "TM."}</span>
-              <strong>{badge.text}</strong>
+              <span style={{ fontWeight: 200 }}>{badge.type === "pd" ? "PĐ." : badge.type === "lt" ? "LT." : "TM."}</span>
+              <strong style={{ fontWeight: 200 }}>{badge.text}</strong>
             </div>
           ))}
         </div>

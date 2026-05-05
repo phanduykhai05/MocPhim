@@ -1,11 +1,12 @@
 import React from "react";
-import { NewUpdateCard } from "@/app/(default)/phimmoi/components/MovieUpdate/components/NewUpdateCard";
+import { NewUpdateCard, type BadgeItem } from "@/app/(default)/phimmoi/components/MovieUpdate/components/NewUpdateCard";
 
 export interface UpdateMovie {
   title: string;
+  originName?: string;
   slug: string;
   thumb: string;
-  badge: string;
+  badges: BadgeItem[];
 }
 
 interface NewUpdateListProps {
