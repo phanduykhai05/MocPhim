@@ -161,6 +161,9 @@ const indexColumns: ProColumns<IndexUrl>[] = [
   {
     title: "Trạng thái index",
     dataIndex: "status",
+    formItemProps: {
+      style: { flex: "0 0 100px" },
+    },
     render: (_, record) => {
       const map = {
         indexed: { color: "success", text: "Đã index" },
