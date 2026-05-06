@@ -29,4 +29,11 @@ public class SearchController {
         if (sortType != null)  params.put("sort_type", sortType);
         return ResponseEntity.ok(ApiResponse.success(searchService.search(keyword, params)));
     }
+
+    @GetMapping("/history")
+    public ResponseEntity<ApiResponse<Object>> getSearchHistory(
+        @RequestParam(defaultValue = "20") int limit
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(searchService.getHistory(limit)));
+    }
 }

@@ -26,7 +26,15 @@ DB_PASSWORD=your_password
 ### 3. Chạy app
 
 ```bash
+# Maven
 mvn spring-boot:run
+
+# Hoặc JAR trực tiếp (load .env tự động)
+./run.sh
+
+# Hoặc Docker
+docker build -t mocphim-backend .
+docker run --env-file .env -p 8080:8080 mocphim-backend
 ```
 
 Server khởi động tại: `http://localhost:8080`
@@ -38,7 +46,7 @@ Server khởi động tại: `http://localhost:8080`
 ```
 src/main/java/mocphim/com/backend_web/
 ├── config/
-│   ├── AppConfig.java          # RestTemplate + ObjectMapper
+│   ├── AppConfig.java          # RestTemplate + ObjectMapper (JavaTimeModule)
 │   ├── RedisConfig.java        # Jedis kết nối Redis Cloud + CacheManager TTL
 │   └── CorsConfig.java         # CORS cho /api/**
 ├── controller/
@@ -48,12 +56,13 @@ src/main/java/mocphim/com/backend_web/
 │   ├── CategoryController.java
 │   ├── CountryController.java
 │   ├── YearController.java
-│   └── SyncController.java     # Xem phim đã sync từ DB
+│   └── SyncController.java     # Quản lý sync phim từ OPhim vào DB
 ├── service/
 │   ├── OPhimService.java       # HTTP proxy đến OPhim API
 │   ├── HomeService.java
 │   ├── MovieService.java
-│   ├── SearchService.java
+│   ├── SearchService.java      # Tìm kiếm + lưu/đọc lịch sử từ khóa
+│   ├── MovieSyncService.java   # Đọc dữ liệu sync từ DB (có Redis cache)
 │   ├── CategoryService.java
 │   ├── CountryService.java
 │   └── YearService.java
@@ -110,24 +119,26 @@ Mọi response đều có format chuẩn:
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| GET | `/movies?slug={slug}` | Danh sách phim theo bộ lọc |
+| GET | `/movies?list={list}` | Danh sách phim theo loại |
 | GET | `/movies/{slug}` | Chi tiết 1 phim |
 | GET | `/movies/{slug}/images` | Hình ảnh phim |
 | GET | `/movies/{slug}/peoples` | Diễn viên / đạo diễn |
 | GET | `/movies/{slug}/keywords` | Từ khóa phim |
 
-**Query params cho `/movies?slug=`:**
+**Query params cho `/movies?list=`:**
 
-| Param | Kiểu | Mô tả |
-|---|---|---|
-| `slug` | String | **Bắt buộc.** VD: `phim-moi`, `phim-bo`, `phim-le` |
-| `page` | int | Trang (default: 1) |
-| `sort_field` | String | Trường sắp xếp |
-| `sort_type` | String | `asc` hoặc `desc` |
-| `category` | String | Slug thể loại |
-| `country` | String | Slug quốc gia |
-| `year` | int | Năm sản xuất |
-| `type` | String | `series`, `single`, `hoathinh`, `tvshows` |
+| Param | Kiểu | Bắt buộc | Mô tả |
+|---|---|---|---|
+| `list` | String | Có | Loại danh sách. VD: `phim-bo`, `phim-le`, `hoat-hinh`, `tv-shows` |
+| `page` | int | Không | Trang (default: 1) |
+| `sort_field` | String | Không | Trường sắp xếp |
+| `sort_type` | String | Không | `asc` hoặc `desc` |
+| `category` | String | Không | Slug thể loại |
+| `country` | String | Không | Slug quốc gia |
+| `year` | int | Không | Năm sản xuất |
+| `type` | String | Không | `series`, `single`, `hoathinh`, `tvshows` |
+
+> Phân biệt: `?list=` xác định **loại danh sách** (`/danh-sach/` trên OPhim), còn `/{slug}` là **ID định danh phim cụ thể**.
 
 ---
 
@@ -135,7 +146,14 @@ Mọi response đều có format chuẩn:
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| GET | `/search?keyword={kw}` | Tìm kiếm phim, tự lưu lịch sử vào DB |
+| GET | `/search?keyword={kw}` | Tìm kiếm phim, tự lưu từ khóa vào DB |
+| GET | `/search/history?limit={n}` | Top từ khóa được tìm nhiều nhất |
+
+**Query params cho `/search/history`:**
+
+| Param | Kiểu | Mô tả |
+|---|---|---|
+| `limit` | int | Số từ khóa trả về (default: 20) |
 
 ---
 
@@ -146,6 +164,14 @@ Mọi response đều có format chuẩn:
 | GET | `/categories` | Danh sách tất cả thể loại |
 | GET | `/categories/{slug}/movies` | Phim theo thể loại |
 
+**Query params cho `/categories/{slug}/movies`:**
+
+| Param | Kiểu | Mô tả |
+|---|---|---|
+| `page` | int | Trang (default: 1) |
+| `sort_field` | String | Trường sắp xếp |
+| `sort_type` | String | `asc` hoặc `desc` |
+
 ---
 
 ### Quốc gia
@@ -154,6 +180,8 @@ Mọi response đều có format chuẩn:
 |---|---|---|
 | GET | `/countries` | Danh sách quốc gia |
 | GET | `/countries/{slug}/movies` | Phim theo quốc gia |
+
+**Query params cho `/countries/{slug}/movies`:** tương tự `/categories/{slug}/movies`
 
 ---
 
@@ -164,37 +192,76 @@ Mọi response đều có format chuẩn:
 | GET | `/years` | Danh sách năm |
 | GET | `/years/{year}/movies` | Phim theo năm |
 
+**Query params cho `/years/{year}/movies`:** tương tự `/categories/{slug}/movies`
+
 ---
 
-### Sync (nội bộ)
+### Sync (quản trị)
+
+Dùng để quản lý và theo dõi quá trình đồng bộ phim từ OPhim vào PostgreSQL.
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| GET | `/sync/movies` | Danh sách phim đã sync vào PostgreSQL |
+| GET | `/sync/movies` | Danh sách phim đã sync (phân trang) |
+| GET | `/sync/movies/all` | Danh sách phim đã sync (tối đa 500, mới nhất) |
 | GET | `/sync/movies/count` | Tổng số phim đã sync |
+| POST | `/sync/movies/trigger` | Kích hoạt sync thủ công |
+
+**Query params cho `GET /sync/movies`:**
+
+| Param | Kiểu | Mô tả |
+|---|---|---|
+| `page` | int | Trang (default: 0) |
+| `size` | int | Số phim mỗi trang (default: 20) |
+
+**Query params cho `POST /sync/movies/trigger`:**
+
+| Param | Kiểu | Mô tả |
+|---|---|---|
+| `startPage` | int | Trang bắt đầu lấy từ OPhim (default: 1) |
+| `maxPages` | int | Số trang tối đa mỗi lần sync (default: 50) |
+
+Response của trigger:
+```json
+{
+  "status": true,
+  "message": "success",
+  "data": { "added": 12, "skipped": 238 },
+  "pagination": null
+}
+```
 
 ---
 
 ## Redis Cache TTL
 
-| Cache | TTL |
-|---|---|
-| `home` | 5 phút |
-| `movieDetail` | 10 phút |
-| `movieList` | 5 phút |
-| `categories` | 30 phút |
-| `countries` | 30 phút |
-| `years` | 60 phút |
+| Cache | TTL | Ghi chú |
+|---|---|---|
+| `home` | 5 phút | |
+| `movieDetail` | 10 phút | |
+| `movieList` | 5 phút | |
+| `categories` | 30 phút | |
+| `countries` | 30 phút | |
+| `years` | 60 phút | |
+| `syncedMovies` | 2 phút | Tự evict khi có phim mới được sync |
+| `searchHistory` | 5 phút | |
 
 ---
 
 ## Scheduler
 
 `MovieSyncScheduler` chạy mỗi 1 phút (cấu hình qua `scheduler.movie-sync.cron`):
-- Gọi OPhim `/danh-sach/phim-moi`
+- Gọi OPhim `/danh-sach/phim-moi`, duyệt từng trang
 - Với mỗi phim: kiểm tra `slug` trong bảng `movie_sync`
 - Chỉ INSERT phim chưa có, bỏ qua phim trùng
+- Dừng sớm nếu cả trang đều đã tồn tại trong DB
+- Khi có phim mới: tự động xóa cache `syncedMovies`
 - Lỗi OPhim → log WARN, không crash app
+
+Tắt scheduler:
+```properties
+scheduler.movie-sync.enabled=false
+```
 
 ---
 
@@ -203,7 +270,7 @@ Mọi response đều có format chuẩn:
 | Bảng | Mục đích |
 |---|---|
 | `movie_sync` | Track phim đã đồng bộ (`slug` unique) |
-| `search_history` | Lịch sử từ khóa tìm kiếm + đếm |
+| `search_history` | Lịch sử từ khóa tìm kiếm + số lần tìm |
 | `movie_view_count` | Lượt xem theo slug |
 | `api_request_log` | Log request đến OPhim |
 

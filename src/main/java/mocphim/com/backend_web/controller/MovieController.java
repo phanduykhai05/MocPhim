@@ -18,7 +18,7 @@ public class MovieController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<Object>> getMovieList(
-        @RequestParam String slug,
+        @RequestParam String list,
         @RequestParam(defaultValue = "1") Integer page,
         @RequestParam(name = "sort_field", required = false) String sortField,
         @RequestParam(name = "sort_type", required = false) String sortType,
@@ -28,7 +28,7 @@ public class MovieController {
         @RequestParam(required = false) String type
     ) {
         Map<String, String> params = buildParams(page, sortField, sortType, category, country, year, type);
-        return ResponseEntity.ok(ApiResponse.success(movieService.getMovieList(slug, params)));
+        return ResponseEntity.ok(ApiResponse.success(movieService.getMovieList(list, params)));
     }
 
     @GetMapping("/{slug}")
