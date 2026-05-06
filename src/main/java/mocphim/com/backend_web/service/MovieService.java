@@ -17,6 +17,7 @@ public class MovieService {
         return ophimService.get("/danh-sach/" + slug, params);
     }
 
+
     @Cacheable(value = "movieDetail", key = "#slug")
     public Object getMovieDetail(String slug) {
         return ophimService.get("/phim/" + slug);
