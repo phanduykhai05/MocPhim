@@ -8,7 +8,7 @@ export default function RootLayout({
 }>) {
     return (
         
-        <div className="flex flex-col min-h-screen bg-[#191B24]"> 
+        <div className="flex flex-col min-h-screen bg-[#f0f3f8] dark:bg-[#191B24] transition-colors duration-300"> 
             <Preloader />
             <Header />
                 <main className="flex-grow">

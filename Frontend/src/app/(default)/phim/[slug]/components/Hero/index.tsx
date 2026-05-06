@@ -33,7 +33,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords }: HeroProp
     : null;
 
   return (
-    <div className="flex-grow flex flex-col bg-[#191b24]/60 backdrop-blur-[20px] rounded-r-2xl rounded-l-none lg:rounded-[0_1.25rem_1.25rem_0] overflow-hidden lg:ml-[-33px] ml-0">
+    <div className="flex-grow flex flex-col bg-gray-100 dark:bg-[#191b24]/60 backdrop-blur-[20px] rounded-r-2xl rounded-l-none lg:rounded-[0_1.25rem_1.25rem_0] overflow-hidden lg:ml-[-33px] ml-0">
 
       <MovieActionBar movie={movie} />
 

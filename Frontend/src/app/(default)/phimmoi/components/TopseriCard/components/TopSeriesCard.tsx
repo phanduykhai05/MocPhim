@@ -34,7 +34,7 @@ export const TopSeriesCard = ({ index, movie, priority = false }: TopSeriesCardP
       {/* Thumbnail phim */}
       <Link
         href={`/phim/${movie.slug}`}
-        className="relative w-full aspect-[2/3] rounded-xl overflow-hidden block bg-[#191b24]"
+        className="relative w-full aspect-[2/3] rounded-xl overflow-hidden block bg-gray-300 dark:bg-[#191b24]"
         style={{
           position: "relative",
           display: "block",

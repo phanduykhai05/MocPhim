@@ -74,7 +74,7 @@ const WatchMovieTemplate = ({
   const currentEpisodeData = activeServer?.episodes.find((ep) => ep.number === currentEpisode);
 
   return (
-    <div className="min-h-screen bg-[#191b24] pb-12 pt-5 lg:pt-30">
+    <div className="min-h-screen bg-[#f0f3f8] dark:bg-[#191b24] pb-12 pt-5 lg:pt-30 transition-colors duration-300">
       <div className="mx-auto w-full max-w-[1640px] px-5">
         <div className="grid gap-3 lg:gap-4">
           <VideoPlayer
@@ -104,7 +104,7 @@ const WatchMovieTemplate = ({
               <CommentSection />
             </div>
 
-            <div className="lg:border-l lg:border-white/5 lg:pl-6">
+            <div className="lg:border-l lg:border-gray-300 dark:lg:border-white/5 lg:pl-6">
               <CastSidebar
                 movie={movie}
                 suggestions={topMovies}

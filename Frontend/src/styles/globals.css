@@ -106,6 +106,19 @@ button {
   background: #94a3b8;
 }
 
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1a1d28;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3a3f52;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4e5468;
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);

@@ -3,7 +3,7 @@ import React from 'react';
 const SeoSection: React.FC = () => {
   return (
     // section-second: padding-bottom 4rem (16 * 0.25rem = 4rem)
-    <div id="section-second" className="pb-16 bg-[#191B24]">
+    <div id="section-second" className="pb-16 bg-[#f0f3f8] dark:bg-[#191B24] transition-colors duration-300">
       
       {/* Container: Giới hạn chiều rộng 1120px theo code gốc */}
       <div className="container mx-auto px-5 w-full max-w-[1120px]">
@@ -12,16 +12,16 @@ const SeoSection: React.FC = () => {
         <div 
           id="about" 
           className="
-            relative text-[1.1em] leading-[1.7] text-[#cfcfcf] px-4 md:px-[6rem]
+            relative text-[1.1em] leading-[1.7] text-gray-700 dark:text-[#cfcfcf] px-4 md:px-[6rem]
             
             /* Headings */
             [&_h2]:text-[1.6em] [&_h2]:my-6 [&_h2]:text-[#fecf59] [&_h2]:font-medium [&_h2]:leading-[1.6]
-            [&_h3]:text-[1.4em] [&_h3]:my-4 [&_h3]:text-white [&_h3]:font-medium [&_h3]:leading-[1.6]
-            [&_h4]:text-[1.2em] [&_h4]:my-4 [&_h4]:text-white [&_h4]:font-medium [&_h4]:leading-[1.6]
+            [&_h3]:text-[1.4em] [&_h3]:my-4 [&_h3]:text-gray-900 dark:[&_h3]:text-white [&_h3]:font-medium [&_h3]:leading-[1.6]
+            [&_h4]:text-[1.2em] [&_h4]:my-4 [&_h4]:text-gray-900 dark:[&_h4]:text-white [&_h4]:font-medium [&_h4]:leading-[1.6]
             
             /* Paragraph & Bold */
             [&_p]:mb-4 
-            [&_b]:font-semibold [&_b]:text-white
+            [&_b]:font-semibold [&_b]:text-gray-900 dark:[&_b]:text-white
             
             /* Lists */
             [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ul]:space-y-2

@@ -6,7 +6,7 @@ import Footer from '@/app/(home)/components/Footer';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#191B24] font-sans text-white selection:bg-[#764ba2] selection:text-white">
+    <div className="min-h-screen bg-[#f0f3f8] dark:bg-[#191B24] font-sans text-gray-900 dark:text-white selection:bg-[#764ba2] selection:text-white transition-colors duration-300">
       {/* Ẩn thẻ H1 cho SEO */}
       <h1 className="sr-only">Xem Phim Online Miễn Phí Vietsub HD - RoPhim 2026</h1>
       

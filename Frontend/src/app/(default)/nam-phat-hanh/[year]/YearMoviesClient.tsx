@@ -32,7 +32,7 @@ function MovieCard({
   return (
     <div className="group w-full">
       <div
-        className="relative w-full rounded-[6px] overflow-hidden bg-[#25252b]"
+        className="relative w-full rounded-[6px] overflow-hidden bg-gray-300 dark:bg-[#25252b]"
         style={{ paddingTop: "135.74%" }}
       >
         <Link
@@ -96,11 +96,11 @@ function MovieCard({
       </div>
 
       <Link href={`/phim/${item.slug}`} title={item.name}>
-        <p className="mt-1.5 text-[12px] leading-[16px] text-white/80 group-hover:text-white line-clamp-2 font-medium transition-colors">
+        <p className="mt-1.5 text-[12px] leading-[16px] text-gray-800 dark:text-white/80 group-hover:text-gray-900 dark:group-hover:text-white line-clamp-2 font-medium transition-colors">
           {item.name}
         </p>
         {item.origin_name && (
-          <p className="mt-0.5 text-[11px] leading-[14px] text-white/35 line-clamp-1">
+          <p className="mt-0.5 text-[11px] leading-[14px] text-gray-400 dark:text-white/35 line-clamp-1">
             {item.origin_name}
           </p>
         )}
@@ -114,9 +114,9 @@ function SkeletonGrid() {
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-x-4 gap-y-3">
       {Array.from({ length: PAGE_SIZE }).map((_, i) => (
         <div key={i} className="w-full">
-          <div className="w-full rounded-[6px] bg-white/10 animate-pulse" style={{ paddingTop: "135.74%" }} />
-          <div className="mt-2 h-3 bg-white/10 rounded animate-pulse" />
-          <div className="mt-1 h-3 w-3/4 bg-white/10 rounded animate-pulse" />
+          <div className="w-full rounded-[6px] bg-gray-200 dark:bg-white/10 animate-pulse" style={{ paddingTop: "135.74%" }} />
+          <div className="mt-2 h-3 bg-gray-200 dark:bg-white/10 rounded animate-pulse" />
+          <div className="mt-1 h-3 w-3/4 bg-gray-200 dark:bg-white/10 rounded animate-pulse" />
         </div>
       ))}
     </div>
@@ -137,7 +137,7 @@ function Paginator({ current, total, onChange }: { current: number; total: numbe
   return (
     <div className="flex justify-center mt-8 mb-6 gap-1.5 flex-wrap items-center">
       <button
-        className="px-3 py-1.5 rounded bg-white/10 text-white/70 hover:bg-white/20 disabled:opacity-30 text-sm transition-colors"
+        className="px-3 py-1.5 rounded bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-300 dark:hover:bg-white/20 disabled:opacity-30 text-sm transition-colors"
         onClick={() => onChange(current - 1)}
         disabled={current <= 1}
       >
@@ -145,12 +145,12 @@ function Paginator({ current, total, onChange }: { current: number; total: numbe
       </button>
       {getPages().map((page, i) =>
         page === "..." ? (
-          <span key={`el-${i}`} className="px-2 text-white/40">…</span>
+          <span key={`el-${i}`} className="px-2 text-gray-400 dark:text-white/40">…</span>
         ) : (
           <button
             key={page}
             className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
-              current === page ? "bg-[#1677ff] text-white" : "bg-white/10 text-white/70 hover:bg-white/20"
+              current === page ? "bg-[#1677ff] text-white" : "bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-300 dark:hover:bg-white/20"
             }`}
             onClick={() => onChange(page as number)}
             disabled={current === page}
@@ -160,7 +160,7 @@ function Paginator({ current, total, onChange }: { current: number; total: numbe
         )
       )}
       <button
-        className="px-3 py-1.5 rounded bg-white/10 text-white/70 hover:bg-white/20 disabled:opacity-30 text-sm transition-colors"
+        className="px-3 py-1.5 rounded bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-300 dark:hover:bg-white/20 disabled:opacity-30 text-sm transition-colors"
         onClick={() => onChange(current + 1)}
         disabled={current >= total}
       >
@@ -238,12 +238,12 @@ export default function YearMoviesClient({ year }: { year: string }) {
     <div className="relative w-full max-w-[1808px] mx-auto px-4 md:px-5 lg:pt-20 pt-16">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-[10px] mb-6">
         <div>
-          <h4 className="text-[22px] leading-[32px] font-bold text-white/90 m-0">
+          <h4 className="text-[22px] leading-[32px] font-bold text-gray-900 dark:text-white/90 m-0">
             Năm phát hành:{" "}
             <span className="text-[#1677ff] capitalize">{year}</span>
           </h4>
           {!loading && (
-            <p className="text-sm text-white/35 mt-0.5">
+            <p className="text-sm text-gray-500 dark:text-white/35 mt-0.5">
               {totalItems > 0
                 ? `${totalItems.toLocaleString()} phim`
                 : "Không có phim nào"}
@@ -252,14 +252,14 @@ export default function YearMoviesClient({ year }: { year: string }) {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-white/40">Sắp xếp:</span>
+          <span className="text-sm text-gray-500 dark:text-white/40">Sắp xếp:</span>
           {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.label}
               className={`text-sm px-3 py-1.5 rounded transition-colors ${
                 currentSort.label === opt.label
                   ? "bg-[#1677ff] text-white"
-                  : "bg-white/10 text-white/60 hover:bg-white/20"
+                  : "bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-white/60 hover:bg-gray-300 dark:hover:bg-white/20"
               }`}
               onClick={() => pushParams({ sort_field: opt.sort_field, sort_type: opt.sort_type })}
             >
@@ -272,7 +272,7 @@ export default function YearMoviesClient({ year }: { year: string }) {
       {loading && <SkeletonGrid />}
 
       {!loading && items.length === 0 && (
-        <div className="flex items-center justify-center min-h-[30vh] text-white/40">
+        <div className="flex items-center justify-center min-h-[30vh] text-gray-400 dark:text-white/40">
           Không có phim nào trong năm này.
         </div>
       )}

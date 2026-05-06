@@ -54,10 +54,10 @@ const SlideElements = ({ movie, priority = false }: { movie: Movie; priority?: b
           fetchPriority={priority ? 'high' : 'auto'}
           className="absolute inset-0 object-cover"
         />
-        <div className="absolute inset-0 bg-[#191b24]/30"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#191b24]/78 via-[#191b24]/40 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#191b24]/88 via-transparent to-[#191b24]/12"></div>
-        <div className="absolute inset-y-0 left-0 w-[44%] bg-gradient-to-r from-[#191b24]/58 to-transparent"></div>
+        <div className="absolute inset-0 bg-[#f0f3f8]/20 dark:bg-[#191b24]/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#f0f3f8]/78 via-[#f0f3f8]/40 dark:from-[#191b24]/78 dark:via-[#191b24]/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#f0f3f8]/88 via-transparent to-[#f0f3f8]/12 dark:from-[#191b24]/88 dark:to-[#191b24]/12"></div>
+        <div className="absolute inset-y-0 left-0 w-[44%] bg-gradient-to-r from-[#f0f3f8]/58 dark:from-[#191b24]/58 to-transparent"></div>
       </div>
 
       <div className={`mx-auto h-full max-w-[1700px] relative z-10 px-4 md:px-10 xl:px-12 flex items-center ${styles.bannerContent}`}>

@@ -57,7 +57,7 @@ export async function fetchSyncMovies(
   size = 20
 ): Promise<SyncMoviesResult | null> {
   try {
-    const res = await fetch(`${API}/sync/movies/all`, {
+    const res = await fetch(`${API}/sync/movies`, {
       next: { revalidate: 120 },
     });
     if (res.ok) {

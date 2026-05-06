@@ -6,7 +6,7 @@ import images from "@/assets/images";
 import Image from "next/image";
 export default function Footer() {
     return (
-        <footer className="relative overflow-hidden bg-[#0F111A] text-[#a0a4b8] font-sans border-t border-[#1f2333]">
+        <footer className="relative overflow-hidden bg-[#e9edf5] dark:bg-[#0F111A] text-gray-700 dark:text-[#a0a4b8] font-sans border-t border-gray-300 dark:border-[#1f2333] transition-colors duration-300">
             {/* Background Decoration */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] opacity-[3] pointer-events-none block z-0">
                 <Image src={images.Footericon} alt="Footer Icon" className="w-full h-full object-contain" />
@@ -29,7 +29,7 @@ export default function Footer() {
 
                     {/* Right Section */}
                     <div className="w-full xl:w-auto xl:min-w-[260px] flex flex-col xl:h-full xl:justify-between xl:self-stretch">
-                        <div className="space-y-0.5 text-center text-[14px] leading-relaxed text-[#85899b] xl:text-left xl:self-start">
+                        <div className="space-y-0.5 text-center text-[14px] leading-relaxed text-gray-500 dark:text-[#85899b] xl:text-left xl:self-start">
                             <p><i>--------Developer--------</i></p>
                             <p>FullStack Phan Duy Khai</p>
                             <p>BackEnd Vo Ho Vinh Khang.</p>

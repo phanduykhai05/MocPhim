@@ -25,7 +25,7 @@ export const NewUpdateCard = ({ title, originName, slug, thumb, badges, priority
   return (
     <div className="group w-full">
       {/* Thumbnail */}
-      <div className="relative w-full rounded-[6px] overflow-hidden bg-[#25252b]" style={{ paddingTop: "135.74%" }}>
+      <div className="relative w-full rounded-[6px] overflow-hidden bg-gray-300 dark:bg-[#25252b]" style={{ paddingTop: "135.74%" }}>
         <Link href={`/phim/${slug}`} title={title} className="absolute inset-0 w-full h-full block overflow-hidden">
           
           {/* Ảnh */}
@@ -92,12 +92,12 @@ export const NewUpdateCard = ({ title, originName, slug, thumb, badges, priority
         <Link
           href={`/phim/${slug}`}
           title={title}
-          className="block text-white/90 font-normal leading-[26px] h-[26px] overflow-hidden text-ellipsis whitespace-nowrap text-sm hover:text-[#f472b6] transition-colors"
+          className="block text-gray-800 dark:text-white/90 font-normal leading-[26px] h-[26px] overflow-hidden text-ellipsis whitespace-nowrap text-sm hover:text-[#f472b6] transition-colors"
         >
           {title}
         </Link>
         {originName && (
-          <p className="text-white/40 text-[11px] leading-[18px] h-[18px] overflow-hidden text-ellipsis whitespace-nowrap m-0">
+          <p className="text-gray-500 dark:text-white/40 text-[11px] leading-[18px] h-[18px] overflow-hidden text-ellipsis whitespace-nowrap m-0">
             {originName}
           </p>
         )}

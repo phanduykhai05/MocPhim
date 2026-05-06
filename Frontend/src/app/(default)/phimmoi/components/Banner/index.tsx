@@ -20,7 +20,7 @@ const Banner = ({ movies }: BannerProps) => {
   const slides = movies && movies.length > 0 ? movies : FAKE_MOVIES;
 
   return (
-    <section id="top_slide" className={`w-full bg-[#191b24] relative ${styles.bannerContainer}`}>
+    <section id="top_slide" className={`w-full bg-[#f0f3f8] dark:bg-[#191b24] relative transition-colors duration-300 ${styles.bannerContainer}`}>
       <Swiper
         modules={[Autoplay, EffectFade, Pagination]}
         effect="fade"

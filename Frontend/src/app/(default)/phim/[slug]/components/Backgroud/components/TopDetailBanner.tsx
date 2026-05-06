@@ -9,13 +9,13 @@ interface TopDetailBannerProps {
 
 export const TopDetailBanner: React.FC<TopDetailBannerProps> = ({ imageUrl, children }) => {
   return (
-    <div className="relative w-full h-[800px] bg-[#191b24] overflow-hidden">
+    <div className="relative w-full h-[800px] bg-[#f0f3f8] dark:bg-[#191b24] overflow-hidden transition-colors duration-300">
       
       {/* 1. Lớp pattern chấm bi mờ phủ toàn màn hình (Thay cho ::before) */}
       <div className="absolute inset-0 bg-[url('/images/dotted.png')] bg-repeat opacity-20 z-[1]" />
       
       {/* 2. Lớp gradient đen làm mượt viền dưới (Thay cho ::after) */}
-      <div className="absolute inset-x-0 bottom-0 h-[200px] z-[3] bg-gradient-to-t from-[#191b24] to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-[200px] z-[3] bg-gradient-to-t from-[#f0f3f8] dark:from-[#191b24] to-transparent" />
 
       {/* 3. Lớp background mờ ảo (Blur effect) */}
       <div 

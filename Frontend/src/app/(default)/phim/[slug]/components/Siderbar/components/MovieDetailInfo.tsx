@@ -16,10 +16,10 @@ export const MovieDetailInfo = ({ movie, cdnImage }: MovieDetailInfoProps) => {
   const isCompleted = movie.status === 'completed';
 
   return (
-    <div className="font-light text-gray-300">
+    <div className="font-light text-gray-700 dark:text-gray-300">
       {/* Thumbnail */}
       <div className="flex flex-col">
-        <div className="w-[290px] lg:w-[350px] xl:w-[360px] mx-auto lg:mx-0 mb-6 shrink-0 rounded-2xl overflow-hidden aspect-[2/3] relative bg-[#191b24] shadow-2xl">
+        <div className="w-[290px] lg:w-[350px] xl:w-[360px] mx-auto lg:mx-0 mb-6 shrink-0 rounded-2xl overflow-hidden aspect-[2/3] relative bg-gray-300 dark:bg-[#191b24] shadow-2xl">
           <img
             src={thumbUrl}
             alt={movie.name}
@@ -29,10 +29,10 @@ export const MovieDetailInfo = ({ movie, cdnImage }: MovieDetailInfoProps) => {
         </div>
 
         <div className="text-center lg:text-left">
-          <h1 className="text-[1.5em] md:text-[1.8em] font-bold text-white mb-2 leading-snug">
+          <h1 className="text-[1.5em] md:text-[1.8em] font-bold text-gray-900 dark:text-white mb-2 leading-snug">
             {movie.name}
           </h1>
-          <div className="text-gray-400 mb-6 font-normal">
+          <div className="text-gray-500 dark:text-gray-400 mb-6 font-normal">
             {movie.origin_name}
           </div>
         </div>
@@ -41,7 +41,7 @@ export const MovieDetailInfo = ({ movie, cdnImage }: MovieDetailInfoProps) => {
       {/* Mobile toggle */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex lg:hidden w-full items-center justify-center gap-2 py-2.5 px-4 bg-white/5 hover:bg-white/10 rounded-lg text-white text-sm font-medium mb-4 transition"
+        className="flex lg:hidden w-full items-center justify-center gap-2 py-2.5 px-4 bg-gray-200 dark:bg-white/5 hover:bg-gray-300 dark:hover:bg-white/10 rounded-lg text-gray-800 dark:text-white text-sm font-medium mb-4 transition"
       >
         <span>{isExpanded ? 'Thu gọn thông tin' : 'Xem thêm thông tin'}</span>
         <svg
@@ -61,14 +61,14 @@ export const MovieDetailInfo = ({ movie, cdnImage }: MovieDetailInfoProps) => {
           <div className="bg-white text-black h-6 px-2 rounded text-xs font-bold flex items-center cursor-default">
             {movie.quality || 'HD'}
           </div>
-          <div className="bg-white/10 text-white h-6 px-2 rounded text-xs flex items-center border border-white/10">
+          <div className="bg-gray-200 dark:bg-white/10 text-gray-800 dark:text-white h-6 px-2 rounded text-xs flex items-center border border-gray-300 dark:border-white/10">
             {movie.year}
           </div>
-          <div className="bg-white/10 text-white h-6 px-2 rounded text-xs flex items-center border border-white/10">
+          <div className="bg-gray-200 dark:bg-white/10 text-gray-800 dark:text-white h-6 px-2 rounded text-xs flex items-center border border-gray-300 dark:border-white/10">
             {movie.episode_current}
           </div>
           {movie.lang && (
-            <div className="bg-white/10 text-white h-6 px-2 rounded text-xs flex items-center border border-white/10">
+            <div className="bg-gray-200 dark:bg-white/10 text-gray-800 dark:text-white h-6 px-2 rounded text-xs flex items-center border border-gray-300 dark:border-white/10">
               {movie.lang}
             </div>
           )}

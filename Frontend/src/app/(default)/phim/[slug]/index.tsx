@@ -30,7 +30,7 @@ const MovieDetailTemplatePage = ({
   const backdropUrl = getMovieThumb(item.poster_url || item.thumb_url, cdnImage);
 
   return (
-    <div className='bg-[#191b24]'>
+    <div className='bg-[#f0f3f8] dark:bg-[#191b24] transition-colors duration-300'>
       <Background backdropUrl={backdropUrl} />
       <div className='relative z-9 pt-0 pb-10'>
         <div className='w-full max-w-[1640px] px-5 mx-auto mt-[-580px] md:mt-[-450px] relative z-3 flex flex-col lg:flex-row gap-4 lg:gap-8 justify-between items-start lg:items-stretch'>

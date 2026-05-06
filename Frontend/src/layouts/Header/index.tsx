@@ -63,7 +63,7 @@ const Header = () => {
         <Navigation />
         
         <div className="flex-grow hidden lg:block"></div>
-        <AnimatedThemeToggler />
+        <AnimatedThemeToggler className="text-gray-700 dark:text-white cursor-pointer hover:opacity-70 transition-opacity w-5 h-5" />
         <UserActions />
       </div>
     </header>
