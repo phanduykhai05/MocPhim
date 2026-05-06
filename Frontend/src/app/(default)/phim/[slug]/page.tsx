@@ -16,7 +16,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ sl
     fetchMoviePeoples(slug),
     fetchMovieImages(slug),
     fetchMovieKeywords(slug),
-    fetchMovieList({ slug: 'phim-moi', sort_field: 'modified_time', sort_type: 'desc' }),
+    fetchMovieList({ list: 'phim-moi', sort_field: 'modified_time', sort_type: 'desc' }),
   ]);
 
   if (!movieData) notFound();

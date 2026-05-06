@@ -19,8 +19,8 @@ const mapToHomeMovie = (items: MovieListItem[], cdnImage: string): Movie[] => {
 
 export default async function TopMovies() {
   const [singleData, seriesData] = await Promise.all([
-    fetchMovieList({ slug: 'phim-le', sort_field: 'modified_time', sort_type: 'desc' }),
-    fetchMovieList({ slug: 'phim-bo', sort_field: 'modified_time', sort_type: 'desc' }),
+    fetchMovieList({ list: 'phim-le', sort_field: 'modified_time', sort_type: 'desc' }),
+    fetchMovieList({ list: 'phim-bo', sort_field: 'modified_time', sort_type: 'desc' }),
   ]);
 
   const topPhimLe = singleData ? mapToHomeMovie(singleData.items, singleData.cdnImage) : [];

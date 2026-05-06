@@ -64,18 +64,20 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisCacheManager redisCacheManager(JedisConnectionFactory factory) {
+    public RedisCacheManager redisCacheManager(JedisConnectionFactory factory, com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
         RedisCacheConfiguration base = RedisCacheConfiguration.defaultCacheConfig()
             .serializeValuesWith(RedisSerializationContext.SerializationPair
-                .fromSerializer(new GenericJackson2JsonRedisSerializer()));
+                .fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper)));
 
         Map<String, RedisCacheConfiguration> configs = new HashMap<>();
-        configs.put("home",        base.entryTtl(Duration.ofMinutes(5)));
-        configs.put("movieDetail", base.entryTtl(Duration.ofMinutes(10)));
-        configs.put("movieList",   base.entryTtl(Duration.ofMinutes(5)));
-        configs.put("categories",  base.entryTtl(Duration.ofMinutes(30)));
-        configs.put("countries",   base.entryTtl(Duration.ofMinutes(30)));
-        configs.put("years",       base.entryTtl(Duration.ofMinutes(60)));
+        configs.put("home",          base.entryTtl(Duration.ofMinutes(5)));
+        configs.put("movieDetail",   base.entryTtl(Duration.ofMinutes(10)));
+        configs.put("movieList",     base.entryTtl(Duration.ofMinutes(5)));
+        configs.put("categories",    base.entryTtl(Duration.ofMinutes(30)));
+        configs.put("countries",     base.entryTtl(Duration.ofMinutes(30)));
+        configs.put("years",         base.entryTtl(Duration.ofMinutes(60)));
+        configs.put("syncedMovies",  base.entryTtl(Duration.ofMinutes(2)));
+        configs.put("searchHistory", base.entryTtl(Duration.ofMinutes(5)));
 
         return RedisCacheManager.builder(factory)
             .cacheDefaults(base)

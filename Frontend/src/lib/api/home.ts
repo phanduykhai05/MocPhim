@@ -13,19 +13,6 @@ export interface ApiMovie {
   country: { id: string; name: string; slug: string }[];
 }
 
-interface HomeApiData {
-  items: ApiMovie[];
-  APP_DOMAIN_CDN_IMAGE: string;
-  APP_DOMAIN_FRONTEND: string;
-}
-
-interface HomeApiResponse {
-  status: boolean;
-  data: {
-    data: HomeApiData;
-  };
-}
-
 export interface HomeData {
   items: ApiMovie[];
   cdnImage: string;
@@ -40,50 +27,22 @@ export function getThumbUrl(thumb_url: string, cdn?: string): string {
   return `${cdn || CDN_IMAGE}/uploads/movies/${thumb_url}`;
 }
 
-export interface HistoryItem {
-  id: number;
-  slug: string;
-  title: string;
-  modifiedAt: string;
-  createdAt: string;
-}
-
-export interface HistoryPagination {
-  currentPage: number;
-  totalPages: number;
-  totalItems: number;
-  itemsPerPage: number;
-}
-
-export interface HistoryData {
-  items: HistoryItem[];
-  pagination: HistoryPagination;
-}
-
-export async function fetchHistory(page = 0, size = 24): Promise<HistoryData | null> {
-  try {
-    const res = await fetch(`${API_URL}/history?page=${page}&size=${size}`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (!json?.status) return null;
-    return {
-      items: json.data ?? [],
-      pagination: json.pagination ?? { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: size },
-    };
-  } catch {
-    return null;
-  }
-}
-
+/**
+ * GET /home
+ * Backend wraps OPhim response in ApiResponse:
+ *   { status, message, data: <OPhim body>, pagination: null }
+ * OPhim /home returns:
+ *   { status, msg, data: { items, APP_DOMAIN_CDN_IMAGE, APP_DOMAIN_FRONTEND } }
+ * So to access items: json.data.data.items
+ */
 export async function fetchHomeData(): Promise<HomeData | null> {
   try {
     const res = await fetch(`${API_URL}/home`, {
       next: { revalidate: 300 },
     });
     if (!res.ok) return null;
-    const json: HomeApiResponse = await res.json();
+    const json = await res.json();
+    // json.data = OPhim raw response → json.data.data = OPhim inner data
     const inner = json?.data?.data;
     if (!inner) return null;
     return {

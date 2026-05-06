@@ -16,7 +16,7 @@ export default async function WatchMoviePage({
 
   const [movieData, topMoviesData] = await Promise.all([
     fetchMovieDetail(slug),
-    fetchMovieList({ sort_field: 'modified_time', sort_type: 'desc' }),
+    fetchMovieList({ list: 'phim-moi', sort_field: 'modified_time', sort_type: 'desc' }),
   ]);
 
   if (!movieData) {
