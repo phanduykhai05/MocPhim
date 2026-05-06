@@ -229,6 +229,30 @@ export async function fetchCategories(): Promise<{ id: string; name: string; slu
   }
 }
 
+export async function fetchAllMovies(
+  params: { page?: number; sort_field?: string; sort_type?: string; type?: string } = {}
+): Promise<{ items: MovieListItem[]; cdnImage: string; totalItems: number; totalPages: number } | null> {
+  try {
+    const url = new URL(`${API}/movies`);
+    if (params.page) url.searchParams.set('page', String(params.page));
+    if (params.sort_field) url.searchParams.set('sort_field', params.sort_field);
+    if (params.sort_type) url.searchParams.set('sort_type', params.sort_type);
+    if (params.type) url.searchParams.set('type', params.type);
+    const res = await fetch(url.toString(), { next: { revalidate: 300 } });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const inner = json?.data?.data;
+    return {
+      items: inner?.items ?? [],
+      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || CDN,
+      totalItems: json?.pagination?.totalItems ?? inner?.params?.pagination?.totalItems ?? 0,
+      totalPages: json?.pagination?.totalPages ?? inner?.params?.pagination?.totalPages ?? 1,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchCategoryMovies(
   slug: string,
   params: { page?: number; sort_field?: string; sort_type?: string } = {}

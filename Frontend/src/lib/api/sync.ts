@@ -6,6 +6,16 @@ export interface MovieSyncItem {
   id: number;
   slug: string;
   title: string;
+  originName?: string;
+  type?: string;
+  thumbUrl?: string;
+  episodeCurrent?: string;
+  quality?: string;
+  lang?: string;
+  year?: number;
+  duration?: string;
+  category?: { id: string; name: string; slug: string }[];
+  country?: { id: string; name: string; slug: string }[];
   modifiedAt: string;
   createdAt: string;
 }
@@ -27,6 +37,18 @@ export interface TriggerSyncResult {
   skipped: number;
 }
 
+function buildPagination(totalItems: number, page: number, size: number): SyncPagination {
+  const safeSize = Math.max(1, size);
+  const totalPages = Math.max(1, Math.ceil(totalItems / safeSize));
+  const currentPage = Math.min(Math.max(1, page + 1), totalPages);
+  return {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage: safeSize,
+  };
+}
+
 // ─── API Functions ─────────────────────────────────────────────────────────────
 
 /** GET /sync/movies — danh sách phim đã sync (phân trang) */
@@ -35,18 +57,44 @@ export async function fetchSyncMovies(
   size = 20
 ): Promise<SyncMoviesResult | null> {
   try {
-    const res = await fetch(`${API}/sync/movies?page=${page}&size=${size}`, {
+    const res = await fetch(`${API}/sync/movies/all`, {
       next: { revalidate: 120 },
     });
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (!json?.status) return null;
+    if (res.ok) {
+      const json = await res.json();
+      if (json?.status) {
+        const rawItems = Array.isArray(json.data) ? json.data : [];
+        const pagination = json.pagination ?? buildPagination(rawItems.length, page, size);
+        if (json.pagination) {
+          return { items: rawItems, pagination };
+        }
+
+        const start = Math.max(0, page) * Math.max(1, size);
+        const end = start + Math.max(1, size);
+        return {
+          items: rawItems.slice(start, end),
+          pagination,
+        };
+      }
+    }
+
+    const allFallback = await fetchSyncMoviesAll();
+    if (!allFallback) return null;
+    const start = Math.max(0, page) * Math.max(1, size);
+    const end = start + Math.max(1, size);
     return {
-      items: json.data ?? [],
-      pagination: json.pagination ?? { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: size },
+      items: allFallback.slice(start, end),
+      pagination: buildPagination(allFallback.length, page, size),
     };
   } catch {
-    return null;
+    const allFallback = await fetchSyncMoviesAll();
+    if (!allFallback) return null;
+    const start = Math.max(0, page) * Math.max(1, size);
+    const end = start + Math.max(1, size);
+    return {
+      items: allFallback.slice(start, end),
+      pagination: buildPagination(allFallback.length, page, size),
+    };
   }
 }
 

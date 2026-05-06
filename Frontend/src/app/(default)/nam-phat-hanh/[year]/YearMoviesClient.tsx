@@ -182,7 +182,8 @@ export default function YearMoviesClient({ year }: { year: string }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const pageParam = Number(searchParams.get("page") ?? 1);
+  const rawPage = Number(searchParams.get("page") ?? 1);
+  const pageParam = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
   const sortField = searchParams.get("sort_field") ?? "modified_time";
   const sortType = searchParams.get("sort_type") ?? "desc";
 
@@ -205,6 +206,15 @@ export default function YearMoviesClient({ year }: { year: string }) {
     });
     return () => { cancelled = true; };
   }, [year, pageParam, sortField, sortType]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (totalPages < 1) return;
+    if (pageParam <= totalPages) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(totalPages));
+    router.replace(`/nam-phat-hanh/${year}?${params.toString()}`);
+  }, [loading, pageParam, totalPages, router, searchParams, year]);
 
   const pushParams = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
