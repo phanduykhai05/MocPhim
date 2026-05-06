@@ -11,6 +11,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 
@@ -31,18 +32,18 @@ public class OPhimService {
     public Object get(String path, Map<String, String> params) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl + path);
         params.forEach(builder::queryParam);
-        String url = builder.toUriString();
+        URI uri = builder.build().encode().toUri();
 
         long start = System.currentTimeMillis();
         try {
-            ResponseEntity<Object> response = restTemplate.getForEntity(url, Object.class);
-            log.debug("OPhim GET {} -> {} ({}ms)", url, response.getStatusCode(), System.currentTimeMillis() - start);
+            ResponseEntity<Object> response = restTemplate.getForEntity(uri, Object.class);
+            log.debug("OPhim GET {} -> {} ({}ms)", uri, response.getStatusCode(), System.currentTimeMillis() - start);
             return response.getBody();
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
-            log.debug("OPhim GET {} -> {} ({}ms)", url, ex.getStatusCode(), System.currentTimeMillis() - start);
+            log.debug("OPhim GET {} -> {} ({}ms)", uri, ex.getStatusCode(), System.currentTimeMillis() - start);
             throw new OPhimApiException("OPhim API error: " + ex.getMessage(), ex.getStatusCode().value());
         } catch (Exception ex) {
-            log.debug("OPhim GET {} -> ERROR ({}ms): {}", url, System.currentTimeMillis() - start, ex.getMessage());
+            log.debug("OPhim GET {} -> ERROR ({}ms): {}", uri, System.currentTimeMillis() - start, ex.getMessage());
             throw new OPhimApiException("OPhim API unreachable: " + ex.getMessage(), 503);
         }
     }

@@ -55,4 +55,17 @@ public class SyncController {
             "skipped", result[1]
         )));
     }
+
+    /**
+     * Re-sync các record cũ chưa có đủ field (origin_name = null).
+     * Gọi nhiều lần cho đến khi remaining = 0.
+     * @param limit số lượng slug xử lý mỗi lần gọi (mặc định 100, tối đa 500)
+     */
+    @PostMapping("/movies/resync")
+    public ResponseEntity<ApiResponse<Object>> resyncMissingFields(
+        @RequestParam(defaultValue = "100") int limit
+    ) {
+        int safeLimit = Math.min(limit, 500);
+        return ResponseEntity.ok(ApiResponse.success(movieSyncService.resyncMissingFields(safeLimit)));
+    }
 }
