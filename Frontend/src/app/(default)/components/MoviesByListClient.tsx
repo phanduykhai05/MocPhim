@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import images from "@/assets/images";
-import { fetchCountryMovies, getMovieThumb, type MovieListItem } from "@/lib/api/movie";
+import { fetchMovieList, getMovieThumb, type MovieListItem } from "@/lib/api/movie";
 
 const PAGE_SIZE = 40;
+
 const CARD_BADGE_LABEL = {
   episode: "PĐ.",
   quality: "TM.",
@@ -18,28 +19,21 @@ const CARD_BADGE_BG = {
   quality: "#2ca35d",
 } as const;
 
-function MovieCard({
-  item,
-  cdnImage,
-  priority = false,
-}: {
-  item: MovieListItem;
-  cdnImage: string;
-  priority?: boolean;
-}) {
+const SORT_OPTIONS = [
+  { label: "Mới nhất", sort_field: "modified_time", sort_type: "desc" },
+  { label: "Cũ nhất", sort_field: "modified_time", sort_type: "asc" },
+  { label: "Tên A-Z", sort_field: "name", sort_type: "asc" },
+  { label: "Tên Z-A", sort_field: "name", sort_type: "desc" },
+  { label: "Năm mới", sort_field: "year", sort_type: "desc" },
+] as const;
+
+function MovieCard({ item, cdnImage, priority = false }: { item: MovieListItem; cdnImage: string; priority?: boolean }) {
   const [imgSrc, setImgSrc] = useState(getMovieThumb(item.thumb_url, cdnImage));
 
   return (
     <div className="group w-full">
-      <div
-        className="relative w-full rounded-[6px] overflow-hidden bg-[#25252b]"
-        style={{ paddingTop: "135.74%" }}
-      >
-        <Link
-          href={`/phim/${item.slug}`}
-          title={item.name}
-          className="absolute inset-0 w-full h-full block overflow-hidden"
-        >
+      <div className="relative w-full rounded-[6px] overflow-hidden bg-[#25252b]" style={{ paddingTop: "135.74%" }}>
+        <Link href={`/phim/${item.slug}`} title={item.name} className="absolute inset-0 w-full h-full block overflow-hidden">
           <Image
             src={imgSrc}
             alt={item.name}
@@ -52,9 +46,7 @@ function MovieCard({
             referrerPolicy="no-referrer"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 rounded-[6px]"
             onError={() =>
-              setImgSrc(
-                `https://via.placeholder.com/200x271/25252b/ffffff?text=${encodeURIComponent(item.name.slice(0, 10))}`
-              )
+              setImgSrc(`https://via.placeholder.com/200x271/25252b/ffffff?text=${encodeURIComponent(item.name.slice(0, 10))}`)
             }
           />
 
@@ -71,19 +63,13 @@ function MovieCard({
           {(item.episode_current || item.quality) && (
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-[10] flex items-stretch rounded-t-[4px] overflow-hidden shadow-[0_0_5px_2px_rgba(0,0,0,0.1)] whitespace-nowrap">
               {item.episode_current && (
-                <div
-                  className="flex items-center gap-1 px-2 py-[0.2rem] text-[11px] font-normal text-white"
-                  style={{ backgroundColor: CARD_BADGE_BG.episode }}
-                >
+                <div className="flex items-center gap-1 px-2 py-[0.2rem] text-[11px] font-normal text-white" style={{ backgroundColor: CARD_BADGE_BG.episode }}>
                   <span style={{ fontWeight: 200 }}>{CARD_BADGE_LABEL.episode}</span>
                   <strong className="font-semibold" style={{ fontWeight: 200 }}>{item.episode_current}</strong>
                 </div>
               )}
               {item.quality && (
-                <div
-                  className="flex items-center gap-1 px-2 py-[0.2rem] text-[11px] font-normal text-white"
-                  style={{ backgroundColor: CARD_BADGE_BG.quality }}
-                >
+                <div className="flex items-center gap-1 px-2 py-[0.2rem] text-[11px] font-normal text-white" style={{ backgroundColor: CARD_BADGE_BG.quality }}>
                   <span style={{ fontWeight: 200 }}>{CARD_BADGE_LABEL.quality}</span>
                   <strong className="font-semibold" style={{ fontWeight: 200 }}>{item.quality}</strong>
                 </div>
@@ -99,11 +85,7 @@ function MovieCard({
         <p className="mt-1.5 text-[12px] leading-[16px] text-white/80 group-hover:text-white line-clamp-2 font-medium transition-colors">
           {item.name}
         </p>
-        {item.origin_name && (
-          <p className="mt-0.5 text-[11px] leading-[14px] text-white/35 line-clamp-1">
-            {item.origin_name}
-          </p>
-        )}
+        {item.origin_name && <p className="mt-0.5 text-[11px] leading-[14px] text-white/35 line-clamp-1">{item.origin_name}</p>}
       </Link>
     </div>
   );
@@ -123,17 +105,7 @@ function SkeletonGrid() {
   );
 }
 
-function Paginator({ current, total, onChange }: { current: number; total: number; onChange: (p: number) => void }) {
-  const getPages = (): (number | "...")[] => {
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    const pages: (number | "...")[] = [1];
-    if (current > 3) pages.push("...");
-    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
-    if (current < total - 2) pages.push("...");
-    pages.push(total);
-    return pages;
-  };
-
+function Paginator({ current, onChange, canGoNext }: { current: number; onChange: (p: number) => void; canGoNext: boolean }) {
   return (
     <div className="flex justify-center mt-8 mb-6 gap-1.5 flex-wrap items-center">
       <button
@@ -143,26 +115,13 @@ function Paginator({ current, total, onChange }: { current: number; total: numbe
       >
         ‹ Trước
       </button>
-      {getPages().map((page, i) =>
-        page === "..." ? (
-          <span key={`el-${i}`} className="px-2 text-white/40">…</span>
-        ) : (
-          <button
-            key={page}
-            className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
-              current === page ? "bg-[#1677ff] text-white" : "bg-white/10 text-white/70 hover:bg-white/20"
-            }`}
-            onClick={() => onChange(page as number)}
-            disabled={current === page}
-          >
-            {page}
-          </button>
-        )
-      )}
+
+      <span className="px-3 py-1.5 text-sm text-white/70">Trang {current}</span>
+
       <button
         className="px-3 py-1.5 rounded bg-white/10 text-white/70 hover:bg-white/20 disabled:opacity-30 text-sm transition-colors"
         onClick={() => onChange(current + 1)}
-        disabled={current >= total}
+        disabled={!canGoNext}
       >
         Sau ›
       </button>
@@ -170,15 +129,7 @@ function Paginator({ current, total, onChange }: { current: number; total: numbe
   );
 }
 
-const SORT_OPTIONS = [
-  { label: "Mới nhất", sort_field: "modified_time", sort_type: "desc" },
-  { label: "Cũ nhất", sort_field: "modified_time", sort_type: "asc" },
-  { label: "Tên A-Z", sort_field: "name", sort_type: "asc" },
-  { label: "Tên Z-A", sort_field: "name", sort_type: "desc" },
-  { label: "Năm mới", sort_field: "year", sort_type: "desc" },
-];
-
-export default function CountryMoviesClient({ slug }: { slug: string }) {
+export default function MoviesByListClient({ listKey, title, routeBase }: { listKey: "phim-le" | "phim-bo"; title: string; routeBase: "/phim-le" | "/phim-bo" }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -190,71 +141,85 @@ export default function CountryMoviesClient({ slug }: { slug: string }) {
   const [items, setItems] = useState<MovieListItem[]>([]);
   const [cdnImage, setCdnImage] = useState("");
   const [totalItems, setTotalItems] = useState(0);
+  const [hasPaginationMeta, setHasPaginationMeta] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [countryName, setCountryName] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchCountryMovies(slug, { page: pageParam, size: PAGE_SIZE, sort_field: sortField, sort_type: sortType }).then((res) => {
+
+    fetchMovieList({
+      list: listKey,
+      page: pageParam,
+      size: PAGE_SIZE,
+      sort_field: sortField,
+      sort_type: sortType,
+    }).then((res) => {
       if (cancelled) return;
-      setItems(res?.items ?? []);
+      const nextItems = res?.items ?? [];
+      setItems(nextItems);
       setCdnImage(res?.cdnImage ?? "");
-      setTotalItems(res?.totalItems ?? 0);
+      setTotalItems(res?.totalItems ?? nextItems.length);
+
+      const hasMeta = (res?.totalPages ?? 1) > 1 || (res?.totalItems ?? 0) > nextItems.length;
+      setHasPaginationMeta(hasMeta);
       setTotalPages(res?.totalPages ?? 1);
-      const firstItem = res?.items?.[0] as unknown as { country?: { slug: string; name: string }[] } | undefined;
-      const countries = firstItem?.country ?? [];
-      const country = countries.find((c: { slug: string; name: string }) => c.slug === slug);
-      if (country) setCountryName(country.name);
       setLoading(false);
     });
-    return () => { cancelled = true; };
-  }, [slug, pageParam, sortField, sortType]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [listKey, pageParam, sortField, sortType]);
 
   useEffect(() => {
     if (loading) return;
+    if (items.length > 0) return;
+    if (pageParam <= 1) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(pageParam - 1));
+    router.replace(`${routeBase}?${params.toString()}`);
+  }, [items.length, loading, pageParam, routeBase, router, searchParams]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!hasPaginationMeta) return;
     if (totalPages < 1) return;
     if (pageParam <= totalPages) return;
+
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(totalPages));
-    router.replace(`/quoc-gia/${slug}?${params.toString()}`);
-  }, [loading, pageParam, totalPages, router, searchParams, slug]);
+    router.replace(`${routeBase}?${params.toString()}`);
+  }, [hasPaginationMeta, loading, pageParam, routeBase, router, searchParams, totalPages]);
 
   const pushParams = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([k, v]) => params.set(k, v));
     params.set("page", "1");
-    router.push(`/quoc-gia/${slug}?${params.toString()}`);
+    router.push(`${routeBase}?${params.toString()}`);
   };
 
   const handlePageChange = (page: number) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(page));
-    router.push(`/quoc-gia/${slug}?${params.toString()}`);
+    router.push(`${routeBase}?${params.toString()}`);
   };
 
-  const currentSort = SORT_OPTIONS.find(
-    (o) => o.sort_field === sortField && o.sort_type === sortType
-  ) ?? SORT_OPTIONS[0];
+  const currentSort =
+    SORT_OPTIONS.find((o) => o.sort_field === sortField && o.sort_type === sortType) ?? SORT_OPTIONS[0];
+
+  const canGoNext = hasPaginationMeta ? pageParam < totalPages : items.length >= PAGE_SIZE;
 
   return (
     <div className="relative w-full max-w-[1808px] mx-auto px-4 md:px-5 lg:pt-20 pt-16">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-[10px] mb-6">
         <div>
-          <h4 className="text-[22px] leading-[32px] font-bold text-white/90 m-0">
-            Quốc gia:{" "}
-            <span className="text-[#1677ff] capitalize">
-              {countryName || slug.replace(/-/g, " ")}
-            </span>
-          </h4>
+          <h4 className="text-[22px] leading-[32px] font-bold text-white/90 m-0">{title}</h4>
           {!loading && (
-            <p className="text-sm text-white/35 mt-0.5">
-              {totalItems > 0
-                ? `${totalItems.toLocaleString()} phim`
-                : "Không có phim nào"}
-            </p>
+            <p className="text-sm text-white/35 mt-0.5">{totalItems > 0 ? `${totalItems.toLocaleString()} phim` : "Không có phim nào"}</p>
           )}
         </div>
 
@@ -264,9 +229,7 @@ export default function CountryMoviesClient({ slug }: { slug: string }) {
             <button
               key={opt.label}
               className={`text-sm px-3 py-1.5 rounded transition-colors ${
-                currentSort.label === opt.label
-                  ? "bg-[#1677ff] text-white"
-                  : "bg-white/10 text-white/60 hover:bg-white/20"
+                currentSort.label === opt.label ? "bg-[#1677ff] text-white" : "bg-white/10 text-white/60 hover:bg-white/20"
               }`}
               onClick={() => pushParams({ sort_field: opt.sort_field, sort_type: opt.sort_type })}
             >
@@ -279,9 +242,7 @@ export default function CountryMoviesClient({ slug }: { slug: string }) {
       {loading && <SkeletonGrid />}
 
       {!loading && items.length === 0 && (
-        <div className="flex items-center justify-center min-h-[30vh] text-white/40">
-          Không có phim nào trong quốc gia này.
-        </div>
+        <div className="flex items-center justify-center min-h-[30vh] text-white/40">Không có phim nào trong danh sách này.</div>
       )}
 
       {!loading && items.length > 0 && (
@@ -292,9 +253,7 @@ export default function CountryMoviesClient({ slug }: { slug: string }) {
         </div>
       )}
 
-      {totalPages > 1 && !loading && (
-        <Paginator current={pageParam} total={totalPages} onChange={handlePageChange} />
-      )}
+      {!loading && items.length > 0 && <Paginator current={pageParam} onChange={handlePageChange} canGoNext={canGoNext} />}
     </div>
   );
 }

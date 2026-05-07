@@ -7,7 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import images from "@/assets/images";
 import { fetchCategoryMovies, getMovieThumb, type MovieListItem } from "@/lib/api/movie";
 
-const PAGE_SIZE = 24;
+const PAGE_SIZE = 40;
 const CARD_BADGE_LABEL = {
   episode: "PĐ.",
   quality: "TM.",
@@ -203,7 +203,7 @@ export default function CategoryMoviesClient({ slug }: { slug: string }) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchCategoryMovies(slug, { page: pageParam, sort_field: sortField, sort_type: sortType }).then((res) => {
+    fetchCategoryMovies(slug, { page: pageParam, size: PAGE_SIZE, sort_field: sortField, sort_type: sortType }).then((res) => {
       if (cancelled) return;
       setItems(res?.items ?? []);
       setCdnImage(res?.cdnImage ?? "");

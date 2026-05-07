@@ -109,7 +109,7 @@ const Navigation = () => {
 
   return (
     <nav className="hidden lg:flex items-center gap-4 text-white text-[13px] font-medium">
-      <Link href="/chu-de" className="hover:text-gray-300 transition-colors capitalize">Chủ Đề</Link>
+      {/* <Link href="/chu-de" className="hover:text-gray-300 transition-colors capitalize">Chủ Đề</Link> */}
 
       <DropdownMenu label="Thể loại" items={categories} basePath="the-loai" loading={catLoading} />
       <DropdownMenu label="Năm phát hành" items={years} basePath="nam-phat-hanh" loading={yearLoading} />
@@ -119,8 +119,8 @@ const Navigation = () => {
 
       <DropdownMenu label="Quốc gia" items={countries} basePath="quoc-gia" loading={cntLoading} />
 
-      <Link href="/dien-vien" className="hover:text-gray-300 transition-colors capitalize">Diễn Viên</Link>
-      <Link href="/lich-chieu" className="hover:text-gray-300 transition-colors capitalize">Lịch Chiếu</Link>
+      {/* <Link href="/dien-vien" className="hover:text-gray-300 transition-colors capitalize">Diễn Viên</Link>
+      <Link href="/lich-chieu" className="hover:text-gray-300 transition-colors capitalize">Lịch Chiếu</Link> */}
     </nav>
   );
 };

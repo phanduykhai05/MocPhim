@@ -176,13 +176,14 @@ export async function fetchMovieKeywords(slug: string): Promise<KeywordsData | n
 export async function fetchMovieList(params: {
   list?: string;
   page?: number;
+  size?: number;
   sort_field?: string;
   sort_type?: string;
   category?: string;
   country?: string;
   year?: number;
   type?: string;
-} = {}): Promise<{ items: MovieListItem[]; cdnImage: string } | null> {
+} = {}): Promise<{ items: MovieListItem[]; cdnImage: string; totalItems: number; totalPages: number } | null> {
   try {
     const url = new URL(`${API}/movies`);
     Object.entries(params).forEach(([k, v]) => {
@@ -191,10 +192,22 @@ export async function fetchMovieList(params: {
     const res = await fetch(url.toString(), { next: { revalidate: 300 } });
     if (!res.ok) return null;
     const json = await res.json();
-    const inner = json?.data?.data;
+    const topData = json?.data;
+    const inner = topData?.data;
+    const items = Array.isArray(inner?.items)
+      ? inner.items
+      : Array.isArray(topData?.items)
+      ? topData.items
+      : Array.isArray(topData)
+      ? topData
+      : [];
+    const totalItems = json?.pagination?.totalItems ?? inner?.params?.pagination?.totalItems ?? items.length;
+    const totalPages = json?.pagination?.totalPages ?? inner?.params?.pagination?.totalPages ?? 1;
     return {
-      items: inner?.items ?? [],
-      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || CDN,
+      items,
+      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || topData?.APP_DOMAIN_CDN_IMAGE || CDN,
+      totalItems,
+      totalPages,
     };
   } catch {
     return null;
@@ -208,10 +221,18 @@ export async function fetchSearch(keyword: string): Promise<{ items: MovieListIt
     const res = await fetch(url.toString(), { cache: 'no-store' });
     if (!res.ok) return null;
     const json = await res.json();
-    const inner = json?.data?.data;
+    const topData = json?.data;
+    const inner = topData?.data;
+    const items = Array.isArray(inner?.items)
+      ? inner.items
+      : Array.isArray(topData?.items)
+      ? topData.items
+      : Array.isArray(topData)
+      ? topData
+      : [];
     return {
-      items: inner?.items ?? [],
-      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || CDN,
+      items,
+      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || topData?.APP_DOMAIN_CDN_IMAGE || CDN,
     };
   } catch {
     return null;
@@ -255,20 +276,29 @@ export async function fetchAllMovies(
 
 export async function fetchCategoryMovies(
   slug: string,
-  params: { page?: number; sort_field?: string; sort_type?: string } = {}
+  params: { page?: number; size?: number; sort_field?: string; sort_type?: string } = {}
 ): Promise<{ items: MovieListItem[]; cdnImage: string; totalItems: number; totalPages: number } | null> {
   try {
     const url = new URL(`${API}/categories/${slug}/movies`);
     if (params.page) url.searchParams.set('page', String(params.page));
+    if (params.size) url.searchParams.set('size', String(params.size));
     if (params.sort_field) url.searchParams.set('sort_field', params.sort_field);
     if (params.sort_type) url.searchParams.set('sort_type', params.sort_type);
     const res = await fetch(url.toString(), { next: { revalidate: 300 } });
     if (!res.ok) return null;
     const json = await res.json();
-    const inner = json?.data?.data;
+    const topData = json?.data;
+    const inner = topData?.data;
+    const items = Array.isArray(inner?.items)
+      ? inner.items
+      : Array.isArray(topData?.items)
+      ? topData.items
+      : Array.isArray(topData)
+      ? topData
+      : [];
     return {
-      items: inner?.items ?? [],
-      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || CDN,
+      items,
+      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || topData?.APP_DOMAIN_CDN_IMAGE || CDN,
       totalItems: json?.pagination?.totalItems ?? inner?.params?.pagination?.totalItems ?? 0,
       totalPages: json?.pagination?.totalPages ?? inner?.params?.pagination?.totalPages ?? 1,
     };
@@ -290,20 +320,29 @@ export async function fetchCountries(): Promise<{ id: string; name: string; slug
 
 export async function fetchCountryMovies(
   slug: string,
-  params: { page?: number; sort_field?: string; sort_type?: string } = {}
+  params: { page?: number; size?: number; sort_field?: string; sort_type?: string } = {}
 ): Promise<{ items: MovieListItem[]; cdnImage: string; totalItems: number; totalPages: number } | null> {
   try {
     const url = new URL(`${API}/countries/${slug}/movies`);
     if (params.page) url.searchParams.set('page', String(params.page));
+    if (params.size) url.searchParams.set('size', String(params.size));
     if (params.sort_field) url.searchParams.set('sort_field', params.sort_field);
     if (params.sort_type) url.searchParams.set('sort_type', params.sort_type);
     const res = await fetch(url.toString(), { next: { revalidate: 300 } });
     if (!res.ok) return null;
     const json = await res.json();
-    const inner = json?.data?.data;
+    const topData = json?.data;
+    const inner = topData?.data;
+    const items = Array.isArray(inner?.items)
+      ? inner.items
+      : Array.isArray(topData?.items)
+      ? topData.items
+      : Array.isArray(topData)
+      ? topData
+      : [];
     return {
-      items: inner?.items ?? [],
-      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || CDN,
+      items,
+      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || topData?.APP_DOMAIN_CDN_IMAGE || CDN,
       totalItems: json?.pagination?.totalItems ?? inner?.params?.pagination?.totalItems ?? 0,
       totalPages: json?.pagination?.totalPages ?? inner?.params?.pagination?.totalPages ?? 1,
     };
@@ -325,20 +364,29 @@ export async function fetchYears(): Promise<number[]> {
 
 export async function fetchYearMovies(
   year: number | string,
-  params: { page?: number; sort_field?: string; sort_type?: string } = {}
+  params: { page?: number; size?: number; sort_field?: string; sort_type?: string } = {}
 ): Promise<{ items: MovieListItem[]; cdnImage: string; totalItems: number; totalPages: number } | null> {
   try {
     const url = new URL(`${API}/years/${year}/movies`);
     if (params.page) url.searchParams.set('page', String(params.page));
+    if (params.size) url.searchParams.set('size', String(params.size));
     if (params.sort_field) url.searchParams.set('sort_field', params.sort_field);
     if (params.sort_type) url.searchParams.set('sort_type', params.sort_type);
     const res = await fetch(url.toString(), { next: { revalidate: 300 } });
     if (!res.ok) return null;
     const json = await res.json();
-    const inner = json?.data?.data;
+    const topData = json?.data;
+    const inner = topData?.data;
+    const items = Array.isArray(inner?.items)
+      ? inner.items
+      : Array.isArray(topData?.items)
+      ? topData.items
+      : Array.isArray(topData)
+      ? topData
+      : [];
     return {
-      items: inner?.items ?? [],
-      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || CDN,
+      items,
+      cdnImage: inner?.APP_DOMAIN_CDN_IMAGE || topData?.APP_DOMAIN_CDN_IMAGE || CDN,
       totalItems: json?.pagination?.totalItems ?? inner?.params?.pagination?.totalItems ?? 0,
       totalPages: json?.pagination?.totalPages ?? inner?.params?.pagination?.totalPages ?? 1,
     };
