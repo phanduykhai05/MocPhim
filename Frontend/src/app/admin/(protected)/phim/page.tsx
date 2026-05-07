@@ -5,6 +5,7 @@ import {
   PageContainer,
   ProTable,
   ModalForm,
+  DrawerForm,
   ProFormText,
   ProFormSelect,
   ProFormTextArea,
@@ -41,8 +42,10 @@ const statusMap: Record<string, { text: string; color: string }> = {
 };
 
 export default function PhimPage() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingMovie, setEditingMovie] = useState<Movie | null>(null);
   const { message } = App.useApp();
 
   const columns: ProColumns<Movie>[] = [
@@ -125,7 +128,10 @@ export default function PhimPage() {
             type="link"
             size="small"
             icon={<EditOutlined />}
-            onClick={() => message.info(`Sửa: ${record.title}`)}
+            onClick={() => {
+              setEditingMovie(record);
+              setEditOpen(true);
+            }}
           />
           <Popconfirm
             title="Xoá phim này?"
@@ -205,6 +211,58 @@ export default function PhimPage() {
         <ProFormText name="thumb" label="URL ảnh thumbnail" />
         <ProFormTextArea name="description" label="Mô tả" />
       </ModalForm>
+
+      <DrawerForm
+        title={editingMovie ? `Sửa phim: ${editingMovie.title}` : "Sửa phim"}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialValues={
+          editingMovie
+            ? {
+                title: editingMovie.title,
+                slug: editingMovie.slug,
+                category: editingMovie.category,
+                status: editingMovie.status,
+                thumb: editingMovie.thumb,
+                episodes: editingMovie.episodes,
+              }
+            : undefined
+        }
+        drawerProps={{
+          destroyOnHidden: true,
+          placement: "right",
+          width: 520,
+        }}
+        key={editingMovie?.id ?? "edit-drawer"}
+        onFinish={async (values) => {
+          console.log("edit", editingMovie?.id, values);
+          message.success("Đã cập nhật phim thành công!");
+          setEditOpen(false);
+          return true;
+        }}
+      >
+        <ProFormText name="title" label="Tên phim" rules={[{ required: true }]} />
+        <ProFormText name="slug" label="Slug" rules={[{ required: true }]} />
+        <ProFormSelect
+          name="category"
+          label="Thể loại"
+          options={["Phim bộ", "Phim lẻ", "Anime", "Hoạt Hình"].map((c) => ({ label: c, value: c }))}
+          rules={[{ required: true }]}
+        />
+        <ProFormSelect
+          name="status"
+          label="Trạng thái"
+          options={[
+            { label: "Hoạt động", value: "active" },
+            { label: "Chờ duyệt", value: "pending" },
+            { label: "Ẩn", value: "hidden" },
+          ]}
+          rules={[{ required: true }]}
+        />
+        <ProFormText name="episodes" label="Tập" />
+        <ProFormText name="thumb" label="URL ảnh thumbnail" />
+        <ProFormTextArea name="description" label="Mô tả" />
+      </DrawerForm>
     </PageContainer>
   );
 }
