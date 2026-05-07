@@ -138,7 +138,7 @@ export default function TheLoaiPage() {
           setCreateOpen(false);
           return true;
         }}
-        modalProps={{ destroyOnClose: true }}
+        modalProps={{ destroyOnHidden: true }}
       >
         <ProFormText
           name="name"

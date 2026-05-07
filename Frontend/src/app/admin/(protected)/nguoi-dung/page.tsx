@@ -176,7 +176,7 @@ export default function NguoiDungPage() {
           message.success("Đã tạo tài khoản thành công!");
           return true;
         }}
-        modalProps={{ destroyOnClose: true }}
+        modalProps={{ destroyOnHidden: true }}
       >
         <ProFormText name="name" label="Họ và tên" rules={[{ required: true }]} />
         <ProFormText

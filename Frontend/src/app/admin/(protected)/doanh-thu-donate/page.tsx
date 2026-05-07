@@ -523,7 +523,7 @@ export default function DoanhThuDonatePage() {
           }
           return true;
         }}
-        modalProps={{ destroyOnClose: true }}
+        modalProps={{ destroyOnHidden: true }}
       >
         <ProFormText name="name" label="Tên kênh" rules={[{ required: true }]} />
         <ProFormSelect

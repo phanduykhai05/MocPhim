@@ -174,7 +174,7 @@ export default function PhanQuyenPage() {
         width={460}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         {editingRole && (
           <ProForm

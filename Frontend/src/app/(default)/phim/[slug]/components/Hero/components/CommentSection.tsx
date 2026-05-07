@@ -127,7 +127,7 @@ export const CommentSection = () => {
       {/* Comments List */}
       <div className="space-y-4">
         {fakeComments.map((comment) => (
-          <div key={comment.id} className="flex gap-4 pb-4 border-b border-white/10 last:border-b-0">
+          <div key={comment.id} className="flex gap-4 pb-4 border-white/10 last:border-b-0">
             {/* Avatar */}
             <div className="flex-shrink-0">
               <img

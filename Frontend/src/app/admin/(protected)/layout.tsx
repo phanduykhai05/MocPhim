@@ -100,7 +100,7 @@ export default function AdminLayout({
         icon: <SearchOutlined />,
       },
       {
-        path: "/admin/nguoi-dung",
+        path: "/admin/nguoi-dung-menu",
         name: "Người dùng",
         icon: <UserOutlined />,
         routes: [

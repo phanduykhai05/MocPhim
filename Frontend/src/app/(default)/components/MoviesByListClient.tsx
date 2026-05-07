@@ -219,7 +219,13 @@ export default function MoviesByListClient({ listKey, title, routeBase }: { list
         <div>
           <h4 className="text-[22px] leading-[32px] font-bold text-white/90 m-0">{title}</h4>
           {!loading && (
-            <p className="text-sm text-white/35 mt-0.5">{totalItems > 0 ? `${totalItems.toLocaleString()} phim` : "Không có phim nào"}</p>
+            <p className="text-sm text-white/35 mt-0.5">
+              {items.length === 0
+                ? "Không có phim nào"
+                : hasPaginationMeta && totalItems > 0
+                ? `${totalItems.toLocaleString()} phim`
+                : null}
+            </p>
           )}
         </div>
 

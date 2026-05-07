@@ -182,7 +182,7 @@ export default function PhimPage() {
           setCreateOpen(false);
           return true;
         }}
-        modalProps={{ destroyOnClose: true }}
+        modalProps={{ destroyOnHidden: true }}
       >
         <ProFormText name="title" label="Tên phim" rules={[{ required: true }]} />
         <ProFormText name="slug" label="Slug" rules={[{ required: true }]} />

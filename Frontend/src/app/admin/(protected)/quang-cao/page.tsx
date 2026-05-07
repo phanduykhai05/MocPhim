@@ -140,7 +140,7 @@ export default function QuangCaoPage() {
           setCreateOpen(false);
           return true;
         }}
-        modalProps={{ destroyOnClose: true }}
+        modalProps={{ destroyOnHidden: true }}
       >
         <ProFormText name="name" label="Tên quảng cáo" rules={[{ required: true }]} />
         <ProFormSelect

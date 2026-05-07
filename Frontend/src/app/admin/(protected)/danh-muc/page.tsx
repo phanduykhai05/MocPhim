@@ -42,7 +42,7 @@ const mockTaxonomies: Taxonomy[] = [
 ];
 
 export default function DanhMucPage() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const [createOpen, setCreateOpen] = useState(false);
   const { message } = App.useApp();
 
@@ -148,7 +148,7 @@ export default function DanhMucPage() {
           message.success("Đã tạo danh mục mới");
           return true;
         }}
-        modalProps={{ destroyOnClose: true }}
+        modalProps={{ destroyOnHidden: true }}
       >
         <ProFormText name="name" label="Tên danh mục" rules={[{ required: true }]} />
         <ProFormText name="slug" label="Slug" rules={[{ required: true }]} />
