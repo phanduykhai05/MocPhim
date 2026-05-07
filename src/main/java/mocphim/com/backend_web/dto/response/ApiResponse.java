@@ -20,6 +20,14 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true, "success", data, null);
     }
 
+    public static <T> ApiResponse<T> success(String message) {
+        return new ApiResponse<>(true, message, null, null);
+    }
+
+    public static <T> ApiResponse<T> success(String message, T data) {
+        return new ApiResponse<>(true, message, data, null);
+    }
+
     public static <T> ApiResponse<T> success(T data, Pagination pagination) {
         return new ApiResponse<>(true, "success", data, pagination);
     }
