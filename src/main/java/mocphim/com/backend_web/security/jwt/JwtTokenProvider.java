@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -33,7 +34,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .subject(String.valueOf(user.getId()))
                 .claim("email", user.getEmail())
-                .claim("roles", user.getRoles())
+                .claim("roles", user.getRoles().stream().map(Enum::name).collect(Collectors.toList()))
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessExpiration))
                 .signWith(secretKey)

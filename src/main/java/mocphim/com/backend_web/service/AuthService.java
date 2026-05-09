@@ -5,6 +5,7 @@ import mocphim.com.backend_web.dto.request.LoginRequest;
 import mocphim.com.backend_web.dto.request.RegisterRequest;
 import mocphim.com.backend_web.dto.response.TokenResponse;
 import mocphim.com.backend_web.dto.response.UserResponse;
+import mocphim.com.backend_web.model.Role;
 import mocphim.com.backend_web.model.User;
 import mocphim.com.backend_web.repository.UserRepository;
 import mocphim.com.backend_web.security.CustomUserDetails;
@@ -22,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +50,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
         user.setProvider("local");
-        user.setRoles(new HashSet<>(Set.of("ROLE_USER")));
+        user.setRoles(new HashSet<>(Set.of(Role.ROLE_USER)));
         userRepository.save(user);
         return buildTokenResponse(user);
     }
@@ -110,7 +112,7 @@ public class AuthService {
             newUser.setAvatar(avatar);
             newUser.setProvider("google");
             newUser.setProviderId(providerId);
-            newUser.setRoles(new HashSet<>(Set.of("ROLE_USER")));
+            newUser.setRoles(new HashSet<>(Set.of(Role.ROLE_USER)));
             return userRepository.save(newUser);
         });
 
@@ -140,7 +142,7 @@ public class AuthService {
                 .name(user.getName())
                 .avatar(user.getAvatar())
                 .provider(user.getProvider())
-                .roles(user.getRoles())
+                .roles(user.getRoles().stream().map(Role::name).collect(Collectors.toSet()))
                 .build();
     }
 }

@@ -1,6 +1,7 @@
 package mocphim.com.backend_web.security.oauth2;
 
 import lombok.RequiredArgsConstructor;
+import mocphim.com.backend_web.model.Role;
 import mocphim.com.backend_web.model.User;
 import mocphim.com.backend_web.repository.UserRepository;
 import mocphim.com.backend_web.security.CustomUserDetails;
@@ -47,7 +48,7 @@ public class CustomOAuth2UserService extends OidcUserService {
             newUser.setAvatar(avatar);
             newUser.setProvider("google");
             newUser.setProviderId(providerId);
-            newUser.setRoles(new HashSet<>(Set.of("ROLE_USER")));
+            newUser.setRoles(new HashSet<>(Set.of(Role.ROLE_USER)));
             return userRepository.save(newUser);
         });
 

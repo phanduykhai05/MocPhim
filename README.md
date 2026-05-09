@@ -156,7 +156,7 @@ Các endpoint public (không cần token):
 
 | Method | Endpoint | Mô tả |
 |---|---|---|
-| POST | `/auth/register` | Đăng ký tài khoản mới |
+| POST | `/auth/register` | Đăng ký tài khoản mới bằng email/password |
 | POST | `/auth/login` | Đăng nhập bằng email/password |
 | POST | `/auth/refresh` | Lấy access token mới từ refresh token |
 | POST | `/auth/logout` | Đăng xuất (client xóa token phía mình) |
@@ -168,7 +168,10 @@ Endpoint cần token:
 |---|---|---|
 | GET | `/auth/me` | Lấy thông tin user đang đăng nhập |
 
-**Đăng ký — `POST /auth/register`**
+---
+
+#### Đăng ký tài khoản — `POST /auth/register`
+
 ```json
 {
   "email": "user@example.com",
@@ -177,7 +180,17 @@ Endpoint cần token:
 }
 ```
 
-**Đăng nhập — `POST /auth/login`**
+Validation:
+- `email`: bắt buộc, định dạng email hợp lệ, chưa được đăng ký
+- `password`: bắt buộc, tối thiểu 6 ký tự
+- `name`: bắt buộc
+
+Tài khoản mới mặc định nhận role `ROLE_USER`.
+
+---
+
+#### Đăng nhập bằng email/password — `POST /auth/login`
+
 ```json
 {
   "email": "user@example.com",
@@ -185,7 +198,10 @@ Endpoint cần token:
 }
 ```
 
+---
+
 Response trả về (cả register và login):
+
 ```json
 {
   "status": true,
@@ -199,29 +215,142 @@ Response trả về (cả register và login):
 }
 ```
 
-**Refresh token — `POST /auth/refresh`**
+Dùng `accessToken` trong header cho các request cần xác thực:
+```
+Authorization: Bearer <accessToken>
+```
+
+---
+
+#### Refresh token — `POST /auth/refresh`
+
 ```json
 {
   "refreshToken": "eyJ..."
 }
 ```
 
-**Dùng token cho các endpoint bảo vệ:**
+---
+
+#### 
+
+
+##### Luồng hoạt động (đơn giản)
+
+```
+User bấm "Đăng nhập Google"
+        ↓
+FE redirect browser đến URL backend:
+https://moc-phim-api.duckdns.org/oauth2/authorize/google
+        ↓
+Google hiện trang chọn tài khoản → user chọn
+        ↓
+Backend nhận callback từ Google, tạo JWT
+        ↓
+Backend redirect về FE kèm token trong URL:
+https://moc-phim.vercel.app/oauth2/callback/google?accessToken=eyJ...&refreshToken=eyJ...
+        ↓
+FE đọc token từ URL params → lưu vào localStorage → dùng như bình thường
+```
+
+---
+
+##### URL FE cần dùng
+
+| Môi trường | URL bắt đầu đăng nhập Google |
+|---|---|
+| Production (VPS) | `https://moc-phim-api.duckdns.org/oauth2/authorize/google` |
+| Local dev | `http://localhost:8080/oauth2/authorize/google` |
+
+> FE chỉ cần redirect browser đến URL trên. Không cần gọi API, không cần xử lý gì thêm ở bước này.
+
+---
+
+##### FE xử lý callback như thế nào?
+
+Backend sẽ redirect về trang `/oauth2/callback/google` của FE kèm 2 param trong URL:
+
+```
+https://moc-phim.vercel.app/oauth2/callback/google?accessToken=eyJ...&refreshToken=eyJ...
+```
+
+FE tạo một trang/route `/oauth2/callback/google` để đọc token:
+
+```javascript
+// Ví dụ Next.js / React
+const params = new URLSearchParams(window.location.search);
+const accessToken = params.get('accessToken');
+const refreshToken = params.get('refreshToken');
+
+// Lưu vào localStorage
+localStorage.setItem('accessToken', accessToken);
+localStorage.setItem('refreshToken', refreshToken);
+
+// Redirect về trang chủ
+window.location.href = '/';
+```
+
+Sau đó dùng `accessToken` như đăng nhập thường:
 ```
 Authorization: Bearer <accessToken>
 ```
 
-#### Đăng nhập Google OAuth2
+---
 
-1. Mở browser truy cập: `http://localhost:8080/oauth2/authorize/google`
-2. Đăng nhập tài khoản Google
-3. Backend redirect về frontend kèm token trong URL:
-   ```
-   http://localhost:3000/oauth2/callback/google?accessToken=eyJ...&refreshToken=eyJ...
-   ```
-4. Frontend lưu token và dùng như bình thường
+##### Lưu ý
 
-> User Google lần đầu đăng nhập sẽ được tự động tạo tài khoản (`provider=google`). Nếu email đã đăng ký bằng email/password, hệ thống trả về lỗi `email_conflict`.
+- User Google lần đầu đăng nhập sẽ tự động tạo tài khoản (`provider=google`)
+- Nếu email đã đăng ký bằng email/password → hệ thống trả lỗi `email_conflict`, FE nhận được `?error=email_conflict` trong URL callback
+- Token Google login có cùng TTL với login thường (access: 30 phút, refresh: 7 ngày)
+
+---
+
+#### Hệ thống phân quyền (Role)
+
+| Role | Ý nghĩa |
+|---|---|
+| `ROLE_USER` | Người dùng thường — mặc định khi đăng ký |
+| `ROLE_ADMIN` | Quản trị viên — truy cập các endpoint sync, quản lý |
+
+Response `GET /auth/me` trả về danh sách roles của user:
+```json
+{
+  "status": true,
+  "data": {
+    "id": 1,
+    "email": "admin@mocphim.com",
+    "name": "Admin",
+    "provider": "local",
+    "roles": ["ROLE_USER", "ROLE_ADMIN"]
+  }
+}
+```
+
+---
+
+#### Tài khoản Admin mặc định
+
+Khi app khởi động, nếu chưa có tài khoản admin, hệ thống tự động tạo:
+
+| Thông tin | Giá trị mặc định |
+|---|---|
+| Email | `admin@mocphim.com` |
+| Password | `Admin@123` |
+| Roles | `ROLE_USER`, `ROLE_ADMIN` |
+
+> **Bắt buộc đổi password admin trong production.** Override bằng biến môi trường:
+> ```env
+> ADMIN_EMAIL=your-admin@domain.com
+> ADMIN_PASSWORD=your-strong-password
+> ```
+
+Endpoint admin (yêu cầu `ROLE_ADMIN`):
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| POST | `/api/v1/sync/movies/trigger` | Kích hoạt sync thủ công |
+| POST | `/api/v1/sync/movies/resync` | Re-sync record cũ thiếu field |
+
+---
 
 **JWT config:**
 | Param | Giá trị mặc định |

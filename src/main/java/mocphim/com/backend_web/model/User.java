@@ -43,7 +43,8 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
-    private Set<String> roles = new HashSet<>(Set.of("ROLE_USER"));
+    @Enumerated(EnumType.STRING)
+    private Set<Role> roles = new HashSet<>(Set.of(Role.ROLE_USER));
 
     @CreatedDate
     @Column(updatable = false)
