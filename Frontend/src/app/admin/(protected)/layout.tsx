@@ -20,8 +20,9 @@ import {
   WalletOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { ConfigProvider, Dropdown, Badge, App } from "antd";
+import { ConfigProvider, Dropdown, Badge, App, Spin } from "antd";
 import viVN from "antd/locale/vi_VN";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminLayout({
   children,
@@ -32,6 +33,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const { user, isLoading, logout } = useAuth();
 
   const route = {
     path: "/admin",
@@ -133,12 +135,28 @@ export default function AdminLayout({
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  // Guard: chưa load xong thì chờ
+  useEffect(() => {
+    if (!isLoading && mounted) {
+      if (!user) {
+        router.replace("/admin/login");
+      } else if (!user.roles.includes("ROLE_ADMIN")) {
+        router.replace("/");
+      }
+    }
+  }, [isLoading, user, mounted, router]);
+
+  if (!mounted || isLoading) {
     return (
       <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div>Đang tải...</div>
+        <Spin size="large" />
       </div>
     );
+  }
+
+  // Chưa xác thực xong hoặc không có quyền → không render gì
+  if (!user || !user.roles.includes("ROLE_ADMIN")) {
+    return null;
   }
 
   return (
@@ -170,17 +188,17 @@ export default function AdminLayout({
               </a>
             )}
             avatarProps={{
-              src: "https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg",
+              src: user.avatar ?? undefined,
               size: "small",
-              title: "Admin",
+              title: user.name,
               render: (_props, dom) => (
                 <Dropdown
                   menu={{
                     items: [
                       {
-                        key: "profile",
-                        label: "Trang cá nhân",
-                        icon: <UserOutlined />,
+                        key: "email",
+                        label: user.email,
+                        disabled: true,
                       },
                       { type: "divider" },
                       {
@@ -188,7 +206,10 @@ export default function AdminLayout({
                         label: "Đăng xuất",
                         icon: <LogoutOutlined />,
                         danger: true,
-                        onClick: () => router.push("/"),
+                        onClick: () => {
+                          logout();
+                          router.push("/admin/login");
+                        },
                       },
                     ],
                   }}

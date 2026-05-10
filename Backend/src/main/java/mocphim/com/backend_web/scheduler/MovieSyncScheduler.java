@@ -4,10 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mocphim.com.backend_web.entity.MovieSync;
 import mocphim.com.backend_web.repository.MovieSyncRepository;
+import mocphim.com.backend_web.service.MovieSyncService;
 import mocphim.com.backend_web.service.OPhimService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +23,7 @@ public class MovieSyncScheduler {
 
     private final OPhimService ophimService;
     private final MovieSyncRepository movieSyncRepository;
-    private final CacheManager cacheManager;
+    private final MovieSyncService movieSyncService;
 
     @Scheduled(cron = "${scheduler.movie-sync.cron}")
     public void sync() {
@@ -56,20 +55,20 @@ public class MovieSyncScheduler {
                         if (movieSyncRepository.existsBySlug(slug)) {
                             skipped++;
                         } else {
-                            movieSyncRepository.save(new MovieSync(slug, title));
+                            MovieSync entity = new MovieSync(slug, title);
+                            movieSyncService.applyMovieFields(entity, movie);
+                            movieSyncRepository.save(entity);
                             added++;
                             pageAdded++;
                         }
                     }
                 }
 
-                // dừng sớm nếu toàn bộ trang đã có trong DB
                 if (pageAdded == 0) {
                     log.debug("[SYNC] Trang {} toàn slug đã biết, dừng sớm", page);
                     break;
                 }
 
-                // kiểm tra còn trang không
                 if (data.get("params") instanceof Map<?, ?> p &&
                     p.get("pagination") instanceof Map<?, ?> pagination) {
                     int total = ((Number) pagination.get("totalItems")).intValue();
@@ -83,10 +82,7 @@ public class MovieSyncScheduler {
         }
 
         log.info("[SYNC] Thêm mới {} phim, bỏ qua {} phim", added, skipped);
-        if (added > 0) {
-            Cache cache = cacheManager.getCache("syncedMovies");
-            if (cache != null) cache.clear();
-        }
+        if (added > 0) movieSyncService.clearCache();
         return new int[]{added, skipped};
     }
 }

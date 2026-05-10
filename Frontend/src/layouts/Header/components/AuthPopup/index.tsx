@@ -103,9 +103,9 @@ const AuthPopup = ({ isOpen, onClose }: AuthPopupProps) => {
 
                 <div className="mt-5">
                   {mode === "login" ? (
-                    <AuthLoginForm onSwitchMode={setMode} />
+                    <AuthLoginForm onSwitchMode={setMode} onClose={onClose} />
                   ) : (
-                    <AuthRegisterForm onSwitchMode={setMode} />
+                    <AuthRegisterForm onSwitchMode={setMode} onClose={onClose} />
                   )}
                 </div>
               </div>

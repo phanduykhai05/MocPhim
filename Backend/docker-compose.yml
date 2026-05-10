@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: mocphim-postgres
+    environment:
+      POSTGRES_DB: mocphim
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 050623
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: mocphim-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: mocphim-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/mocphim
+      DB_USERNAME: postgres
+      DB_PASSWORD: 050623
+      GOOGLE_CLIENT_ID: (điền client id)
+      GOOGLE_CLIENT_SECRET: (điền client secret)
+      JWT_SECRET: mocphim-super-secret-jwt-key-change-this-in-production-minimum-256-bits-required
+      OAUTH2_REDIRECT_URI: http://mocphim.duckdns.org/oauth2/callback/google
+      FRONTEND_URL: https://moc-phim.vercel.app
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_USER: ""
+      REDIS_PASSWORD: ""
+
+volumes:
+  postgres_data:

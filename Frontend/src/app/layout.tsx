@@ -5,6 +5,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import ThemeInitializer from "@/components/ThemeInitializer";
 import SecurityGuard from "@/components/SecurityGuard";
 import { cn } from "@/lib/utils";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -38,7 +39,9 @@ export default function RootLayout({
                 <ThemeInitializer />
                 <SecurityGuard />
                 <ScrollToTop />
-                {children}
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
             </body>
         </html>
     );

@@ -27,6 +27,7 @@ public class SearchService {
         return ophimService.get("/tim-kiem", params);
     }
 
+
     @Cacheable(value = "searchHistory", key = "'top_' + #limit")
     public List<SearchHistory> getHistory(int limit) {
         return searchHistoryRepository.findAll(
