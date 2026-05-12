@@ -1,5 +1,7 @@
 package mocphim.com.backend_web.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -66,10 +68,20 @@ public class RedisConfig {
 
     @Bean
     public RedisCacheManager redisCacheManager(JedisConnectionFactory factory,
-                                               com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
+                                               ObjectMapper objectMapper) {
+        ObjectMapper redisMapper = objectMapper.copy()
+                .activateDefaultTyping(
+                        BasicPolymorphicTypeValidator.builder()
+                                .allowIfSubType("mocphim.com.backend_web")
+                                .allowIfSubType("java.util")
+                                .allowIfSubType("java.lang")
+                                .build(),
+                        ObjectMapper.DefaultTyping.NON_FINAL
+                );
+
         RedisCacheConfiguration base = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper)));
+                        .fromSerializer(new GenericJackson2JsonRedisSerializer(redisMapper)));
 
         Map<String, RedisCacheConfiguration> configs = new HashMap<>();
         configs.put("home",          base.entryTtl(Duration.ofMinutes(5)));

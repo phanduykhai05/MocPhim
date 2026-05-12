@@ -79,6 +79,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/years/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/sync/movies/trigger").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/sync/movies/resync").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/admin/cache/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
