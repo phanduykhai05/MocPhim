@@ -37,68 +37,96 @@ export interface TriggerSyncResult {
   skipped: number;
 }
 
-function buildPagination(totalItems: number, page: number, size: number): SyncPagination {
+export interface ResyncResult {
+  updated: number;
+  notFound: number;
+  failed: number;
+  remaining: number;
+}
+
+function authHeaders(accessToken?: string): Record<string, string> {
+  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+}
+
+function buildPagination(
+  totalItems: number,
+  page: number,
+  size: number,
+): SyncPagination {
   const safeSize = Math.max(1, size);
   const totalPages = Math.max(1, Math.ceil(totalItems / safeSize));
   const currentPage = Math.min(Math.max(1, page + 1), totalPages);
+  return { currentPage, totalPages, totalItems, itemsPerPage: safeSize };
+}
+
+function applyFallbackPage(
+  all: MovieSyncItem[],
+  page: number,
+  size: number,
+): SyncMoviesResult {
+  const start = Math.max(0, page) * Math.max(1, size);
   return {
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage: safeSize,
+    items: all.slice(start, start + size),
+    pagination: buildPagination(all.length, page, size),
   };
+}
+
+async function adminPost<T>(
+  url: string,
+  accessToken?: string,
+): Promise<T | null> {
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: authHeaders(accessToken),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json?.status) return null;
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
 }
 
 // ─── API Functions ─────────────────────────────────────────────────────────────
 
-/** GET /sync/movies — danh sách phim đã sync (phân trang) */
 export async function fetchSyncMovies(
   page = 0,
-  size = 20
+  size = 20,
 ): Promise<SyncMoviesResult | null> {
   try {
-    const res = await fetch(`${API}/sync/movies/all`, {
+    const res = await fetch(`${API}/sync/movies?page=${page}&size=${size}`, {
       next: { revalidate: 120 },
     });
     if (res.ok) {
       const json = await res.json();
       if (json?.status) {
-        const rawItems = Array.isArray(json.data) ? json.data : [];
-        const pagination = json.pagination ?? buildPagination(rawItems.length, page, size);
-        if (json.pagination) {
-          return { items: rawItems, pagination };
-        }
-
-        const start = Math.max(0, page) * Math.max(1, size);
-        const end = start + Math.max(1, size);
-        return {
-          items: rawItems.slice(start, end),
-          pagination,
-        };
+        const rawData = json.data;
+        const items: MovieSyncItem[] = Array.isArray(rawData)
+          ? rawData
+          : Array.isArray(rawData?.content)
+            ? rawData.content
+            : Array.isArray(rawData?.items)
+              ? rawData.items
+              : [];
+        const pagination =
+          json.pagination ??
+          (rawData?.totalElements != null
+            ? buildPagination(rawData.totalElements, page, size)
+            : buildPagination(items.length, page, size));
+        return { items, pagination };
       }
     }
-
-    const allFallback = await fetchSyncMoviesAll();
-    if (!allFallback) return null;
-    const start = Math.max(0, page) * Math.max(1, size);
-    const end = start + Math.max(1, size);
-    return {
-      items: allFallback.slice(start, end),
-      pagination: buildPagination(allFallback.length, page, size),
-    };
+    const all = await fetchSyncMoviesAll();
+    return all ? applyFallbackPage(all, page, size) : null;
   } catch {
-    const allFallback = await fetchSyncMoviesAll();
-    if (!allFallback) return null;
-    const start = Math.max(0, page) * Math.max(1, size);
-    const end = start + Math.max(1, size);
-    return {
-      items: allFallback.slice(start, end),
-      pagination: buildPagination(allFallback.length, page, size),
-    };
+    const all = await fetchSyncMoviesAll();
+    return all ? applyFallbackPage(all, page, size) : null;
   }
 }
 
-/** GET /sync/movies/all — tối đa 500 phim mới nhất */
 export async function fetchSyncMoviesAll(): Promise<MovieSyncItem[] | null> {
   try {
     const res = await fetch(`${API}/sync/movies/all`, {
@@ -113,7 +141,6 @@ export async function fetchSyncMoviesAll(): Promise<MovieSyncItem[] | null> {
   }
 }
 
-/** GET /sync/movies/count — tổng số phim đã sync */
 export async function fetchSyncCount(): Promise<number | null> {
   try {
     const res = await fetch(`${API}/sync/movies/count`, {
@@ -128,24 +155,42 @@ export async function fetchSyncCount(): Promise<number | null> {
   }
 }
 
-/** POST /sync/movies/trigger — kích hoạt sync thủ công */
 export async function triggerSync(
   startPage = 1,
-  maxPages = 50
+  maxPages = 50,
+  accessToken?: string,
 ): Promise<TriggerSyncResult | null> {
+  const url = new URL(`${API}/sync/movies/trigger`);
+  url.searchParams.set("startPage", String(startPage));
+  url.searchParams.set("maxPages", String(maxPages));
+  return adminPost<TriggerSyncResult>(url.toString(), accessToken);
+}
+
+export async function triggerResync(
+  limit = 100,
+  accessToken?: string,
+): Promise<ResyncResult | null> {
+  return adminPost<ResyncResult>(
+    `${API}/sync/movies/resync?limit=${limit}`,
+    accessToken,
+  );
+}
+
+export async function deleteAdminCache(
+  pattern: string,
+  accessToken?: string,
+): Promise<boolean> {
   try {
-    const url = new URL(`${API}/sync/movies/trigger`);
-    url.searchParams.set('startPage', String(startPage));
-    url.searchParams.set('maxPages', String(maxPages));
-    const res = await fetch(url.toString(), {
-      method: 'POST',
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (!json?.status) return null;
-    return json.data ?? null;
+    const res = await fetch(
+      `${API}/admin/cache/${encodeURIComponent(pattern)}`,
+      {
+        method: "DELETE",
+        headers: authHeaders(accessToken),
+        cache: "no-store",
+      },
+    );
+    return res.ok;
   } catch {
-    return null;
+    return false;
   }
 }

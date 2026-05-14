@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm lint *)",
+      "Bash(pnpm eslint *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm exec *)",
+      "Bash(sed -n '140,165p' src/app/\\\\\\(default\\\\\\)/components/MoviesByListClient.tsx)",
+      "Bash(sed -n '185,215p' src/app/\\\\\\(default\\\\\\)/phimmoi/full-movies/FullMoviesClient.tsx)",
+      "Bash(sed -n '185,210p' src/app/\\\\\\(default\\\\\\)/tim-kiem/SearchResultsClient.tsx)",
+      "Bash(sed -n '128,145p' \"src/app/admin/\\(protected\\)/layout.tsx\")",
+      "Bash(sed -n '10,25p' \"src/components/Preloader/Preloader.tsx\")",
+      "Bash(sed -n '30,45p' \"src/components/SecurityGuard/index.tsx\")",
+      "Bash(sed -n '130,145p' \"src/app/admin/\\(protected\\)/bao-mat-log/page.tsx\")",
+      "Bash(sed -n '55,70p' \"src/layouts/Header/components/SearchBar.tsx\")",
+      "Bash(dir Frontend\\\\src /s /b)"
+    ]
+  }
+}

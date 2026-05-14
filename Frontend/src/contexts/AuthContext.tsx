@@ -11,6 +11,7 @@ import {
 import {
   apiGetMe,
   apiLogin,
+  apiLogout,
   apiRefreshToken,
   apiRegister,
   type AuthTokens,
@@ -25,7 +26,8 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  /** Trả về message xác nhận gửi email — không tự đăng nhập */
+  register: (email: string, password: string, name: string) => Promise<string>;
   logout: () => void;
 }
 
@@ -60,19 +62,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
       const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
-      // Không có token nào → chưa đăng nhập
       if (!accessToken && !refreshToken) {
         setIsLoading(false);
         return;
       }
 
       try {
-        // Access token còn hạn → dùng luôn, không cần gọi API
         if (accessToken && isAccessTokenValid()) {
           const me = await apiGetMe(accessToken);
           setUser(me);
         } else if (refreshToken) {
-          // Access token hết hạn → lấy token mới bằng refresh token
           const tokens = await apiRefreshToken(refreshToken);
           saveTokens(tokens);
           const me = await apiGetMe(tokens.accessToken);
@@ -90,22 +89,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restoreSession();
   }, []);
 
-  const login = useCallback(async (email: string, password: string): Promise<AuthUser> => {
-    const tokens = await apiLogin(email, password);
-    saveTokens(tokens);
-    const me = await apiGetMe(tokens.accessToken);
-    setUser(me);
-    return me;
-  }, []);
+  const login = useCallback(
+    async (email: string, password: string): Promise<AuthUser> => {
+      const tokens = await apiLogin(email, password);
+      saveTokens(tokens);
+      const me = await apiGetMe(tokens.accessToken);
+      setUser(me);
+      return me;
+    },
+    [],
+  );
 
-  const register = useCallback(async (email: string, password: string, name: string) => {
-    const tokens = await apiRegister(email, password, name);
-    saveTokens(tokens);
-    const me = await apiGetMe(tokens.accessToken);
-    setUser(me);
-  }, []);
+  const register = useCallback(
+    (email: string, password: string, name: string): Promise<string> =>
+      apiRegister(email, password, name),
+    [],
+  );
 
   const logout = useCallback(() => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY) ?? undefined;
+    void apiLogout(token);
     clearTokens();
     setUser(null);
   }, []);

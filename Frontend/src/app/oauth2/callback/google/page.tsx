@@ -12,8 +12,8 @@ export default function GoogleCallbackPage() {
     const refreshToken = params.get("refreshToken");
     const error = params.get("error");
 
-    if (error === "email_conflict") {
-      router.replace("/?auth_error=email_conflict");
+    if (error) {
+      router.replace(`/login?error=${encodeURIComponent(error)}`);
       return;
     }
 

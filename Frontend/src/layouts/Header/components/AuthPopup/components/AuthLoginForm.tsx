@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AuthFormProps } from "../types";
 import { Google } from "@/components/icon/gg";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,12 +9,13 @@ import { AUTH_BASE_URL } from "@/constants";
 
 const AuthLoginForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
   const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!email || !password) {
       setError("Vui lòng nhập đầy đủ email và mật khẩu");
@@ -33,6 +35,11 @@ const AuthLoginForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
 
   const handleGoogleLogin = () => {
     window.location.href = `${AUTH_BASE_URL}/oauth2/authorize/google`;
+  };
+
+  const handleForgotPassword = () => {
+    onClose();
+    router.push("/forgot-password");
   };
 
   return (
@@ -68,6 +75,7 @@ const AuthLoginForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
 
       <button
         type="button"
+        onClick={handleForgotPassword}
         className="w-full text-center text-sm font-medium text-[#bec8e6] transition hover:text-white"
       >
         Quên mật khẩu?

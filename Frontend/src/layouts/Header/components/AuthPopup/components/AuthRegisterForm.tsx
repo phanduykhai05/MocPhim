@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AuthFormProps } from "../types";
 import { useAuth } from "@/contexts/AuthContext";
 
-const AuthRegisterForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
+const AuthRegisterForm = ({ onSwitchMode }: AuthFormProps) => {
   const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -12,9 +12,10 @@ const AuthRegisterForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!name || !email || !password || !confirmPassword) {
       setError("Vui lòng nhập đầy đủ thông tin");
@@ -35,14 +36,34 @@ const AuthRegisterForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
     setError("");
     setIsLoading(true);
     try {
-      await register(email, password, name);
-      onClose();
+      const msg = await register(email, password, name);
+      setSuccessMsg(msg || "Đăng ký thành công! Kiểm tra email để xác thực.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Đăng ký thất bại");
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (successMsg) {
+    return (
+      <div className="space-y-6 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1a2146] text-3xl">
+            📧
+          </div>
+          <p className="text-sm leading-relaxed text-[#bec8e6]">{successMsg}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onSwitchMode("login")}
+          className="h-11 w-full rounded-lg bg-[#ffd875] text-sm font-bold text-[#121931] transition hover:brightness-95"
+        >
+          Về trang đăng nhập
+        </button>
+      </div>
+    );
+  }
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
