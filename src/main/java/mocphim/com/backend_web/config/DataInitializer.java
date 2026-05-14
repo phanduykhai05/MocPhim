@@ -37,6 +37,7 @@ public class DataInitializer implements ApplicationRunner {
             admin.setName("Admin");
             admin.setProvider("local");
             admin.setRoles(new HashSet<>(Set.of(Role.ROLE_USER, Role.ROLE_ADMIN)));
+            admin.setVerified(true);
             userRepository.save(admin);
             log.info("Admin account created: {}", adminEmail);
         }

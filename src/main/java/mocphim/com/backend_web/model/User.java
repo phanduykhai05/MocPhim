@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -55,4 +56,19 @@ public class User {
 
     @Column
     private boolean enabled = true;
+
+    @Column(name = "is_verified", nullable = false, columnDefinition = "boolean not null default false")
+    private boolean isVerified = false;
+
+    @Column(name = "verify_token")
+    private String verifyToken;
+
+    @Column(name = "verify_expires")
+    private LocalDateTime verifyExpires;
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_expires")
+    private LocalDateTime resetExpires;
 }
