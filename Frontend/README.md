@@ -151,5 +151,8 @@ Triển khai ứng dụng lên Vercel hoặc bất kỳ nền tảng nào hỗ t
 ## Đóng góp
 Mọi đóng góp đều được hoan nghênh! Vui lòng fork repository và tạo pull request cho các thay đổi.
 
-## Giấy phép
-Dự án này được cấp phép theo giấy phép MIT.
+## Phát Triển Bởi Sinh Viên
+- FullStack Phan Duy Khai
+- BackEnd Vo Ho Vinh Khang.
+- TestTer Tran Thi Bich Ngoc
+- BA Nguyen Gia Huy
