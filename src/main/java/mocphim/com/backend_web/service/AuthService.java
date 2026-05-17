@@ -191,7 +191,7 @@ public class AuthService {
                 .build();
     }
 
-    private UserResponse toUserResponse(User user) {
+    public UserResponse toUserResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -199,6 +199,10 @@ public class AuthService {
                 .avatar(user.getAvatar())
                 .provider(user.getProvider())
                 .roles(user.getRoles().stream().map(Role::name).collect(Collectors.toSet()))
+                .isVerified(user.isVerified())
+                .enabled(user.isEnabled())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 }

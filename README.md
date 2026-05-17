@@ -432,7 +432,11 @@ Yêu cầu `Authorization: Bearer <accessToken>`.
     "name": "Nguyễn Văn A",
     "avatar": null,
     "provider": "local",
-    "roles": ["ROLE_USER"]
+    "roles": ["ROLE_USER"],
+    "isVerified": true,
+    "enabled": true,
+    "createdAt": "2026-05-01T10:00:00",
+    "updatedAt": "2026-05-10T15:30:00"
   }
 }
 ```
@@ -442,6 +446,10 @@ Yêu cầu `Authorization: Bearer <accessToken>`.
 | `provider` | `"local"` hoặc `"google"` |
 | `avatar` | URL ảnh (có giá trị với Google OAuth2, `null` với local) |
 | `roles` | Mảng role — thường là `["ROLE_USER"]`, admin có thêm `"ROLE_ADMIN"` |
+| `isVerified` | `true` nếu đã xác thực email |
+| `enabled` | `true` nếu tài khoản đang hoạt động |
+| `createdAt` | Thời điểm tạo tài khoản (ISO 8601) |
+| `updatedAt` | Thời điểm cập nhật cuối (ISO 8601) |
 
 ---
 
@@ -649,13 +657,82 @@ const isAdmin = user.roles.includes('ROLE_ADMIN')
 
 ## Admin Endpoints (yêu cầu ROLE_ADMIN)
 
+Tất cả endpoint dưới đây yêu cầu header `Authorization: Bearer <accessToken>` của tài khoản có `ROLE_ADMIN`.
+
 ```
-POST /api/v1/sync/movies/trigger   → Sync thủ công phim từ OPhim
-POST /api/v1/sync/movies/resync    → Re-sync record thiếu metadata
-GET  /api/v1/sync/movies           → Danh sách phim đã sync (phân trang)
-GET  /api/v1/sync/movies/all       → Tối đa 500 phim mới nhất
-GET  /api/v1/sync/movies/count     → Tổng số phim đã sync
-DELETE /api/v1/admin/cache/**      → Xóa cache
+POST   /api/v1/sync/movies/trigger    → Sync thủ công phim từ OPhim
+POST   /api/v1/sync/movies/resync     → Re-sync record thiếu metadata
+GET    /api/v1/sync/movies            → Danh sách phim đã sync (phân trang)
+GET    /api/v1/sync/movies/all        → Tối đa 500 phim mới nhất
+GET    /api/v1/sync/movies/count      → Tổng số phim đã sync
+DELETE /api/v1/admin/cache            → Xóa toàn bộ cache
+DELETE /api/v1/admin/cache/{name}     → Xóa cache theo tên
+GET    /api/v1/admin/cache            → Danh sách tên cache
+GET    /api/v1/admin/users            → Danh sách tất cả user (phân trang)
+```
+
+---
+
+### GET `/api/v1/admin/users` — Danh sách tất cả user
+
+**Query params:**
+
+| Param | Mặc định | Mô tả |
+|---|---|---|
+| `page` | `0` | Trang (bắt đầu từ 0) |
+| `size` | `20` | Số user mỗi trang |
+
+**Ví dụ:**
+```
+GET /api/v1/admin/users?page=0&size=20
+```
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "message": "success",
+  "data": [
+    {
+      "id": 1,
+      "email": "admin@mocphim.com",
+      "name": "Admin",
+      "avatar": null,
+      "provider": "local",
+      "roles": ["ROLE_USER", "ROLE_ADMIN"],
+      "isVerified": true,
+      "enabled": true,
+      "createdAt": "2026-05-01T10:00:00",
+      "updatedAt": "2026-05-10T15:30:00"
+    },
+    {
+      "id": 2,
+      "email": "user@example.com",
+      "name": "Nguyễn Văn A",
+      "avatar": "https://lh3.googleusercontent.com/...",
+      "provider": "google",
+      "roles": ["ROLE_USER"],
+      "isVerified": true,
+      "enabled": true,
+      "createdAt": "2026-05-05T08:20:00",
+      "updatedAt": "2026-05-05T08:20:00"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 5,
+    "totalItems": 100,
+    "itemsPerPage": 20
+  }
+}
+```
+
+Kết quả sắp xếp theo `createdAt` mới nhất trước.
+
+**Response lỗi `401` / `403`:**
+```json
+{ "status": false, "message": "Vui lòng đăng nhập" }
+{ "status": false, "message": "Không có quyền truy cập" }
 ```
 
 ---
