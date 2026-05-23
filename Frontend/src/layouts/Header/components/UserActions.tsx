@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { fetchSearch, getMovieThumb } from "@/lib/api/movie";
+import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import MagnifierIcon from "@/components/icon/magnifier-icon";
 import AuthPopup from "@/layouts/Header/components/AuthPopup";
@@ -13,6 +16,10 @@ const UserActions = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const iconRef = useRef(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const [cdnImage, setCdnImage] = useState("");
+  const suggestTimeout = useRef<NodeJS.Timeout | null>(null);
   const { user, isLoading, logout } = useAuth();
 
   useEffect(() => {
@@ -31,6 +38,30 @@ const UserActions = () => {
   };
 
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "?";
+
+  // Handle search suggestion fetch
+  useEffect(() => {
+    if (!isSearchOpen) {
+      setSuggestions([]);
+      return;
+    }
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    setSuggestLoading(true);
+    if (suggestTimeout.current) clearTimeout(suggestTimeout.current);
+    suggestTimeout.current = setTimeout(() => {
+      fetchSearch(searchQuery.trim()).then((res) => {
+        setSuggestions(res?.items?.slice(0, 8) || []);
+        setCdnImage(res?.cdnImage || "");
+        setSuggestLoading(false);
+      });
+    }, 300);
+    return () => {
+      if (suggestTimeout.current) clearTimeout(suggestTimeout.current);
+    };
+  }, [searchQuery, isSearchOpen]);
 
   return (
     <>
@@ -146,15 +177,66 @@ const UserActions = () => {
       {/* Mobile Search Box */}
       {isSearchOpen && (
         <div className="fixed inset-0 top-[70px] md:top-[90px] lg:hidden bg-[#191b24]/95 backdrop-blur-sm z-40">
-          <div className="p-4">
+          <div className="p-4 flex gap-2 relative">
             <input
               type="text"
               placeholder="Tìm kiếm phim, diễn viên..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus
-              className="w-full bg-[#2a2d3a] text-white placeholder-[#85899b] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FFD875]"
+              className="flex-1 bg-[#2a2d3a] text-white placeholder-[#85899b] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FFD875]"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  window.location.href = `/tim-kiem?keyword=${encodeURIComponent(searchQuery.trim())}`;
+                  setIsSearchOpen(false);
+                }
+              }}
             />
+            <button
+              aria-label="Tìm kiếm"
+              className="bg-[#FFD875] text-[#191b24] px-4 py-3 rounded-lg font-semibold hover:bg-[#ffe699] transition-colors"
+              onClick={() => {
+                if (searchQuery.trim()) {
+                  window.location.href = `/tim-kiem?keyword=${encodeURIComponent(searchQuery.trim())}`;
+                  setIsSearchOpen(false);
+                }
+              }}
+            >
+              Tìm kiếm
+            </button>
+            {/* Suggestion dropdown */}
+            {searchQuery.trim() && (
+              <div className="absolute left-0 top-[110%] w-full bg-[#23243a] rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto border border-[#FFD875]/30">
+                {suggestLoading && (
+                  <div className="p-3 text-white/60 text-sm">Đang tìm kiếm...</div>
+                )}
+                {!suggestLoading && suggestions.length === 0 && (
+                  <div className="p-3 text-white/40 text-sm">Không có gợi ý</div>
+                )}
+                {!suggestLoading && suggestions.map((item) => (
+                  <Link
+                    key={item._id}
+                    href={`/phim/${item.slug}`}
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-[#FFD875]/10 transition-colors"
+                    onClick={() => setIsSearchOpen(false)}
+                  >
+                    <Image
+                      src={getMovieThumb(item.thumb_url, cdnImage)}
+                      alt={item.name}
+                      width={40}
+                      height={54}
+                      className="rounded w-10 h-[54px] object-cover bg-[#222]"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="truncate text-white text-sm font-medium">{item.name}</div>
+                      {item.origin_name && (
+                        <div className="truncate text-xs text-white/50">{item.origin_name}</div>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

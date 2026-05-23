@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import MobileMenu from '@/layouts/Header/components/MobileMenu';
 import SearchBar from '@/layouts/Header/components/SearchBar';
 import Navigation from '@/layouts/Header/components/Navigation';
 import UserActions from '@/layouts/Header/components/UserActions';
@@ -10,6 +11,7 @@ import images from "@/assets/images";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
   // Xử lý đổi màu nền header khi cuộn trang
@@ -28,9 +30,12 @@ const Header = () => {
       }
     >
       <div className="max-w-[1920px] mx-auto w-full px-4 md:px-8 flex items-center gap-4 lg:gap-8 h-[70px] md:h-[90px]">
-        
         {/* Mobile Hamburger Menu (Chỉ hiện trên mobile) */}
-        <button className="lg:hidden text-white flex flex-col gap-[4px] p-2">
+        <button
+          className="lg:hidden text-white flex flex-col gap-[4px] p-2"
+          aria-label="Mở menu danh mục"
+          onClick={() => setMobileMenuOpen(true)}
+        >
           <span className="block w-5 h-[2px] bg-white"></span>
           <span className="block w-3.5 h-[2px] bg-white"></span>
           <span className="block w-5 h-[2px] bg-white"></span>
@@ -61,6 +66,7 @@ const Header = () => {
         </Link>
         <SearchBar />
         <Navigation />
+        <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         
         <div className="flex-grow hidden lg:block"></div>
         <AnimatedThemeToggler />
