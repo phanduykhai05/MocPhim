@@ -13,7 +13,11 @@
       "Bash(sed -n '30,45p' \"src/components/SecurityGuard/index.tsx\")",
       "Bash(sed -n '130,145p' \"src/app/admin/\\(protected\\)/bao-mat-log/page.tsx\")",
       "Bash(sed -n '55,70p' \"src/layouts/Header/components/SearchBar.tsx\")",
-      "Bash(dir Frontend\\\\src /s /b)"
+      "Bash(dir Frontend\\\\src /s /b)",
+      "Bash(Get-ChildItem -Path \"k:\\\\MocPhim\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "PowerShell(Head -20)",
+      "Bash(pnpm list *)"
     ]
   }
 }

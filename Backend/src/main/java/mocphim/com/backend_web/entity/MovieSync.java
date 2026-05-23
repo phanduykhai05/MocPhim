@@ -1,7 +1,9 @@
 package mocphim.com.backend_web.entity;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
+import mocphim.com.backend_web.config.RawJsonDeserializer;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,6 +29,7 @@ public class MovieSync {
 
     @Column(name = "alternative_names", columnDefinition = "TEXT")
     @JsonRawValue
+    @JsonDeserialize(using = RawJsonDeserializer.class)
     private String alternativeNames;
 
     private String type;
@@ -49,18 +52,22 @@ public class MovieSync {
     private Integer year;
 
     @JsonRawValue
+    @JsonDeserialize(using = RawJsonDeserializer.class)
     @Column(columnDefinition = "TEXT")
     private String category;
 
     @JsonRawValue
+    @JsonDeserialize(using = RawJsonDeserializer.class)
     @Column(columnDefinition = "TEXT")
     private String country;
 
     @JsonRawValue
+    @JsonDeserialize(using = RawJsonDeserializer.class)
     @Column(columnDefinition = "TEXT")
     private String tmdb;
 
     @JsonRawValue
+    @JsonDeserialize(using = RawJsonDeserializer.class)
     @Column(columnDefinition = "TEXT")
     private String imdb;
 

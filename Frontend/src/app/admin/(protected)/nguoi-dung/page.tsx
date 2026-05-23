@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   PageContainer,
   ProTable,
@@ -11,46 +11,27 @@ import {
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { Button, Tag, Space, Popconfirm, Avatar, App } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, StopOutlined } from "@ant-design/icons";
+import { apiGetAdminUsers, type AdminUser } from "@/lib/api/admin";
 
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  role: "admin" | "editor" | "member";
-  status: "active" | "banned";
-  comments: number;
-  joinedAt: string;
-  avatar?: string;
-};
-
-const mockUsers: User[] = [
-  { id: 1, name: "Nguyễn Văn A", email: "a@mocphim.vn", role: "admin", status: "active", comments: 142, joinedAt: "01/01/2025" },
-  { id: 2, name: "Trần Thị B", email: "b@mocphim.vn", role: "editor", status: "active", comments: 98, joinedAt: "15/02/2025" },
-  { id: 3, name: "Lê Văn C", email: "c@mocphim.vn", role: "member", status: "active", comments: 76, joinedAt: "10/03/2025" },
-  { id: 4, name: "Phạm Thị D", email: "d@mocphim.vn", role: "member", status: "banned", comments: 54, joinedAt: "05/04/2025" },
-  { id: 5, name: "Hoàng Văn E", email: "e@mocphim.vn", role: "member", status: "active", comments: 32, joinedAt: "12/04/2025" },
-  { id: 6, name: "Ngô Thị F", email: "f@mocphim.vn", role: "editor", status: "active", comments: 21, joinedAt: "18/04/2025" },
-];
-
-const roleMap: Record<string, { text: string; color: string }> = {
-  admin: { text: "Admin", color: "red" },
-  editor: { text: "Editor", color: "blue" },
-  member: { text: "Thành viên", color: "default" },
-};
+function getRoleTag(roles: string[]) {
+  if (roles.includes("ROLE_ADMIN")) return <Tag color="red">Admin</Tag>;
+  if (roles.includes("ROLE_EDITOR")) return <Tag color="blue">Editor</Tag>;
+  return <Tag>Thành viên</Tag>;
+}
 
 export default function NguoiDungPage() {
   const actionRef = useRef<ActionType | undefined>(undefined);
   const [createOpen, setCreateOpen] = useState(false);
   const { message } = App.useApp();
 
-  const columns: ProColumns<User>[] = [
+  const columns: ProColumns<AdminUser>[] = [
     {
       title: "Người dùng",
       dataIndex: "name",
       render: (_, record) => (
         <Space>
-          <Avatar style={{ backgroundColor: "#1677ff" }}>
-            {record.name.charAt(0)}
+          <Avatar src={record.avatar} style={{ backgroundColor: "#1677ff" }}>
+            {record.name?.charAt(0)}
           </Avatar>
           <div>
             <div style={{ fontWeight: 500 }}>{record.name}</div>
@@ -61,41 +42,42 @@ export default function NguoiDungPage() {
     },
     {
       title: "Vai trò",
-      dataIndex: "role",
-      valueType: "select",
-      valueEnum: {
-        admin: { text: "Admin" },
-        editor: { text: "Editor" },
-        member: { text: "Thành viên" },
-      },
-      render: (_, record) => (
-        <Tag color={roleMap[record.role].color}>{roleMap[record.role].text}</Tag>
-      ),
+      dataIndex: "roles",
+      search: false,
+      render: (_, record) => getRoleTag(record.roles ?? []),
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
+      dataIndex: "enabled",
       valueType: "select",
-      valueEnum: {
-        active: { text: "Hoạt động", status: "Success" },
-        banned: { text: "Đã khoá", status: "Error" },
-      },
+      search: false,
       render: (_, record) => (
-        <Tag color={record.status === "active" ? "success" : "error"}>
-          {record.status === "active" ? "Hoạt động" : "Đã khoá"}
+        <Tag color={record.enabled ? "success" : "error"}>
+          {record.enabled ? "Hoạt động" : "Đã khoá"}
         </Tag>
       ),
     },
     {
-      title: "Bình luận",
-      dataIndex: "comments",
+      title: "Xác thực",
+      dataIndex: "isVerified",
       search: false,
-      sorter: (a, b) => a.comments - b.comments,
+      render: (_, record) => (
+        <Tag color={record.isVerified ? "blue" : "default"}>
+          {record.isVerified ? "Đã xác thực" : "Chưa xác thực"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Provider",
+      dataIndex: "provider",
+      search: false,
     },
     {
       title: "Ngày tham gia",
-      dataIndex: "joinedAt",
+      dataIndex: "createdAt",
       search: false,
+      render: (_, record) =>
+        record.createdAt ? new Date(record.createdAt).toLocaleDateString("vi-VN") : "—",
     },
     {
       title: "Thao tác",
@@ -110,7 +92,7 @@ export default function NguoiDungPage() {
             onClick={() => message.info(`Sửa: ${record.name}`)}
           />
           <Popconfirm
-            title={record.status === "active" ? "Khoá tài khoản này?" : "Mở khoá tài khoản?"}
+            title={record.enabled ? "Khoá tài khoản này?" : "Mở khoá tài khoản?"}
             okText="Xác nhận"
             cancelText="Huỷ"
             onConfirm={() => message.success("Đã cập nhật trạng thái")}
@@ -118,7 +100,7 @@ export default function NguoiDungPage() {
             <Button
               type="link"
               size="small"
-              danger={record.status === "active"}
+              danger={record.enabled}
               icon={<StopOutlined />}
             />
           </Popconfirm>
@@ -137,21 +119,24 @@ export default function NguoiDungPage() {
 
   return (
     <PageContainer title="Danh sách user" subTitle="Quản lý danh sách tài khoản người dùng hệ thống">
-      <ProTable<User>
+      <ProTable<AdminUser>
         actionRef={actionRef}
         rowKey="id"
         columns={columns}
         request={async (params) => {
-          let data = [...mockUsers];
-          if (params.name)
-            data = data.filter(
-              (u) =>
-                u.name.toLowerCase().includes(params.name.toLowerCase()) ||
-                u.email.toLowerCase().includes(params.name.toLowerCase())
+          try {
+            const result = await apiGetAdminUsers({
+              page: params.current,
+              pageSize: params.pageSize,
+              name: params.name as string | undefined,
+            });
+            return { data: result.data, success: true, total: result.total };
+          } catch (err) {
+            message.error(
+              err instanceof Error ? err.message : "Không thể tải danh sách người dùng",
             );
-          if (params.role) data = data.filter((u) => u.role === params.role);
-          if (params.status) data = data.filter((u) => u.status === params.status);
-          return { data, success: true, total: data.length };
+            return { data: [], success: false, total: 0 };
+          }
         }}
         rowSelection={{}}
         toolBarRender={() => [
@@ -165,6 +150,7 @@ export default function NguoiDungPage() {
           </Button>,
         ]}
         pagination={{ pageSize: 10, showSizeChanger: true }}
+        search={{ labelWidth: "auto" }}
       />
 
       <ModalForm
@@ -193,11 +179,11 @@ export default function NguoiDungPage() {
           name="role"
           label="Vai trò"
           options={[
-            { label: "Admin", value: "admin" },
-            { label: "Editor", value: "editor" },
-            { label: "Thành viên", value: "member" },
+            { label: "Admin", value: "ROLE_ADMIN" },
+            { label: "Editor", value: "ROLE_EDITOR" },
+            { label: "Thành viên", value: "ROLE_USER" },
           ]}
-          initialValue="member"
+          initialValue="ROLE_USER"
         />
       </ModalForm>
     </PageContainer>

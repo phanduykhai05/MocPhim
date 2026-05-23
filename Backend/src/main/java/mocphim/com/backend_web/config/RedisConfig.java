@@ -1,5 +1,7 @@
 package mocphim.com.backend_web.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -12,11 +14,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.util.StringUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
@@ -70,16 +67,14 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisCacheManager redisCacheManager(JedisConnectionFactory factory) {
-        // ObjectMapper riêng cho Redis: bật activateDefaultTyping để lưu thông tin kiểu,
-        // tránh lỗi LinkedHashMap cannot be cast khi deserialize
-        ObjectMapper redisMapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                .registerModule(new JavaTimeModule())
+    public RedisCacheManager redisCacheManager(JedisConnectionFactory factory,
+                                               ObjectMapper objectMapper) {
+        ObjectMapper redisMapper = objectMapper.copy()
                 .activateDefaultTyping(
                         BasicPolymorphicTypeValidator.builder()
-                                .allowIfBaseType(Object.class)
+                                .allowIfSubType("mocphim.com.backend_web")
+                                .allowIfSubType("java.util")
+                                .allowIfSubType("java.lang")
                                 .build(),
                         ObjectMapper.DefaultTyping.NON_FINAL
                 );

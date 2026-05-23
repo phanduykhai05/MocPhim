@@ -20,9 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +36,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RestTemplate restTemplate;
+    private final EmailService emailService;
 
     @Value("${app.jwt.access-expiration}")
     private long accessExpiration;
@@ -41,18 +44,70 @@ public class AuthService {
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
 
-    public TokenResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email đã được sử dụng");
-        }
+    public void register(RegisterRequest request) {
+        userRepository.findByEmail(request.getEmail()).ifPresent(existing -> {
+            if (existing.isVerified()) {
+                throw new IllegalArgumentException("Email đã được sử dụng");
+            }
+            // Chưa verify → cấp lại token và gửi lại mail
+            existing.setPassword(passwordEncoder.encode(request.getPassword()));
+            existing.setName(request.getName());
+            existing.setVerifyToken(UUID.randomUUID().toString());
+            existing.setVerifyExpires(LocalDateTime.now().plusHours(24));
+            userRepository.save(existing);
+            emailService.sendVerificationEmail(existing.getEmail(), existing.getVerifyToken());
+            throw new AlreadySentException();
+        });
+
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
         user.setProvider("local");
         user.setRoles(new HashSet<>(Set.of(Role.ROLE_USER)));
+        user.setVerified(false);
+        user.setVerifyToken(UUID.randomUUID().toString());
+        user.setVerifyExpires(LocalDateTime.now().plusHours(24));
         userRepository.save(user);
-        return buildTokenResponse(user);
+        emailService.sendVerificationEmail(user.getEmail(), user.getVerifyToken());
+    }
+
+    // Sentinel exception dùng để thoát sớm khỏi ifPresent mà không cần flag biến
+    private static class AlreadySentException extends RuntimeException {
+        AlreadySentException() { super(null, null, true, false); }
+    }
+
+    public void verifyEmail(String token) {
+        User user = userRepository.findByVerifyToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token xác thực không hợp lệ"));
+        if (user.getVerifyExpires() == null || user.getVerifyExpires().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Token xác thực đã hết hạn");
+        }
+        user.setVerified(true);
+        user.setVerifyToken(null);
+        user.setVerifyExpires(null);
+        userRepository.save(user);
+    }
+
+    public void forgotPassword(String email) {
+        userRepository.findByEmailAndIsVerifiedTrue(email).ifPresent(user -> {
+            user.setResetToken(UUID.randomUUID().toString());
+            user.setResetExpires(LocalDateTime.now().plusMinutes(15));
+            userRepository.save(user);
+            emailService.sendResetPasswordEmail(user.getEmail(), user.getResetToken());
+        });
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepository.findByResetToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token không hợp lệ"));
+        if (user.getResetExpires() == null || user.getResetExpires().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Token đặt lại mật khẩu đã hết hạn");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetToken(null);
+        user.setResetExpires(null);
+        userRepository.save(user);
     }
 
     public TokenResponse login(LoginRequest request) {
@@ -112,6 +167,7 @@ public class AuthService {
             newUser.setAvatar(avatar);
             newUser.setProvider("google");
             newUser.setProviderId(providerId);
+            newUser.setVerified(true);
             newUser.setRoles(new HashSet<>(Set.of(Role.ROLE_USER)));
             return userRepository.save(newUser);
         });
@@ -135,7 +191,7 @@ public class AuthService {
                 .build();
     }
 
-    private UserResponse toUserResponse(User user) {
+    public UserResponse toUserResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -143,6 +199,10 @@ public class AuthService {
                 .avatar(user.getAvatar())
                 .provider(user.getProvider())
                 .roles(user.getRoles().stream().map(Role::name).collect(Collectors.toSet()))
+                .isVerified(user.isVerified())
+                .enabled(user.isEnabled())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 }

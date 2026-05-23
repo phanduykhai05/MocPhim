@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import ScrollToTop from "@/components/ScrollToTop";
 import ThemeInitializer from "@/components/ThemeInitializer";
 import SecurityGuard from "@/components/SecurityGuard";
+import AntdProvider from "@/components/AntdProvider";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -39,9 +40,11 @@ export default function RootLayout({
                 <ThemeInitializer />
                 <SecurityGuard />
                 <ScrollToTop />
-                <AuthProvider>
-                    {children}
-                </AuthProvider>
+                <AntdProvider>
+                    <AuthProvider>
+                        {children}
+                    </AuthProvider>
+                </AntdProvider>
             </body>
         </html>
     );

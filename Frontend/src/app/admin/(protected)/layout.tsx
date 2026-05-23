@@ -160,7 +160,7 @@ export default function AdminLayout({
   }
 
   return (
-    <ConfigProvider locale={viVN}>
+    <ConfigProvider locale={viVN} warning={{ strict: false }}>
       <App>
         <div style={{ height: "100vh" }}>
           <ProLayout
