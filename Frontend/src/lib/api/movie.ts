@@ -125,19 +125,26 @@ export interface MovieListItem {
 // ─── API Functions ─────────────────────────────────────────────────────────────
 
 export async function fetchMovieDetail(slug: string): Promise<MovieDetailResult | null> {
-  try {
-    const res = await fetch(`${API}/movies/${slug}`, { next: { revalidate: 600 } });
-    if (!res.ok) return null;
-    const json = await res.json();
-    const inner = json?.data?.data;
-    if (!inner?.item) return null;
-    return {
-      item: inner.item,
-      cdnImage: inner.APP_DOMAIN_CDN_IMAGE || CDN,
-    };
-  } catch {
-    return null;
+  const url = `${API}/movies/${slug}`;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(url, { next: { revalidate: 600 } });
+      // 404 = phim không tồn tại, không retry
+      if (res.status === 404) return null;
+      if (!res.ok) {
+        if (attempt < 2) continue;
+        return null;
+      }
+      const json = await res.json();
+      const inner = json?.data?.data;
+      if (!inner?.item) return null;
+      return { item: inner.item, cdnImage: inner.APP_DOMAIN_CDN_IMAGE || CDN };
+    } catch {
+      if (attempt < 2) continue;
+      return null;
+    }
   }
+  return null;
 }
 
 export async function fetchMoviePeoples(slug: string): Promise<PeoplesData | null> {

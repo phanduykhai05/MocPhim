@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { MovieListItem, getMovieThumb } from '@/lib/api/movie';
 
 interface TopWeeklyMoviesProps {
@@ -31,13 +32,13 @@ export const TopWeeklyMovies = ({ movies, cdnImage }: TopWeeklyMoviesProps) => {
               </div>
 
               <div className="flex-grow flex items-center gap-4 bg-white/5 rounded-lg overflow-hidden pr-3">
-                <a href={`/phim/${movie.slug}`} className="w-[80px] shrink-0 aspect-[2/3] relative bg-gray-800 block">
+                <Link href={`/phim/${movie.slug}`} className="w-[80px] shrink-0 aspect-[2/3] relative bg-gray-800 block">
                   <img src={thumb} alt={movie.name} className="absolute inset-0 w-full h-full object-cover select-none" />
-                </a>
+                </Link>
 
                 <div className="py-2 flex-grow">
                   <h4 className="text-white text-[1em] font-normal mb-1 line-clamp-2">
-                    <a href={`/phim/${movie.slug}`} className="hover:text-gray-300 transition">{movie.name}</a>
+                    <Link href={`/phim/${movie.slug}`} className="hover:text-gray-300 transition">{movie.name}</Link>
                   </h4>
                   <div className="text-[0.9em] text-gray-400 opacity-70 mb-2 line-clamp-1">
                     {movie.origin_name}

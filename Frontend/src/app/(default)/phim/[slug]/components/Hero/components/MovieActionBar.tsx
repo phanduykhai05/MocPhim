@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import Link from 'next/link';
 import { Play, Heart, Share, MessageCircle } from 'lucide-react';
 import { MovieItem } from '@/lib/api/movie';
 
@@ -37,14 +38,14 @@ export const MovieActionBar = ({ movie }: MovieActionBarProps) => {
           <div className="absolute left-0 right-0 bottom-0 flex items-center justify-center text-center text-[11px] leading-6 bg-[#f1f1f1] text-black">Phim sắp ra mắt</div>
         </a>
       ) : hasEpisodes ? (
-        <a
+        <Link
           href={`/xem-phim/${movie.slug}`}
           className="relative w-full lg:w-auto flex-shrink-0 flex items-center justify-center gap-3 text-[16px] font-semibold py-3 px-8 border-0 rounded-xl overflow-hidden text-white transition-all duration-300 hover:opacity-95 shadow-[0_8px_26px_rgba(0,0,0,0.28)] cursor-pointer"
           style={{ background: 'linear-gradient(39deg, #e11d48 0%, #f472b6 100%)' }}
         >
           <Play className="w-6 h-6" fill="white" />
           <span>Xem Trên Màn Hình Lớn</span>
-        </a>
+        </Link>
       ) : (
         <a
           href={movie.trailer_url || '#'}

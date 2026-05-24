@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { MovieItem, getMovieThumb } from '@/lib/api/movie';
 
 interface MovieDetailInfoProps {
@@ -78,9 +79,9 @@ export const MovieDetailInfo = ({ movie, cdnImage }: MovieDetailInfoProps) => {
         {movie.category && movie.category.length > 0 && (
           <div className="flex items-center flex-wrap gap-2.5 mb-3">
             {movie.category.map((cat) => (
-              <a key={cat.id} href={`/the-loai/${cat.slug}`} className="bg-white/10 hover:bg-white/20 transition text-white h-6 px-2 rounded text-xs flex items-center">
+              <Link key={cat.id} href={`/the-loai/${cat.slug}`} className="bg-white/10 hover:bg-white/20 transition text-white h-6 px-2 rounded text-xs flex items-center">
                 {cat.name}
-              </a>
+              </Link>
             ))}
           </div>
         )}
@@ -121,7 +122,7 @@ export const MovieDetailInfo = ({ movie, cdnImage }: MovieDetailInfoProps) => {
               <span className="text-white font-medium whitespace-nowrap">Quốc gia:</span>
               <div className="flex flex-wrap gap-1">
                 {movie.country.map((c) => (
-                  <a key={c.id} href={`/quoc-gia/${c.slug}`} className="text-gray-300 hover:text-white transition">{c.name}</a>
+                  <Link key={c.id} href={`/quoc-gia/${c.slug}`} className="text-gray-300 hover:text-white transition">{c.name}</Link>
                 ))}
               </div>
             </div>

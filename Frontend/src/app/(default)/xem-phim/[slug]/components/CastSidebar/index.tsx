@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { WatchMovie } from '@/app/(default)/xem-phim/[slug]/types';
 import { getMovieThumb, MovieListItem } from '@/lib/api/movie';
 
@@ -24,7 +25,7 @@ const CastSidebar = ({ movie, suggestions, cdnImage }: CastSidebarProps) => {
         <h4 className="text-lg font-semibold text-white">Đề xuất cho bạn</h4>
         <div className="mt-2 flex flex-col gap-1">
           {suggestions.slice(0, 8).map((item) => (
-            <a
+            <Link
               key={item._id}
               href={`/phim/${item.slug}`}
               className="flex gap-4 rounded-xl border border-white/5 bg-white/5 p-2 transition hover:bg-white/15"
@@ -47,7 +48,7 @@ const CastSidebar = ({ movie, suggestions, cdnImage }: CastSidebarProps) => {
                   <span>{item.episode_current}</span>
                 </div>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
