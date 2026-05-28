@@ -1,3 +1,4 @@
+"use client";
 import Link from 'next/link';
 import type { WatchMovie } from '@/app/(default)/xem-phim/[slug]/types';
 import { getMovieThumb, MovieListItem } from '@/lib/api/movie';
