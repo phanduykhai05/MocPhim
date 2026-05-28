@@ -14,12 +14,14 @@ interface MoviePosterProps {
   fetchPriority?: "high" | "auto" | "low";
   referrerPolicy?: React.HTMLAttributeReferrerPolicy;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export default function MoviePoster({
   src,
   alt,
   className = "absolute inset-0 w-full h-full object-cover",
+  style,
   ...props
 }: MoviePosterProps) {
   const [loaded, setLoaded] = useState(false);
@@ -52,6 +54,7 @@ export default function MoviePoster({
         alt={alt}
         fill
         className={`${className} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+        style={style}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
         {...props}

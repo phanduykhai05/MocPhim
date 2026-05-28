@@ -56,6 +56,7 @@ export const TopSeriesCard = ({ index, movie, priority = false }: TopSeriesCardP
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
+          style={{ clipPath: cardClipPath }}
         />
 
         {/* Pin Badge (PĐ, LT, TM) */}
