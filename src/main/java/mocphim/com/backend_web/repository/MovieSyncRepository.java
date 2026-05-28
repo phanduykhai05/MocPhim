@@ -5,8 +5,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface MovieSyncRepository extends JpaRepository<MovieSync, Long> {
     boolean existsBySlug(String slug);
-    Page<MovieSync> findByOriginNameIsNull(Pageable pageable);
-    long countByOriginNameIsNull();
+    Optional<MovieSync> findBySlug(String slug);
+    Page<MovieSync> findByOphimIdIsNull(Pageable pageable);
+    long countByOphimIdIsNull();
 }

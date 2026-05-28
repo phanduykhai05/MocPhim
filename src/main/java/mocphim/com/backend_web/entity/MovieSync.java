@@ -22,6 +22,9 @@ public class MovieSync {
     @Column(unique = true, nullable = false)
     private String slug;
 
+    @Column(name = "ophim_id")
+    private String ophimId;
+
     private String title;
 
     @Column(name = "origin_name")

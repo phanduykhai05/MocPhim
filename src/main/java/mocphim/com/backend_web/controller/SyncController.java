@@ -57,7 +57,7 @@ public class SyncController {
     }
 
     /**
-     * Re-sync các record cũ chưa có đủ field (origin_name = null).
+     * Re-sync các record chưa có ophim_id (= null) — cần thiết để bookmark hoạt động.
      * Gọi nhiều lần cho đến khi remaining = 0.
      * @param limit số lượng slug xử lý mỗi lần gọi (mặc định 100, tối đa 500)
      */

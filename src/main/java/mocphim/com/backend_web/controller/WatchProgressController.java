@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import mocphim.com.backend_web.dto.request.WatchProgressRequestDto;
 import mocphim.com.backend_web.dto.response.ApiResponse;
 import mocphim.com.backend_web.dto.response.WatchProgressResponseDto;
+import mocphim.com.backend_web.security.CustomUserDetails;
 import mocphim.com.backend_web.service.WatchProgressService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,33 +20,42 @@ public class WatchProgressController {
 
     private final WatchProgressService watchProgressService;
 
-    // Lấy tiến trình 1 tập cụ thể — gọi khi user mở tập để player seek đúng vị trí
     @GetMapping("/{userId}/{movieId}/{episodeNumber}")
     public ResponseEntity<ApiResponse<WatchProgressResponseDto>> getProgress(
             @PathVariable Long userId,
             @PathVariable String movieId,
-            @PathVariable int episodeNumber) {
-        WatchProgressResponseDto response = watchProgressService.getProgress(userId, movieId, episodeNumber);
-        return ResponseEntity.ok(ApiResponse.success(response));
+            @PathVariable int episodeNumber,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        validateOwner(userId, principal);
+        return ResponseEntity.ok(ApiResponse.success(
+                watchProgressService.getProgress(userId, movieId, episodeNumber)));
     }
 
-    // Lấy tiến trình tất cả tập đã xem của 1 phim — dùng cho trang chi tiết phim
     @GetMapping("/{userId}/{movieId}")
     public ResponseEntity<ApiResponse<List<WatchProgressResponseDto>>> getAllProgress(
             @PathVariable Long userId,
-            @PathVariable String movieId) {
-        List<WatchProgressResponseDto> response = watchProgressService.getAllProgress(userId, movieId);
-        return ResponseEntity.ok(ApiResponse.success(response));
+            @PathVariable String movieId,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        validateOwner(userId, principal);
+        return ResponseEntity.ok(ApiResponse.success(
+                watchProgressService.getAllProgress(userId, movieId)));
     }
 
-    // Upsert tiến trình — gọi mỗi ~30s khi đang xem, khi pause, chuyển tập, đóng trang
     @PatchMapping("/{userId}/{movieId}/{episodeNumber}")
     public ResponseEntity<ApiResponse<WatchProgressResponseDto>> updateProgress(
             @PathVariable Long userId,
             @PathVariable String movieId,
             @PathVariable int episodeNumber,
-            @RequestBody WatchProgressRequestDto request) {
-        WatchProgressResponseDto response = watchProgressService.updateProgress(userId, movieId, episodeNumber, request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+            @RequestBody WatchProgressRequestDto request,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        validateOwner(userId, principal);
+        return ResponseEntity.ok(ApiResponse.success(
+                watchProgressService.updateProgress(userId, movieId, episodeNumber, request)));
+    }
+
+    private void validateOwner(Long userId, CustomUserDetails principal) {
+        if (!principal.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Không có quyền truy cập dữ liệu của người dùng khác");
+        }
     }
 }

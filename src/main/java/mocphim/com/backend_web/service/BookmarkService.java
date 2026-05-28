@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import mocphim.com.backend_web.dto.request.BookmarkRequestDto;
 import mocphim.com.backend_web.dto.response.BookmarkResponseDto;
 import mocphim.com.backend_web.entity.Bookmark;
+import mocphim.com.backend_web.entity.MovieSync;
 import mocphim.com.backend_web.entity.WatchProgress;
 import mocphim.com.backend_web.repository.BookmarkRepository;
+import mocphim.com.backend_web.repository.MovieSyncRepository;
 import mocphim.com.backend_web.repository.WatchProgressRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ public class BookmarkService {
 
     private final BookmarkRepository bookmarkRepository;
     private final WatchProgressRepository watchProgressRepository;
+    private final MovieSyncRepository movieSyncRepository;
 
     public List<BookmarkResponseDto> getBookmarksByUserId(Long userId) {
         List<Bookmark> bookmarks = bookmarkRepository.findByUserIdOrderByBookmarkDateDesc(userId);
@@ -47,17 +50,25 @@ public class BookmarkService {
         return bookmarkRepository.existsByUserIdAndMovieId(userId, movieId);
     }
 
-    public BookmarkResponseDto addBookmark(BookmarkRequestDto request) {
-        if (bookmarkRepository.existsByUserIdAndMovieId(request.getUserId(), request.getMovieId())) {
+    public BookmarkResponseDto addBookmark(Long userId, BookmarkRequestDto request) {
+        MovieSync movie = movieSyncRepository.findBySlug(request.getSlug())
+                .orElseThrow(() -> new IllegalArgumentException("Phim chưa được đồng bộ, vui lòng thử lại sau"));
+
+        if (movie.getOphimId() == null || "NOT_FOUND".equals(movie.getOphimId())) {
+            throw new IllegalArgumentException("Phim chưa có ID, vui lòng thử lại sau");
+        }
+
+        if (bookmarkRepository.existsByUserIdAndMovieId(userId, movie.getOphimId())) {
             throw new IllegalArgumentException("Already bookmarked");
         }
+
         Bookmark bookmark = new Bookmark();
-        bookmark.setUserId(request.getUserId());
-        bookmark.setMovieId(request.getMovieId());
-        bookmark.setSlug(request.getSlug());
-        bookmark.setMovieTitle(request.getMovieTitle());
-        bookmark.setPosterUrl(request.getPosterUrl());
-        bookmark.setMediaType(request.getMediaType());
+        bookmark.setUserId(userId);
+        bookmark.setMovieId(movie.getOphimId());
+        bookmark.setSlug(movie.getSlug());
+        bookmark.setMovieTitle(movie.getTitle());
+        bookmark.setPosterUrl(movie.getThumbUrl());
+        bookmark.setMediaType(movie.getType());
         bookmark.setBookmarkDate(LocalDateTime.now());
         return toResponse(bookmarkRepository.save(bookmark), null);
     }

@@ -657,60 +657,46 @@ const isAdmin = user.roles.includes('ROLE_ADMIN')
 
 ## Endpoints — Bookmark
 
-> Prefix: `/api/bookmarks`
+> Prefix: `/api/bookmarks`  
+> Tất cả endpoint yêu cầu `Authorization: Bearer <accessToken>`. `userId` được lấy tự động từ token — không cần gửi trong request.
 
 ### Flow tổng quan
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                     BOOKMARK + WATCH PROGRESS FLOW                  │
-│                                                                     │
-│  1. User bấm bookmark phim                                          │
-│     POST /api/bookmarks                                             │
-│                                                                     │
-│  2. User mở tập để xem → FE gọi lấy vị trí đã xem                  │
-│     GET /api/v1/progress/{userId}/{movieId}/{episodeNumber}         │
-│     → player seek đến positionSeconds                               │
-│                                                                     │
-│  3. Trong khi xem → gọi mỗi ~30s hoặc khi pause/chuyển tập         │
-│     PATCH /api/v1/progress/{userId}/{movieId}/{episodeNumber}       │
-│     → { "slug": "...", "positionSeconds": 1234 }                    │
-│                                                                     │
-│  4. Tập xem xong                                                    │
-│     PATCH /api/v1/progress/{userId}/{movieId}/{episodeNumber}       │
-│     → { "isCompleted": true, "positionSeconds": <tổng giây> }      │
-│                                                                     │
-│  5. User vào trang bookmark → danh sách kèm tiến trình gần nhất    │
-│     GET /api/bookmarks/{userId}                                     │
-│     → Hiển thị "Đang xem - Tập 4, 20:34" hoặc badge "Đã xem"       │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        BOOKMARK FLOW                        │
+│                                                             │
+│  1. User bấm bookmark phim                                  │
+│     POST /api/bookmarks                                     │
+│     Body: { "slug": "ten-phim" }                            │
+│                                                             │
+│  2. User vào trang bookmark → danh sách kèm tiến trình      │
+│     GET /api/bookmarks/{userId}                             │
+│     → latestEpisode, positionSeconds, lastWatchedAt         │
+│       (null nếu chưa xem lần nào)                           │
+│                                                             │
+│  3. Kiểm tra trạng thái nút bookmark                        │
+│     GET /api/bookmarks/isBookmarked/{userId}/{movieId}      │
+│                                                             │
+│  4. Xóa bookmark                                            │
+│     DELETE /api/bookmarks/{userId}/{movieId}                │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ### POST `/api/bookmarks` — Thêm bookmark
 
+**Header:** `Authorization: Bearer <accessToken>`
+
 **Request:**
 ```json
 {
-  "userId": 1,
-  "movieId": "69dfcfeb41d6bb2c315360fb",
-  "slug": "nhip-dap-trai-tim-phan-5",
-  "movieTitle": "Nhịp Đập Trái Tim (Phần 5)",
-  "posterUrl": "nhip-dap-trai-tim-phan-5-poster.jpg",
-  "mediaType": "series"
+  "slug": "nhip-dap-trai-tim-phan-5"
 }
 ```
 
-**Mapping từ OPhim API → request:**
-
-| Field request | Lấy từ OPhim `item` |
-|---|---|
-| `movieId` | `item._id` |
-| `slug` | `item.slug` |
-| `movieTitle` | `item.name` |
-| `posterUrl` | `item.poster_url` |
-| `mediaType` | `item.type` (`"series"` hoặc `"single"`) |
+> Backend tự lấy `userId` từ token và tra cứu `movieId`, `movieTitle`, `posterUrl`, `mediaType` từ DB (đã sync từ OPhim). FE chỉ cần gửi `slug` của phim.
 
 **Response `200`:**
 ```json
@@ -718,7 +704,7 @@ const isAdmin = user.roles.includes('ROLE_ADMIN')
   "status": true,
   "data": {
     "id": 1,
-    "userId": 1,
+    "userId": 3,
     "movieId": "69dfcfeb41d6bb2c315360fb",
     "slug": "nhip-dap-trai-tim-phan-5",
     "movieTitle": "Nhịp Đập Trái Tim (Phần 5)",
@@ -733,22 +719,27 @@ const isAdmin = user.roles.includes('ROLE_ADMIN')
 }
 ```
 
-> `latestEpisode`, `positionSeconds`, `episodeCompleted`, `lastWatchedAt` — `null` khi chưa xem lần nào. Sau khi có tiến trình (`PATCH /api/v1/progress/...`), `GET /api/bookmarks/{userId}` sẽ trả về giá trị của tập xem gần nhất nhất.
+> `latestEpisode`, `positionSeconds`, `episodeCompleted`, `lastWatchedAt` — `null` khi user chưa xem tập nào của phim đó.
 
 **Response lỗi `400`:**
 ```json
 { "status": false, "message": "Already bookmarked" }
+{ "status": false, "message": "Phim chưa được đồng bộ, vui lòng thử lại sau" }
 ```
 
 ---
 
 ### GET `/api/bookmarks/{userId}` — Danh sách bookmark
 
+**Header:** `Authorization: Bearer <accessToken>`
+
 ```
-GET /api/bookmarks/1
+GET /api/bookmarks/3
 ```
 
-**Response `200`:** Mảng bookmark sắp xếp theo `bookmarkDate` mới nhất, mỗi item kèm tiến trình tập xem gần nhất (nếu có):
+> `userId` trong path phải khớp với token. Nếu không khớp → `403 Forbidden`.
+
+**Response `200`:** Mảng bookmark sắp xếp theo `bookmarkDate` mới nhất, kèm tiến trình tập xem gần nhất (nếu có):
 
 ```json
 {
@@ -756,7 +747,7 @@ GET /api/bookmarks/1
   "data": [
     {
       "id": 1,
-      "userId": 1,
+      "userId": 3,
       "movieId": "69dfcfeb41d6bb2c315360fb",
       "slug": "nhip-dap-trai-tim-phan-5",
       "movieTitle": "Nhịp Đập Trái Tim (Phần 5)",
@@ -776,9 +767,13 @@ GET /api/bookmarks/1
 
 ### GET `/api/bookmarks/isBookmarked/{userId}/{movieId}` — Kiểm tra đã bookmark chưa
 
+**Header:** `Authorization: Bearer <accessToken>`
+
 ```
-GET /api/bookmarks/isBookmarked/1/69dfcfeb41d6bb2c315360fb
+GET /api/bookmarks/isBookmarked/3/69dfcfeb41d6bb2c315360fb
 ```
+
+> `userId` trong path phải khớp với token. Nếu không khớp → `403 Forbidden`.
 
 **Response `200`:**
 ```json
@@ -791,108 +786,18 @@ Dùng để FE render nút bookmark (đã bookmark / chưa bookmark).
 
 ### DELETE `/api/bookmarks/{userId}/{movieId}` — Xóa bookmark
 
+**Header:** `Authorization: Bearer <accessToken>`
+
 ```
-DELETE /api/bookmarks/1/69dfcfeb41d6bb2c315360fb
+DELETE /api/bookmarks/3/69dfcfeb41d6bb2c315360fb
 ```
+
+> `userId` trong path phải khớp với token. Nếu không khớp → `403 Forbidden`.
 
 **Response `200`:**
 ```json
 { "status": true, "data": "Xóa bookmark thành công" }
 ```
-
----
-
-## Endpoints — Watch Progress
-
-> Prefix: `/api/v1/progress`. Theo dõi tiến trình xem theo từng tập (per-episode, per-second).
-
-### PATCH `/api/v1/progress/{userId}/{movieId}/{episodeNumber}` — Upsert tiến trình
-
-Gọi mỗi ~30s khi đang xem, khi pause, khi chuyển tập, khi đóng trang.
-
-```
-PATCH /api/v1/progress/1/69dfcfeb41d6bb2c315360fb/4
-```
-
-**Request** (`slug` bắt buộc lần đầu upsert; các field còn lại optional):
-```json
-{
-  "slug": "nhip-dap-trai-tim-phan-5",
-  "positionSeconds": 1234,
-  "isCompleted": false
-}
-```
-
-Khi tập xem xong:
-```json
-{
-  "isCompleted": true,
-  "positionSeconds": 2700
-}
-```
-
-**Response `200`:**
-```json
-{
-  "status": true,
-  "data": {
-    "userId": 1,
-    "movieId": "69dfcfeb41d6bb2c315360fb",
-    "slug": "nhip-dap-trai-tim-phan-5",
-    "episodeNumber": 4,
-    "positionSeconds": 1234,
-    "isCompleted": false,
-    "lastWatchedAt": "2026-05-27T20:30:00"
-  }
-}
-```
-
-**FE trigger khi nào:**
-```javascript
-// Polling mỗi 30s khi đang xem
-setInterval(() => {
-  PATCH /api/v1/progress/{userId}/{movieId}/{ep} { positionSeconds: player.currentTime }
-}, 30000)
-
-// Khi pause
-player.on('pause', () => {
-  PATCH /api/v1/progress/{userId}/{movieId}/{ep} { positionSeconds: player.currentTime }
-})
-
-// Khi tập kết thúc
-player.on('ended', () => {
-  PATCH /api/v1/progress/{userId}/{movieId}/{ep} { isCompleted: true, positionSeconds: player.duration }
-})
-
-// Khi đóng trang
-window.addEventListener('beforeunload', () => {
-  navigator.sendBeacon(`/api/v1/progress/${userId}/${movieId}/${ep}`, JSON.stringify({ positionSeconds: player.currentTime }))
-})
-```
-
----
-
-### GET `/api/v1/progress/{userId}/{movieId}/{episodeNumber}` — Tiến trình 1 tập
-
-Gọi khi user mở tập để player seek đúng vị trí đã xem.
-
-```
-GET /api/v1/progress/1/69dfcfeb41d6bb2c315360fb/4
-```
-
-**Response `200`:** Cùng cấu trúc PATCH. Nếu chưa xem tập này, trả về `positionSeconds: 0`, `isCompleted: false`.
-
----
-
-### GET `/api/v1/progress/{userId}/{movieId}` — Tiến trình tất cả tập
-
-Dùng cho trang chi tiết phim — hiển thị tập nào đã xem / đang xem.
-
-```
-GET /api/v1/progress/1/69dfcfeb41d6bb2c315360fb
-```
-
-**Response `200`:** Mảng `WatchProgressResponseDto` cho tất cả tập đã có tiến trình.
 
 ---
 
