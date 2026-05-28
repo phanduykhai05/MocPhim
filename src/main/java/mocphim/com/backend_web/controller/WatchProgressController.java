@@ -41,6 +41,16 @@ public class WatchProgressController {
                 watchProgressService.getAllProgress(userId, movieId)));
     }
 
+    @GetMapping("/{userId}/resume/{slug}")
+    public ResponseEntity<ApiResponse<WatchProgressResponseDto>> getResumePoint(
+            @PathVariable Long userId,
+            @PathVariable String slug,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        validateOwner(userId, principal);
+        return ResponseEntity.ok(ApiResponse.success(
+                watchProgressService.getResumePoint(userId, slug)));
+    }
+
     @PatchMapping("/{userId}/{movieId}/{episodeNumber}")
     public ResponseEntity<ApiResponse<WatchProgressResponseDto>> updateProgress(
             @PathVariable Long userId,

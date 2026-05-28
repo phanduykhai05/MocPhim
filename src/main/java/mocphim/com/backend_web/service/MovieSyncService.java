@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,6 +46,59 @@ public class MovieSyncService {
         return movieSyncRepository.findAll(
             PageRequest.of(0, 500, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent();
+    }
+
+    @Async
+    public void resyncAllAsync() {
+        log.info("[RESYNC] Bắt đầu resync toàn bộ phim thiếu ophimId...");
+        int totalUpdated = 0;
+        int totalNotFound = 0;
+        int totalFailed = 0;
+        int batchSize = 100;
+
+        while (true) {
+            List<MovieSync> toResync = movieSyncRepository
+                .findByOphimIdIsNull(PageRequest.of(0, batchSize))
+                .getContent();
+            if (toResync.isEmpty()) break;
+
+            for (MovieSync entity : toResync) {
+                try {
+                    Object response = ophimService.get("/phim/" + entity.getSlug());
+                    Map<?, ?> movieData = extractMovieData(response);
+                    if (movieData != null) {
+                        applyMovieFields(entity, movieData);
+                        movieSyncRepository.save(entity);
+                        totalUpdated++;
+                    } else {
+                        entity.setOphimId("NOT_FOUND");
+                        movieSyncRepository.save(entity);
+                        totalFailed++;
+                    }
+                } catch (OPhimApiException e) {
+                    if (e.getStatusCode() == 404) {
+                        entity.setOphimId("NOT_FOUND");
+                        movieSyncRepository.save(entity);
+                        totalNotFound++;
+                    } else {
+                        log.warn("[RESYNC] Lỗi slug {}: {}", entity.getSlug(), e.getMessage());
+                        totalFailed++;
+                    }
+                } catch (Exception e) {
+                    log.warn("[RESYNC] Lỗi slug {}: {}", entity.getSlug(), e.getMessage());
+                    totalFailed++;
+                }
+            }
+
+            long remaining = movieSyncRepository.countByOphimIdIsNull();
+            log.info("[RESYNC] Batch xong — updated={}, notFound={}, failed={}, remaining={}",
+                totalUpdated, totalNotFound, totalFailed, remaining);
+            if (remaining == 0) break;
+        }
+
+        log.info("[RESYNC] Hoàn tất — tổng updated={}, notFound={}, failed={}",
+            totalUpdated, totalNotFound, totalFailed);
+        clearCache();
     }
 
     public Map<String, Long> resyncMissingFields(int limit) {
