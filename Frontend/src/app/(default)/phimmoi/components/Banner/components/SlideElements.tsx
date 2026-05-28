@@ -62,10 +62,14 @@ const SlideElements = ({ movie, priority = false }: { movie: Movie; priority?: b
           fetchPriority={priority ? 'high' : 'auto'}
           className="absolute inset-0 object-cover"
         />
+        {/* Overlay tối nhẹ toàn ảnh */}
         <div className="absolute inset-0 bg-[#191b24]/30"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#191b24]/78 via-[#191b24]/40 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#191b24]/88 via-transparent to-[#191b24]/12"></div>
-        <div className="absolute inset-y-0 left-0 w-[44%] bg-gradient-to-r from-[#191b24]/58 to-transparent"></div>
+        {/* Fade trái mạnh — khu vực text */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#191b24]/90 via-[#191b24]/50 to-transparent"></div>
+        {/* Fade phải — làm mờ cạnh bên phải */}
+        <div className="absolute inset-y-0 right-0 w-[35%] bg-gradient-to-l from-[#191b24]/80 to-transparent"></div>
+        {/* Fade trên/dưới */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#191b24]/90 via-transparent to-[#191b24]/20"></div>
       </div>
 
       <div className={`mx-auto h-full max-w-[1700px] relative z-10 px-4 md:px-10 xl:px-12 flex items-center ${styles.bannerContent}`}>

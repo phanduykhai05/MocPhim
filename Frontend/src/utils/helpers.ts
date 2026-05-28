@@ -12,9 +12,9 @@ export const formatDate = (date: Date): string => {
 /**
  * Debounce function
  */
-export const debounce = (func: Function, delay: number) => {
+export const debounce = <T extends (...args: unknown[]) => unknown>(func: T, delay: number) => {
     let timeoutId: NodeJS.Timeout;
-    return (...args: any[]) => {
+    return (...args: Parameters<T>) => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => func(...args), delay);
     };
@@ -23,9 +23,9 @@ export const debounce = (func: Function, delay: number) => {
 /**
  * Throttle function
  */
-export const throttle = (func: Function, limit: number) => {
+export const throttle = <T extends (...args: unknown[]) => unknown>(func: T, limit: number) => {
     let inThrottle: boolean = false;
-    return (...args: any[]) => {
+    return (...args: Parameters<T>) => {
         if (!inThrottle) {
             func(...args);
             inThrottle = true;

@@ -106,6 +106,33 @@ button {
   background: #94a3b8;
 }
 
+/* Disable default cross-fade so clip-path animation works both ways */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1a1d28;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3a3f52;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4e5468;
+}
+
+/* Custom breakpoints for large/ultra-wide screens */
+@theme {
+  --breakpoint-3xl: 1920px;
+  --breakpoint-4xl: 2560px;
+  --breakpoint-5xl: 3200px;
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);

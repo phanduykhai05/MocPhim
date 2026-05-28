@@ -210,7 +210,7 @@ function SyncManagementTab() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setTotalCount(typeof json?.data === "number" ? json.data : json?.data?.count ?? null);
-    } catch (e) {
+    } catch {
       message.error("Không thể lấy tổng số phim đã sync");
     } finally {
       setCountLoading(false);
@@ -310,7 +310,7 @@ function SyncManagementTab() {
             layout="vertical"
             onFinish={handleTrigger}
             submitter={{
-              render: (_, dom) => (
+              render: (_props, _dom) => (
                 <Space>
                   <Button
                     type="primary"

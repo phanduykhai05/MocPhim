@@ -48,16 +48,16 @@ const TopicGrid = () => {
   const remainingCount = topics.length - initialDisplayCount;
 
   return (
-    <section className="w-full max-w-[1900px] mx-auto px-4 md:px-[50px] py-0 relative z-10 overflow-hidden md:mt-[-80px] z-30 mt-[-50px]">
+    <section className="w-full max-w-[1900px] mx-auto px-4 md:px-[50px] py-0 relative z-10 overflow-hidden md:mt-[-80px] z-30 mt-[-50px] 3xl:max-w-[2400px] 4xl:max-w-[3200px] 3xl:px-[80px] 4xl:px-[120px]">
       <div className="flex items-center gap-4 mb-6">
-        <h2 className="text-2xl md:text-[2rem] font-semibold text-white drop-shadow-[0_2px_1px_rgba(0,0,0,0.3)]">
+        <h2 className="text-2xl md:text-[2rem] font-semibold text-gray-900 dark:text-white drop-shadow-[0_2px_1px_rgba(0,0,0,0.3)]">
           <Highlighter action="underline" iterations={1} animationDuration={1000}>{`Bạn đang quan tâm gì?`}</Highlighter>
         </h2>
       </div>
 
       <div className="
         flex flex-nowrap overflow-x-auto gap-4 pb-4
-        md:grid md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 md:overflow-visible md:pb-0
+        md:grid md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 3xl:grid-cols-10 4xl:grid-cols-12 md:overflow-visible md:pb-0
         scrollbar-hide
       ">
         {loading

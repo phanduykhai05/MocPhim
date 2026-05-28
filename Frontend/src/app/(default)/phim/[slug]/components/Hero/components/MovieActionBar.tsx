@@ -73,8 +73,8 @@ export const MovieActionBar = ({ movie }: MovieActionBarProps) => {
           ].map((item, idx) => {
             const Icon = item.icon;
             return (
-              <button key={idx} className="flex items-center gap-2 text-sm text-white/90 hover:text-white hover:bg-white/10 p-2.5 rounded-lg transition whitespace-nowrap select-none">
-                <Icon size={16} strokeWidth={2} className="text-white/90" />
+              <button key={idx} className="flex items-center gap-2 text-sm text-gray-700 dark:text-white/90 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 p-2.5 rounded-lg transition whitespace-nowrap select-none">
+                <Icon size={16} strokeWidth={2} className="text-gray-700 dark:text-white/90" />
                 <span>{item.name}</span>
               </button>
             );

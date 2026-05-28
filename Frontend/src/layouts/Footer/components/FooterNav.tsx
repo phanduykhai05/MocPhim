@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export default function FooterNav() {
     const navLinks = [
         { label: "Hỏi-Đáp", url: "https://rophims.vip/hoi-dap" },

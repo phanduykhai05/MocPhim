@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import images from "@/assets/images";
 import { fetchMovieList, getMovieThumb, type MovieListItem } from "@/lib/api/movie";
+import MoviePoster from "@/components/MoviePoster";
 
 const PAGE_SIZE = 40;
 
@@ -28,16 +29,15 @@ const SORT_OPTIONS = [
 ] as const;
 
 function MovieCard({ item, cdnImage, priority = false }: { item: MovieListItem; cdnImage: string; priority?: boolean }) {
-  const [imgSrc, setImgSrc] = useState(getMovieThumb(item.thumb_url, cdnImage));
+  const thumb = getMovieThumb(item.thumb_url, cdnImage);
 
   return (
     <div className="group w-full">
       <div className="relative w-full rounded-[6px] overflow-hidden bg-[#25252b]" style={{ paddingTop: "135.74%" }}>
         <Link href={`/phim/${item.slug}`} title={item.name} className="absolute inset-0 w-full h-full block overflow-hidden">
-          <Image
-            src={imgSrc}
+          <MoviePoster
+            src={thumb}
             alt={item.name}
-            fill
             sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 12vw"
             quality={70}
             priority={priority}
@@ -45,9 +45,6 @@ function MovieCard({ item, cdnImage, priority = false }: { item: MovieListItem; 
             fetchPriority={priority ? "high" : "auto"}
             referrerPolicy="no-referrer"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 rounded-[6px]"
-            onError={() =>
-              setImgSrc(`https://via.placeholder.com/200x271/25252b/ffffff?text=${encodeURIComponent(item.name.slice(0, 10))}`)
-            }
           />
 
           <span className="absolute top-2 left-2 z-[10] pointer-events-none opacity-80">

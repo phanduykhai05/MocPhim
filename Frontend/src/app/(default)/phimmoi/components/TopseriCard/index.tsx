@@ -53,7 +53,7 @@ const FALLBACK_MOVIES: TopSeriesMovie[] = [
 
 export const TopSeriesList = ({ movies }: TopSeriesListProps) => {
   const topMovies = movies && movies.length > 0 ? movies : FALLBACK_MOVIES;
-  const swiperRef = React.useRef<any>(null);
+  const swiperRef = React.useRef<{ update: () => void; destroyed: boolean; setBreakpoint?: () => void; updateSize?: () => void; updateSlides?: () => void; updateProgress?: () => void; updateSlidesClasses?: () => void } | null>(null);
   const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -95,46 +95,12 @@ export const TopSeriesList = ({ movies }: TopSeriesListProps) => {
     };
   }, []);
 
-  // Dữ liệu mẫu bóc từ HTML
-  const topMovies2 = [
-    {
-      title: "One Piece",
-      alias: "Đảo Hải Tặc, Vua Hải Tặc, OP",
-      slug: "one-piece",
-      thumb: "https://rophims.vip/wp-content/uploads/2026/04/one-piece-39120-thumb-149.jpg",
-      episodeText: "Tập 1157",
-      badges: [
-        { type: "pd" as const, text: "1157" },
-        { type: "lt" as const, text: "1157" },
-      ],
-    },
-    {
-      title: "Nguyệt Lân Ỷ Kỷ",
-      alias: "Veil of Shadows",
-      slug: "nguyet-lan-y-ky",
-      thumb: "https://rophims.vip/wp-content/uploads/2026/04/nguyet-lan-y-ky-38622-thumb-196.jpg",
-      episodeText: "Tập 29",
-      badges: [{ type: "pd" as const, text: "29" }],
-    },
-    {
-      title: "Trục Ngọc",
-      alias: "Pursuit Of Jade",
-      slug: "truc-ngoc",
-      thumb: "https://rophims.vip/wp-content/uploads/2026/03/truc-ngoc-23313-thumb-4.jpg",
-      episodeText: "Hoàn Tất (40/40)",
-      badges: [
-        { type: "pd" as const, text: "HT" },
-        { type: "tm" as const, text: "HT" },
-      ],
-    },
-    // ... bạn map nốt data còn lại
-  ]; // unused - kept for reference, replaced by topMovies above
 
   return (
-    <div className="w-full max-w-[1900px] px-4 md:px-[50px] mx-auto relative mb-10">
+    <div className="w-full max-w-[1900px] px-4 md:px-[50px] mx-auto relative mb-10 3xl:max-w-[2400px] 4xl:max-w-[3200px] 3xl:px-[80px] 4xl:px-[120px]">
       {/* Header */}
       <div className="flex items-center justify-start gap-4 relative min-h-[44px] mb-5">
-        <h2 className="text-[2rem] leading-[1.4] font-semibold m-0 text-[#ffebc6] drop-shadow-[0_2px_1px_rgba(0,0,0,0.3)]">
+        <h2 className="text-[2rem] leading-[1.4] font-semibold m-0 text-gray-900 dark:text-[#ffebc6] drop-shadow-[0_2px_1px_rgba(0,0,0,0.3)]">
           Top 10 Phim Bộ Hôm Nay
         </h2>
       </div>
@@ -194,6 +160,9 @@ export const TopSeriesList = ({ movies }: TopSeriesListProps) => {
                 640: { slidesPerView: 3 },
                 1024: { slidesPerView: 5 },
                 1440: { slidesPerView: 6 },
+                1920: { slidesPerView: 8 },
+                2560: { slidesPerView: 10 },
+                3200: { slidesPerView: 12 },
               }}
               className="!px-1" // Thêm chút padding để đổ bóng không bị lẹm
             >

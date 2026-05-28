@@ -27,7 +27,7 @@ export default async function TopMovies() {
   const topPhimBo = seriesData ? mapToHomeMovie(seriesData.items, seriesData.cdnImage) : [];
 
   return (
-    <div className="py-10 bg-[#191B24]">
+    <div className="py-10 bg-[#f0f3f8] dark:bg-[#191B24] transition-colors duration-300">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto px-4">
         {/* Cột Phim Lẻ */}
         <MovieList

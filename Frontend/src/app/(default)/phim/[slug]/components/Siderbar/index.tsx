@@ -16,17 +16,17 @@ export const Sidebar = ({ movie, cdnImage, peoples, topMovies }: SidebarProps) =
 
   return (
     <div className="w-full lg:w-[440px] shrink-0 flex flex-col p-6 lg:p-10
-                    bg-transparent lg:bg-[#191b24]/60
+                    bg-transparent lg:bg-gray-100 dark:lg:bg-[#191b24]/60
                     lg:backdrop-blur-[40px]
                     rounded-2xl lg:rounded-[1.25rem_3rem_1.25rem_1.25rem]
-                    border-none lg:border lg:border-white/5
+                    border-none lg:border lg:border-gray-300 dark:lg:border-white/5
                     mt-[-180px]">
 
       <MovieDetailInfo movie={movie} cdnImage={cdnImage} />
       <MovieActors peoples={peoples?.peoples ?? null} profileBase={profileBase} actors={movie.actor} />
 
       <div className="hidden lg:block">
-        <hr className="my-8 border-white/10" />
+        <hr className="my-8 border-gray-300 dark:border-white/10" />
         <TopWeeklyMovies movies={topMovies?.items ?? []} cdnImage={topMovies?.cdnImage ?? cdnImage} />
       </div>
     </div>

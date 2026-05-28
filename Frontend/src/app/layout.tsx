@@ -36,6 +36,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="vi" className={cn(sora.variable, roboto.variable, "font-sans", geist.variable)} suppressHydrationWarning>
+            <head>
+                {/* Chạy trước render để tránh flash trắng — mặc định dark nếu chưa chọn light */}
+                <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('theme')!=='light'){document.documentElement.classList.add('dark')}}catch(e){}})()` }} />
+            </head>
             <body className="antialiased">
                 <ThemeInitializer />
                 <SecurityGuard />

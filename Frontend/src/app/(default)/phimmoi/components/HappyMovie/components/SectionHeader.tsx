@@ -8,13 +8,13 @@ interface HeaderProps {
 export default function SectionHeader({ title, slug }: HeaderProps) {
   return (
     <div className="flex items-center justify-start gap-4 relative min-h-[44px] mb-5">
-      <h2 className="text-2xl sm:text-[2rem] leading-tight font-semibold m-0 text-white drop-shadow-md">
+      <h2 className="text-2xl sm:text-[2rem] leading-tight font-semibold m-0 text-gray-900 dark:text-white drop-shadow-md">
         {title}
       </h2>
       <div className="ml-auto sm:ml-0">
-        <a 
+        <a
           href={`/c/${slug}`}
-          className="flex items-center gap-1.5 text-sm sm:text-base text-gray-300 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-sm sm:text-base text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
         >
           <span>Xem thêm</span>
           <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 320 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">

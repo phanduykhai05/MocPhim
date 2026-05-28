@@ -7,7 +7,7 @@ const HeroSection: React.FC = () => {
     // section-first: Căn giữa nội dung, thêm màu nền tối để làm nổi bật hiệu ứng kính mờ
     <div 
       id="section-first" 
-      className="flex justify-center items-center min-h-screen bg-[#191B24]"
+      className="flex justify-center items-center min-h-screen bg-[#f0f3f8] dark:bg-[#191B24] transition-colors duration-300"
     >
       {/* Container: Giới hạn chiều rộng theo code gốc (max-width: 1120px) */}
       <div className="container mx-auto px-5 w-full max-w-[1120px]">
@@ -29,7 +29,7 @@ const HeroSection: React.FC = () => {
           </a>
 
           {/* Heading */}
-          <h2 className="text-white text-center text-[18px] md:text-[2.6em] font-semibold leading-[1.5] mb-4">
+          <h2 className="text-gray-900 dark:text-white text-center text-[18px] md:text-[2.6em] font-semibold leading-[1.5] mb-4">
             Xem Phim Miễn Phí Cực Nhanh, Chất Lượng Cao Và Cập Nhật Liên Tục
           </h2>
 

@@ -29,7 +29,7 @@ const Header = () => {
         ${isScrolled ? 'bg-[#191b24] shadow-lg' : 'bg-gradient-to-t from-transparent to-[#191b24]'}`
       }
     >
-      <div className="max-w-[1920px] mx-auto w-full px-4 md:px-8 flex items-center gap-4 lg:gap-8 h-[70px] md:h-[90px]">
+      <div className="max-w-[1920px] 3xl:max-w-[2400px] 4xl:max-w-[3200px] mx-auto w-full px-4 md:px-8 3xl:px-16 4xl:px-24 flex items-center gap-4 lg:gap-8 h-[70px] md:h-[90px] 3xl:h-[100px]">
         {/* Mobile Hamburger Menu (Chỉ hiện trên mobile) */}
         <button
           className="lg:hidden text-white flex flex-col gap-[4px] p-2"
@@ -69,7 +69,7 @@ const Header = () => {
         <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         
         <div className="flex-grow hidden lg:block"></div>
-        <AnimatedThemeToggler />
+        <AnimatedThemeToggler className="text-gray-700 dark:text-white cursor-pointer hover:opacity-70 transition-opacity w-5 h-5" />
         <UserActions />
       </div>
     </header>

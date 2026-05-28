@@ -16,7 +16,7 @@ type VietnamMarker = Marker & {
 };
 
 function toBannerMovies(items: ApiMovie[], cdn: string): Movie[] {
-  return items.slice(0, 8).map((item, i) => ({
+  return items.slice(0, 8).map((item) => ({
     id: item._id,
     title: item.name,
     alias: item.origin_name,
@@ -126,7 +126,7 @@ export default async function PhimMoi() {
   ];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#191B24] font-sans text-white selection:bg-[#764ba2] selection:text-white">
+    <div className="min-h-screen overflow-x-hidden bg-[#f0f3f8] dark:bg-[#191B24] font-sans text-gray-900 dark:text-white selection:bg-[#764ba2] selection:text-white transition-colors duration-300">
       <Banner movies={bannerMovies} />
       <Topics />
       <BookmarkedMovies />

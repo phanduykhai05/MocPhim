@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import images from "@/assets/images";
 import { fetchSyncMovies, type MovieSyncItem } from "@/lib/api/sync";
+import MoviePoster from "@/components/MoviePoster";
 
 const CDN = process.env.NEXT_PUBLIC_CDN_IMAGE ?? "https://img.ophim.live";
 const PAGE_SIZE = 40;
@@ -21,16 +22,13 @@ function MovieCard({ item, priority = false }: { item: MovieSyncItem; priority?:
       : `${CDN}/uploads/movies/${item.thumbUrl}`
     : `${CDN}/uploads/movies/${item.slug}-thumb.jpg`;
 
-  const [imgSrc, setImgSrc] = useState(thumb);
-
   return (
     <div className="group w-full">
-      <div className="relative w-full rounded-[6px] overflow-hidden bg-[#25252b]" style={{ paddingTop: "135.74%" }}>
+      <div className="relative w-full rounded-[6px] overflow-hidden bg-gray-300 dark:bg-[#25252b]" style={{ paddingTop: "135.74%" }}>
         <Link href={`/phim/${item.slug}`} title={item.title} className="absolute inset-0 w-full h-full block overflow-hidden">
-          <Image
-            src={imgSrc}
+          <MoviePoster
+            src={thumb}
             alt={item.title}
-            fill
             sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 12vw"
             quality={70}
             priority={priority}
@@ -38,9 +36,6 @@ function MovieCard({ item, priority = false }: { item: MovieSyncItem; priority?:
             fetchPriority={priority ? "high" : "auto"}
             referrerPolicy="no-referrer"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 rounded-[6px]"
-            onError={() =>
-              setImgSrc(`https://via.placeholder.com/200x271/25252b/ffffff?text=${encodeURIComponent(item.title.slice(0, 10))}`)
-            }
           />
 
           {/* Logo watermark */}
@@ -71,11 +66,11 @@ function MovieCard({ item, priority = false }: { item: MovieSyncItem; priority?:
       </div>
 
       <Link href={`/phim/${item.slug}`} title={item.title}>
-        <p className="mt-1.5 text-[12px] leading-[16px] text-white/80 group-hover:text-white line-clamp-2 font-medium transition-colors">
+        <p className="mt-1.5 text-[12px] leading-[16px] text-gray-800 dark:text-white/80 group-hover:text-gray-900 dark:group-hover:text-white line-clamp-2 font-medium transition-colors">
           {item.title}
         </p>
         {item.originName && (
-          <p className="mt-0.5 text-[11px] leading-[14px] text-white/35 line-clamp-1">{item.originName}</p>
+          <p className="mt-0.5 text-[11px] leading-[14px] text-gray-400 dark:text-white/35 line-clamp-1">{item.originName}</p>
         )}
       </Link>
     </div>
@@ -85,12 +80,12 @@ function MovieCard({ item, priority = false }: { item: MovieSyncItem; priority?:
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function SkeletonGrid() {
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-x-4 gap-y-3">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 3xl:grid-cols-10 4xl:grid-cols-12 gap-x-4 gap-y-3">
       {Array.from({ length: PAGE_SIZE }).map((_, i) => (
         <div key={i} className="w-full">
-          <div className="w-full rounded-[6px] bg-white/10 animate-pulse" style={{ paddingTop: "135.74%" }} />
-          <div className="mt-2 h-3 bg-white/10 rounded animate-pulse" />
-          <div className="mt-1 h-3 w-3/4 bg-white/10 rounded animate-pulse" />
+          <div className="w-full rounded-[6px] bg-gray-200 dark:bg-white/10 animate-pulse" style={{ paddingTop: "135.74%" }} />
+          <div className="mt-2 h-3 bg-gray-200 dark:bg-white/10 rounded animate-pulse" />
+          <div className="mt-1 h-3 w-3/4 bg-gray-200 dark:bg-white/10 rounded animate-pulse" />
         </div>
       ))}
     </div>
@@ -122,7 +117,7 @@ function Paginator({
   return (
     <div className="flex justify-center mt-8 mb-6 gap-1.5 flex-wrap items-center">
       <button
-        className="px-3 py-1.5 rounded bg-white/10 text-white/70 hover:bg-white/20 disabled:opacity-30 text-sm transition-colors"
+        className="px-3 py-1.5 rounded bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-300 dark:hover:bg-white/20 disabled:opacity-30 text-sm transition-colors"
         onClick={() => onChange(current - 1)}
         disabled={current <= 1}
       >
@@ -131,7 +126,7 @@ function Paginator({
 
       {getPages().map((page, i) =>
         page === "..." ? (
-          <span key={`el-${i}`} className="px-2 text-white/40">
+          <span key={`el-${i}`} className="px-2 text-gray-400 dark:text-white/40">
             …
           </span>
         ) : (
@@ -140,7 +135,7 @@ function Paginator({
             className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
               current === page
                 ? "bg-[#1677ff] text-white"
-                : "bg-white/10 text-white/70 hover:bg-white/20"
+                : "bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-300 dark:hover:bg-white/20"
             }`}
             onClick={() => onChange(page as number)}
             disabled={current === page}
@@ -151,7 +146,7 @@ function Paginator({
       )}
 
       <button
-        className="px-3 py-1.5 rounded bg-white/10 text-white/70 hover:bg-white/20 disabled:opacity-30 text-sm transition-colors"
+        className="px-3 py-1.5 rounded bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-300 dark:hover:bg-white/20 disabled:opacity-30 text-sm transition-colors"
         onClick={() => onChange(current + 1)}
         disabled={current >= total}
       >
@@ -207,13 +202,13 @@ export default function FullMoviesClient() {
   };
 
   return (
-    <div className="relative w-full max-w-[1808px] mx-auto px-4 md:px-5 lg:pt-20 pt-16">
+    <div className="relative w-full max-w-[1808px] mx-auto px-4 md:px-5 lg:pt-20 pt-16 3xl:max-w-[2400px] 4xl:max-w-[3200px]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-[10px] mb-6">
         <div>
-          <h4 className="text-[22px] leading-[32px] font-bold text-white/90 m-0">Danh sách phim</h4>
+          <h4 className="text-[22px] leading-[32px] font-bold text-gray-900 dark:text-white/90 m-0">Danh sách phim</h4>
           {!loading && totalItems > 0 && (
-            <p className="text-sm text-white/35 mt-0.5">{totalItems.toLocaleString()} phim</p>
+            <p className="text-sm text-gray-500 dark:text-white/35 mt-0.5">{totalItems.toLocaleString()} phim</p>
           )}
         </div>
       </div>
@@ -223,10 +218,10 @@ export default function FullMoviesClient() {
 
       {/* Error */}
       {!loading && error && (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] text-white/50 gap-3">
+          <div className="flex flex-col items-center justify-center min-h-[40vh] text-gray-400 dark:text-white/50 gap-3">
           <p className="text-base">Không thể tải danh sách phim.</p>
           <button
-            className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors"
+            className="px-4 py-2 rounded bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20 text-sm transition-colors"
             onClick={() => handlePageChange(pageParam)}
           >
             Thử lại
@@ -236,14 +231,14 @@ export default function FullMoviesClient() {
 
       {/* Empty */}
       {!loading && !error && items.length === 0 && (
-        <div className="flex items-center justify-center min-h-[40vh] text-white/40">
+          <div className="flex items-center justify-center min-h-[40vh] text-gray-400 dark:text-white/40">
           Chưa có phim nào được đồng bộ.
         </div>
       )}
 
       {/* Grid */}
       {!loading && !error && items.length > 0 && (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-x-4 gap-y-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 3xl:grid-cols-10 4xl:grid-cols-12 gap-x-4 gap-y-3">
           {items.map((item, index) => (
             <MovieCard key={item.id} item={item} priority={index < 8} />
           ))}

@@ -1,6 +1,6 @@
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
+import MoviePoster from "@/components/MoviePoster";
 
 interface TopSeriesCardProps {
   index: number;
@@ -34,7 +34,7 @@ export const TopSeriesCard = ({ index, movie, priority = false }: TopSeriesCardP
       {/* Thumbnail phim */}
       <Link
         href={`/phim/${movie.slug}`}
-        className="relative w-full aspect-[2/3] rounded-xl overflow-hidden block bg-[#191b24]"
+        className="relative w-full aspect-[2/3] rounded-xl overflow-hidden block bg-gray-300 dark:bg-[#191b24]"
         style={{
           position: "relative",
           display: "block",
@@ -47,24 +47,15 @@ export const TopSeriesCard = ({ index, movie, priority = false }: TopSeriesCardP
           className="absolute inset-0 bg-white/5 z-10"
           style={{ clipPath: cardClipPath }}
         />
-        <Image
+        <MoviePoster
           alt={`Xem Phim ${movie.title}`}
           src={movie.thumb}
-          fill
           sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 16vw"
           quality={70}
           priority={priority}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 "
-          style={{
-            clipPath: cardClipPath,
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
         />
 
         {/* Pin Badge (PĐ, LT, TM) */}

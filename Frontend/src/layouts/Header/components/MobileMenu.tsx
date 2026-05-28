@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { fetchCategories, fetchCountries, fetchYears } from "@/lib/api/movie";
-import { useRouter } from "next/navigation";
-
 const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [categories, setCategories] = useState([]);
   const [countries, setCountries] = useState([]);
@@ -11,7 +9,6 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
   const [catLoading, setCatLoading] = useState(true);
   const [cntLoading, setCntLoading] = useState(true);
   const [yearLoading, setYearLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     if (!isOpen) return;

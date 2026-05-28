@@ -1,6 +1,6 @@
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
+import MoviePoster from '@/components/MoviePoster';
 import { MovieHorizontal } from '@/app/(default)/phimmoi/components/HappyMovie/components/types/movie'; // Điều chỉnh path phù hợp
 
 interface Props {
@@ -31,10 +31,9 @@ export default function MovieHorizontalCard({ movie, priority = false }: Props) 
             </div>
           )}
 
-          <Image
+          <MoviePoster
             alt={movie.title}
             src={movie.posterUrl}
-            fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1440px) 33vw, 25vw"
             quality={72}
             priority={priority}
@@ -52,10 +51,9 @@ export default function MovieHorizontalCard({ movie, priority = false }: Props) 
               href={`/phim/${movie.slug}`}
               className="block w-full relative h-0 pb-[150%] rounded-lg overflow-hidden bg-gray-800 shadow-[0_0_10px_5px_rgba(0,0,0,0.1)]"
             >
-              <Image
+              <MoviePoster
                 alt={movie.title}
                 src={movie.thumbUrl}
-                fill
                 sizes="80px"
                 quality={65}
                 loading="lazy"

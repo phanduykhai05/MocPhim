@@ -22,7 +22,7 @@ const TABS = [
   { id: 'suggestion', label: 'Đề xuất' },
 ];
 
-export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap, initialSv }: HeroProps) => {
+export const MovieMainContent = ({ movie, images, keywords, initialTap, initialSv }: HeroProps) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('episodes');
   const [selectedServerIdx, setSelectedServerIdx] = useState(initialSv);
@@ -37,22 +37,22 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap
     : null;
 
   return (
-    <div className="flex-grow flex flex-col bg-[#191b24]/60 backdrop-blur-[20px] rounded-r-2xl rounded-l-none lg:rounded-[0_1.25rem_1.25rem_0] overflow-hidden lg:ml-[-33px] ml-0">
+    <div className="flex-grow flex flex-col bg-gray-100 dark:bg-[#191b24]/60 backdrop-blur-[20px] rounded-r-2xl rounded-l-none lg:rounded-[0_1.25rem_1.25rem_0] overflow-hidden lg:ml-[-33px] ml-0">
 
       <MovieActionBar movie={movie} />
 
       <div className="flex flex-col pb-10">
 
         {/* Tabs bar */}
-        <div className="flex overflow-x-auto border-b border-white/10 hide-scrollbar">
+        <div className="flex overflow-x-auto border-b border-gray-200 dark:border-white/10 hide-scrollbar">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`whitespace-nowrap px-6 py-4 text-sm font-medium transition-all duration-200 border-b-2 ${
                 activeTab === tab.id
-                  ? 'border-[#f472b6] text-white'
-                  : 'border-transparent text-gray-400 hover:text-white'
+                  ? 'border-[#f472b6] text-gray-900 dark:text-white'
+                  : 'border-transparent text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               {tab.label}
@@ -95,7 +95,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
                       selectedServerIdx === idx
                         ? 'bg-[#f472b6] text-white'
-                        : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                        : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/20'
                     }`}
                   >
                     {server.server_name}
@@ -107,7 +107,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap
             {/* Episode grid */}
             {currentServer && currentServer.server_data.length > 1 && (
               <>
-                <h3 className="text-white font-medium mb-3 text-sm">Chọn tập:</h3>
+                <h3 className="text-gray-900 dark:text-white font-medium mb-3 text-sm">Chọn tập:</h3>
                 <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-10 xl:grid-cols-12 gap-2">
                   {currentServer.server_data.map((ep, idx) => (
                     <button
@@ -119,7 +119,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap
                       className={`h-9 rounded-md text-sm font-medium transition ${
                         selectedEpIdx === idx
                           ? 'bg-[#f472b6] text-white'
-                          : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                          : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/20'
                       }`}
                     >
                       {ep.name}
@@ -149,7 +149,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap
             {/* Available versions summary */}
             {servers.length > 0 && (
               <div className="mt-10">
-                <h2 className="text-xl font-semibold text-white mb-5">Các bản chiếu</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-5">Các bản chiếu</h2>
                 <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {servers.map((server, idx) => (
                     <button
@@ -189,7 +189,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap
         {/* ── Gallery tab ── */}
         {activeTab === 'gallery' && (
           <div className="px-6 lg:px-10 py-8">
-            <h2 className="text-xl font-semibold text-white mb-6">Gallery</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Gallery</h2>
             {images?.backdrops && images.backdrops.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {images.backdrops.slice(0, 12).map((img, i) => (
@@ -204,7 +204,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400">Chưa có hình ảnh</p>
+              <p className="text-gray-500 dark:text-gray-400">Chưa có hình ảnh</p>
             )}
           </div>
         )}
@@ -212,20 +212,20 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap
         {/* ── Từ khóa tab ── */}
         {activeTab === 'keywords' && (
           <div className="px-6 lg:px-10 py-8">
-            <h2 className="text-xl font-semibold text-white mb-6">Từ khóa</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Từ khóa</h2>
             {keywords?.keywords && keywords.keywords.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {keywords.keywords.map((kw) => (
                   <span
                     key={kw.tmdb_keyword_id}
-                    className="px-3 py-1.5 bg-white/10 rounded-full text-sm text-gray-300 hover:bg-white/20 transition cursor-default border border-white/10"
+                    className="px-3 py-1.5 bg-gray-200 dark:bg-white/10 rounded-full text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/20 transition cursor-default border border-gray-300 dark:border-white/10"
                   >
                     {kw.name_vn || kw.name}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400">Không có từ khóa</p>
+              <p className="text-gray-500 dark:text-gray-400">Không có từ khóa</p>
             )}
           </div>
         )}
@@ -233,7 +233,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap
         {/* ── Đề xuất tab ── */}
         {activeTab === 'suggestion' && (
           <div className="px-6 lg:px-10 py-8">
-            <p className="text-gray-400">Đang cập nhật...</p>
+            <p className="text-gray-500 dark:text-gray-400">Đang cập nhật...</p>
           </div>
         )}
 

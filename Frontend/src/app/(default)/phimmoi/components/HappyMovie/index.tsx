@@ -52,7 +52,7 @@ export default function MovieTheatersSection({ movies }: HappyMovieProps) {
 
   return (
     // fadeIn effect & Container
-    <div className="w-full px-5 lg:px-[50px] mx-auto max-w-[1900px] relative animate-[fadeInUp_0.5s_ease-out_forwards]">
+    <div className="w-full px-5 lg:px-[50px] mx-auto max-w-[1900px] relative animate-[fadeInUp_0.5s_ease-out_forwards] 3xl:max-w-[2400px] 4xl:max-w-[3200px] 3xl:px-[80px] 4xl:px-[120px]">
       <div className="relative">
         
         <SectionHeader 
