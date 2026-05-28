@@ -954,6 +954,57 @@ PATCH /api/v1/progress/3/68a1b2c3d4e5f6/5
 
 ---
 
+### Flow Progress — Frontend
+
+**1. Trang phim `/phim/{slug}`**
+```
+User mở trang → đã login?
+  Có → GET /api/v1/progress/{userId}/resume/{slug}
+        data.episodeNumber? → redirect /xem-phim/{slug}?tap=N&sv=0
+        null?               → ở lại trang, user tự chọn tập
+```
+
+**2. Trang xem `/xem-phim/{slug}?tap=N` — Restore vị trí**
+```
+HLS MANIFEST_PARSED fired
+  → đọc localStorage[progress_{slug}_{ep}]
+  → có token? → GET /api/v1/progress/{userId}/{movieId}/{ep}
+        server > 5s  → dùng server (server thắng)
+        server = 0   → giữ localStorage (không override)
+  → saved > 5s? → video.currentTime = saved
+```
+
+**3. Đang xem — Lưu tiến trình**
+
+Trigger: mỗi 30s (nếu đang play) + pause + ended + pagehide
+```
+currentTime > 5s?
+  → localStorage[progress_{slug}_{ep}] = seconds
+  → PATCH /api/v1/progress/{userId}/{movieId}/{ep}
+     { slug, positionSeconds, isCompleted }
+
+isCompleted = true khi currentTime >= 90% tổng thời lượng
+```
+
+**4. Chuyển tập (không F5)**
+```
+Click tập khác
+  → aborted = true        (chặn restoreProgress cũ)
+  → cleanup HLS cũ        (remove listeners, clear interval, destroy)
+  → HLS mới load tập mới → lặp lại bước 2
+```
+
+**Ghi chú kỹ thuật**
+
+| | |
+|---|---|
+| `userRef` | Auth load chậm không ảnh hưởng — save/restore luôn thấy user mới nhất |
+| `aborted` flag | Switch tập nhanh không bị race condition seek sai tập |
+| Server vs localStorage | Server thắng chỉ khi > 5s, tránh `server=0` ghi đè localStorage |
+| HLS deps | Không có user → HLS không restart khi auth state thay đổi |
+
+---
+
 ## Admin Endpoints (yêu cầu ROLE_ADMIN)
 
 Tất cả endpoint dưới đây yêu cầu header `Authorization: Bearer <accessToken>` của tài khoản có `ROLE_ADMIN`.
