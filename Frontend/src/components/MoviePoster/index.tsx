@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import images from "@/assets/images";
 
 interface MoviePosterProps {
   src: string;
@@ -29,16 +28,12 @@ export default function MoviePoster({
 
   if (error) {
     return (
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-200 dark:bg-[#1e2030] gap-2 px-2">
-        <Image
-          src={images.logo}
-          alt="MocPhim"
-          width={72}
-          height={28}
-          className="object-contain opacity-50"
-        />
-        <p className="text-[9px] text-center text-gray-400 dark:text-white/35 leading-snug">
-          ảnh server gặp 1 chút vấn đề
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-200 dark:bg-[#1e2030] gap-1.5 px-2">
+        <svg className="w-8 h-8 text-gray-400 dark:text-white/25 opacity-70" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3 10.5h18M3 3.75h18" />
+        </svg>
+        <p className="text-[9px] text-center text-gray-400 dark:text-white/30 leading-snug">
+          ảnh server gặp<br />1 chút vấn đề
         </p>
       </div>
     );
