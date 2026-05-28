@@ -47,6 +47,7 @@ const WatchMovieTemplate = ({
   }));
 
   const movie: WatchMovie = {
+    movieId: item._id,
     slug: item.slug,
     title: item.name,
     altTitle: item.origin_name,
@@ -79,6 +80,7 @@ const WatchMovieTemplate = ({
         <div className="grid gap-3 lg:gap-4">
           <VideoPlayer
             movieSlug={slug}
+            movieId={movie.movieId}
             movieTitle={movie.title}
             episode={currentEpisode}
             server={currentServer}

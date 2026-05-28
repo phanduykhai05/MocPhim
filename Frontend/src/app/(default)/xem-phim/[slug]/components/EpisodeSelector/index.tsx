@@ -25,6 +25,7 @@ const EpisodeSelector = ({ slug, currentEpisode, server, episodes, sectionLabel 
             <Link
               key={episode.number}
               href={`/xem-phim/${slug}?tap=${episode.number}&sv=${server}`}
+              replace
               className={`flex items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-semibold transition ${
                 isActive
                   ? 'bg-gradient-to-tr from-[#fecf59] to-[#fff1cc] shadow-[0_5px_10px_5px_rgba(255,218,125,0.1)] text-black ring-1 ring-[#f1c84f]/55'

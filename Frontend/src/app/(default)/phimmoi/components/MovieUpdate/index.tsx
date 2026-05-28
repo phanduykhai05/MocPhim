@@ -26,7 +26,7 @@ export const NewUpdateList = ({ movies }: NewUpdateListProps) => {
             className="flex items-center gap-2 hover:text-white transition-colors"
             style={{ cursor: "pointer" }}
           >
-            <span>Mới Update</span>
+            <span className="text-white text-[22px]">Mới Update</span>
             <span className="text-sm font-normal text-white/50 ml-2 flex items-center gap-1">
               Xem thêm
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

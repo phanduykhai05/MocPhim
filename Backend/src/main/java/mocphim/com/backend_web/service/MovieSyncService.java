@@ -49,7 +49,7 @@ public class MovieSyncService {
 
     public Map<String, Long> resyncMissingFields(int limit) {
         List<MovieSync> toResync = movieSyncRepository
-            .findByOriginNameIsNull(PageRequest.of(0, limit))
+            .findByOphimIdIsNull(PageRequest.of(0, limit))
             .getContent();
 
         int updated = 0;
@@ -72,8 +72,8 @@ public class MovieSyncService {
                 }
             } catch (OPhimApiException e) {
                 if (e.getStatusCode() == 404) {
-                    // Slug không tồn tại trên OPhim — đánh dấu để bỏ qua ở lần resync sau
-                    entity.setOriginName("");
+                    // Slug không tồn tại trên OPhim — set sentinel để bỏ qua ở lần resync sau
+                    entity.setOphimId("NOT_FOUND");
                     movieSyncRepository.save(entity);
                     notFound++;
                 } else {
@@ -89,7 +89,7 @@ public class MovieSyncService {
         log.info("[RESYNC] Cập nhật {}, không tìm thấy {}, lỗi {} phim", updated, notFound, failed);
         if (updated > 0) clearCache();
 
-        long remaining = movieSyncRepository.countByOriginNameIsNull();
+        long remaining = movieSyncRepository.countByOphimIdIsNull();
         return Map.of(
             "updated",  (long) updated,
             "notFound", (long) notFound,
@@ -112,6 +112,7 @@ public class MovieSyncService {
     }
 
     public void applyMovieFields(MovieSync entity, Map<?, ?> movie) {
+        entity.setOphimId((String) movie.get("_id"));
         entity.setOriginName((String) movie.get("origin_name"));
         entity.setType((String) movie.get("type"));
         entity.setThumbUrl((String) movie.get("thumb_url"));

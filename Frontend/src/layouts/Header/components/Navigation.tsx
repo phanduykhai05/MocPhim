@@ -114,8 +114,8 @@ const Navigation = () => {
       <DropdownMenu label="Thể loại" items={categories} basePath="the-loai" loading={catLoading} />
       <DropdownMenu label="Năm phát hành" items={years} basePath="nam-phat-hanh" loading={yearLoading} />
 
-      <Link href="/phim-le" className="hover:text-gray-300 transition-colors capitalize">Phim Lẻ</Link>
-      <Link href="/phim-bo" className="hover:text-gray-300 transition-colors capitalize">Phim Bộ</Link>
+      <Link href="/phim-le" className="text-white no-underline hover:text-gray-300 transition-colors capitalize">Phim Lẻ</Link>
+      <Link href="/phim-bo" className="text-white no-underline hover:text-gray-300 transition-colors capitalize">Phim Bộ</Link>
 
       <DropdownMenu label="Quốc gia" items={countries} basePath="quoc-gia" loading={cntLoading} />
 

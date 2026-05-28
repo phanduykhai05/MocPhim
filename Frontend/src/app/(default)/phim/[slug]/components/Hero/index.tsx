@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { MovieItem, MoviesImagesData, KeywordsData } from '@/lib/api/movie';
 import { MovieActionBar } from '@/app/(default)/phim/[slug]/components/Hero/components/MovieActionBar';
 import { CommentSection } from '@/app/(default)/phim/[slug]/components/Hero/components/CommentSection';
@@ -10,6 +11,8 @@ interface HeroProps {
   cdnImage: string;
   images: MoviesImagesData | null;
   keywords: KeywordsData | null;
+  initialTap: number;
+  initialSv: number;
 }
 
 const TABS = [
@@ -19,10 +22,11 @@ const TABS = [
   { id: 'suggestion', label: 'Đề xuất' },
 ];
 
-export const MovieMainContent = ({ movie, cdnImage, images, keywords }: HeroProps) => {
+export const MovieMainContent = ({ movie, cdnImage, images, keywords, initialTap, initialSv }: HeroProps) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('episodes');
-  const [selectedServerIdx, setSelectedServerIdx] = useState(0);
-  const [selectedEpIdx, setSelectedEpIdx] = useState(0);
+  const [selectedServerIdx, setSelectedServerIdx] = useState(initialSv);
+  const [selectedEpIdx, setSelectedEpIdx] = useState(Math.max(0, initialTap - 1));
 
   const servers = movie.episodes ?? [];
   const currentServer = servers[selectedServerIdx];
@@ -87,7 +91,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords }: HeroProp
                 {servers.map((server, idx) => (
                   <button
                     key={idx}
-                    onClick={() => { setSelectedServerIdx(idx); setSelectedEpIdx(0); }}
+                    onClick={() => { setSelectedServerIdx(idx); setSelectedEpIdx(0); router.replace(`/phim/${movie.slug}?tap=1&sv=${idx}`); }}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
                       selectedServerIdx === idx
                         ? 'bg-[#f472b6] text-white'
@@ -107,8 +111,11 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords }: HeroProp
                 <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-10 xl:grid-cols-12 gap-2">
                   {currentServer.server_data.map((ep, idx) => (
                     <button
-                      key={ep.slug}
-                      onClick={() => setSelectedEpIdx(idx)}
+                      key={`${idx}-${ep.slug}`}
+                      onClick={() => {
+                        setSelectedEpIdx(idx);
+                        router.replace(`/phim/${movie.slug}?tap=${idx + 1}&sv=${selectedServerIdx}`);
+                      }}
                       className={`h-9 rounded-md text-sm font-medium transition ${
                         selectedEpIdx === idx
                           ? 'bg-[#f472b6] text-white'
@@ -147,7 +154,7 @@ export const MovieMainContent = ({ movie, cdnImage, images, keywords }: HeroProp
                   {servers.map((server, idx) => (
                     <button
                       key={idx}
-                      onClick={() => { setSelectedServerIdx(idx); setSelectedEpIdx(0); setActiveTab('episodes'); }}
+                      onClick={() => { setSelectedServerIdx(idx); setSelectedEpIdx(0); setActiveTab('episodes'); router.replace(`/phim/${movie.slug}?tap=1&sv=${idx}`); }}
                       className="relative flex items-center bg-[#5e6070] text-white rounded-xl overflow-hidden hover:opacity-90 transition text-left"
                     >
                       <div

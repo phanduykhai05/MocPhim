@@ -3,40 +3,48 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { App } from 'antd';
 import { Movie } from '@/app/(default)/phimmoi/components/Banner/components/data/movie';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiAddBookmark, apiDeleteBookmark, apiIsBookmarked } from '@/lib/api/bookmarks';
 import styles from '../style.module.css';
-
-const FAVORITES_STORAGE_KEY = 'mocphim:favorites';
 
 const SlideElements = ({ movie, priority = false }: { movie: Movie; priority?: boolean }) => {
   const primaryGradient = {
     background: 'rgb(254, 207, 89)',
     backgroundImage: 'linear-gradient(39deg, rgba(254, 207, 89, 1) 0%, rgba(255, 241, 204, 1) 100%)'
   };
+  const { user } = useAuth();
+  const { message } = App.useApp();
   const [isFavorite, setIsFavorite] = React.useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = React.useState(false);
 
   React.useEffect(() => {
-    try {
-      const raw = localStorage.getItem(FAVORITES_STORAGE_KEY);
-      const saved: string[] = raw ? JSON.parse(raw) : [];
-      setIsFavorite(saved.includes(movie.slug));
-    } catch {
-      setIsFavorite(false);
+    if (!user || !movie.id) return;
+    apiIsBookmarked(user.id, movie.id).then(setIsFavorite).catch(() => {});
+  }, [user, movie.id]);
+
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      message.warning('Bạn cần đăng nhập để sử dụng tính năng này');
+      return;
     }
-  }, [movie.slug]);
-
-  const handleToggleFavorite = () => {
+    if (bookmarkLoading) return;
+    setBookmarkLoading(true);
     try {
-      const raw = localStorage.getItem(FAVORITES_STORAGE_KEY);
-      const saved: string[] = raw ? JSON.parse(raw) : [];
-      const next = saved.includes(movie.slug)
-        ? saved.filter((slug) => slug !== movie.slug)
-        : [...saved, movie.slug];
-
-      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(next));
-      setIsFavorite(next.includes(movie.slug));
-    } catch {
-      // Ignore storage errors in private/restricted environments.
+      if (isFavorite) {
+        await apiDeleteBookmark(user.id, movie.id);
+        setIsFavorite(false);
+        message.success('Đã xóa khỏi danh sách yêu thích');
+      } else {
+        await apiAddBookmark(movie.slug);
+        setIsFavorite(true);
+        message.success('Đã thêm vào danh sách yêu thích');
+      }
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Đã có lỗi xảy ra');
+    } finally {
+      setBookmarkLoading(false);
     }
   };
 
@@ -116,13 +124,19 @@ const SlideElements = ({ movie, priority = false }: { movie: Movie; priority?: b
                 aria-label={isFavorite ? 'Bỏ khỏi yêu thích' : 'Thêm vào yêu thích'}
                 aria-pressed={isFavorite}
                 onClick={handleToggleFavorite}
-                className={`w-12 h-12 rounded-full border backdrop-blur-sm flex items-center justify-center transition-all ${
+                disabled={bookmarkLoading}
+                className={`w-12 h-12 rounded-full border backdrop-blur-sm flex items-center justify-center transition-all disabled:opacity-60 ${
                   isFavorite
                     ? 'border-[#ff4d6d]/70 bg-[#ff4d6d]/20 text-[#ff8ca3]'
                     : 'border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/40'
                 }`}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-5 h-5"
+                  fill={isFavorite ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                 </svg>
               </button>

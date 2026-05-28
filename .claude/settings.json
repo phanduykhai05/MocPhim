@@ -18,7 +18,8 @@
       "Bash(Select-Object Name, PSIsContainer)",
       "PowerShell(Head -20)",
       "Bash(pnpm list *)",
-      "Bash(grep -rn 'href={`/' k:/MocPhim/Frontend/src --include=\"*.tsx\")"
+      "Bash(grep -rn 'href={`/' k:/MocPhim/Frontend/src --include=\"*.tsx\")",
+      "Bash(xargs grep -l \"ExceptionHandler\\\\|ControllerAdvice\")"
     ]
   }
 }

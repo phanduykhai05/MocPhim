@@ -66,13 +66,13 @@ export default function MovieHorizontalCard({ movie, priority = false }: Props) 
 
           {/* Thông tin Text */}
           <div className="flex-1 overflow-hidden mt-2">
-            <h4 className="font-medium text-base text-gray-100 truncate hover:text-blue-400 transition-colors">
-              <Link title={movie.title} href={`/phim/${movie.slug}`}>
+            <h4 className="font-medium text-base truncate">
+              <Link title={movie.title} href={`/phim/${movie.slug}`} className="text-gray-100 hover:text-pink-400 no-underline transition-colors">
                 {movie.title}
               </Link>
             </h4>
-            <h4 className="text-sm text-gray-400 truncate mb-2">
-              <Link title={movie.originalTitle} href={`/phim/${movie.slug}`}>
+            <h4 className="text-sm truncate mb-2">
+              <Link title={movie.originalTitle} href={`/phim/${movie.slug}`} className="text-gray-400 hover:text-gray-200 no-underline transition-colors">
                 {movie.originalTitle}
               </Link>
             </h4>

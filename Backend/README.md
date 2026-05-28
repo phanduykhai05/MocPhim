@@ -1,16 +1,10 @@
-# MocPhim Project Documentation
+# MocPhim — Backend API
 
-<<<<<<< HEAD
 > Nền tảng xem phim trực tuyến — REST API proxy qua OPhim Public API  
 > **Stack:** Spring Boot 3.4.5 · PostgreSQL · Redis · Java 17 · Spring Security 6 · JWT · Google OAuth2
-=======
-## Tổng quan
-Dự án MocPhim bao gồm hai phần chính: **Frontend** và **Backend**. Frontend được xây dựng bằng Next.js và TypeScript, trong khi Backend được phát triển bằng Java Spring Boot. Hai phần này giao tiếp với nhau thông qua các API RESTful để cung cấp trải nghiệm người dùng mượt mà và hiệu quả.
->>>>>>> 3418a81b3a7d808ed65364b7b6b848762d4414a7
 
-## Cấu trúc chi tiết dự án
+---
 
-<<<<<<< HEAD
 ## Base URL
 
 | Môi trường | URL |
@@ -23,71 +17,9 @@ Dự án MocPhim bao gồm hai phần chính: **Frontend** và **Backend**. Fron
 ## Response Format
 
 Mọi response đều có cùng cấu trúc:
-=======
-### Frontend
-Frontend là giao diện người dùng của ứng dụng, chịu trách nhiệm hiển thị nội dung và xử lý tương tác của người dùng. Dưới đây là cấu trúc chi tiết của thư mục Frontend:
 
-```
-Frontend/
-├── public/                # Tài nguyên tĩnh (hình ảnh, font chữ, favicon, v.v.)
-├── src/
-│   ├── app/              # Các trang chính và layout của ứng dụng
-│   │   ├── (default)/    # Layout mặc định và các trang con
-│   │   ├── phimmoi/      # Trang hiển thị danh sách phim mới
-│   │   ├── xem-phim/     # Trang phát phim theo slug
-│   │   ├── admin/        # Trang quản trị
-│   ├── components/       # Các thành phần giao diện tái sử dụng (icon, UI, Preloader, v.v.)
-│   ├── constants/        # Các hằng số toàn cục (ví dụ: URL API, giá trị mặc định)
-│   ├── hooks/            # Custom React hooks (ví dụ: useScrollPosition)
-│   ├── layouts/          # Các layout chính (Header, Footer, Sidebar)
-│   ├── lib/              # Hàm tiện ích và tích hợp API (ví dụ: home.ts, movie.ts)
-│   ├── styles/           # CSS toàn cục (globals.css)
-│   ├── types/            # Định nghĩa kiểu TypeScript (ví dụ: MovieItem, Swiper CSS)
-│   └── utils/            # Các hàm hỗ trợ (ví dụ: helpers.ts)
-├── package.json          # Metadata và dependencies của dự án
-├── tsconfig.json         # Cấu hình TypeScript
-├── tailwind.config.js    # Cấu hình Tailwind CSS
-└── README.md             # Tài liệu dự án
-```
-
-### Backend
-Backend là API server, chịu trách nhiệm xử lý logic nghiệp vụ, quản lý dữ liệu và cung cấp API cho Frontend. Dưới đây là cấu trúc chi tiết của thư mục Backend:
-
-```
-Backend/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   ├── mocphim/com/backend_web/
-│   │   │   │   ├── config/          # Cấu hình ứng dụng (CORS, Redis, v.v.)
-│   │   │   │   ├── controller/      # Các controller xử lý request từ Frontend
-│   │   │   │   ├── dto/             # Các lớp DTO (Data Transfer Object) để truyền dữ liệu
-│   │   │   │   ├── entity/          # Các entity ánh xạ với database
-│   │   │   │   ├── exception/       # Xử lý ngoại lệ toàn cục
-│   │   │   │   ├── repository/      # Các interface làm việc với database
-│   │   │   │   ├── scheduler/       # Các tác vụ định kỳ (ví dụ: đồng bộ dữ liệu phim)
-│   │   │   │   └── service/         # Các lớp xử lý logic nghiệp vụ
-│   │   ├── resources/               # File cấu hình ứng dụng (application.properties)
-│   └── test/                        # Các bài kiểm thử
-├── pom.xml                          # Cấu hình Maven
-└── README.md                        # Tài liệu dự án
-```
-
-## Giao tiếp giữa Frontend và Backend
-Frontend và Backend giao tiếp thông qua các API RESTful. Dưới đây là danh sách các API chính và cách sử dụng:
->>>>>>> 3418a81b3a7d808ed65364b7b6b848762d4414a7
-
-### 1. **Lấy danh sách phim**
-- **URL**: `http://103.229.53.17/api/movies`
-- **Phương thức**: `GET`
-- **Mô tả**: Lấy danh sách các bộ phim.
-- **Tham số**:
-  - `page` (tùy chọn): Số trang.
-  - `limit` (tùy chọn): Số lượng phim trên mỗi trang.
-- **Phản hồi**:
 ```json
 {
-<<<<<<< HEAD
   "status": true,
   "message": "success",
   "data": { },
@@ -357,68 +289,10 @@ async function handleForgotPassword(email) {
     setError(err.response?.data?.message || 'Có lỗi xảy ra')
   } finally {
     setLoading(false)
-=======
-  "data": [
-    {
-      "id": 1,
-      "title": "Tên phim",
-      "description": "Mô tả phim",
-      "poster": "URL hình ảnh",
-      "rating": 8.5
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "totalPages": 10
   }
 }
 ```
 
-### 2. **Lấy chi tiết phim**
-- **URL**: `http://103.229.53.17/api/movies/:id`
-- **Phương thức**: `GET`
-- **Mô tả**: Lấy thông tin chi tiết của một bộ phim.
-- **Tham số**:
-  - `id` (bắt buộc): ID của bộ phim.
-- **Phản hồi**:
-```json
-{
-  "id": 1,
-  "title": "Tên phim",
-  "description": "Mô tả phim",
-  "poster": "URL hình ảnh",
-  "rating": 8.5,
-  "episodes": [
-    {
-      "id": 101,
-      "title": "Tập 1",
-      "url": "URL phát phim"
-    }
-  ]
-}
-```
-
-### 3. **Xác thực người dùng**
-- **URL**: `http://103.229.53.17/api/auth/login`
-- **Phương thức**: `POST`
-- **Mô tả**: Đăng nhập người dùng.
-- **Tham số**:
-  - `email` (bắt buộc): Email của người dùng.
-  - `password` (bắt buộc): Mật khẩu.
-- **Phản hồi**:
-```json
-{
-  "token": "JWT token",
-  "user": {
-    "id": 1,
-    "name": "Tên người dùng",
-    "email": "Email người dùng"
->>>>>>> 3418a81b3a7d808ed65364b7b6b848762d4414a7
-  }
-}
-```
-
-<<<<<<< HEAD
 ---
 
 ### POST `/auth/reset-password` — Đặt lại mật khẩu
@@ -781,6 +655,152 @@ const isAdmin = user.roles.includes('ROLE_ADMIN')
 
 ---
 
+## Endpoints — Bookmark
+
+> Prefix: `/api/bookmarks`  
+> Tất cả endpoint yêu cầu `Authorization: Bearer <accessToken>`. `userId` được lấy tự động từ token — không cần gửi trong request.
+
+### Flow tổng quan
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        BOOKMARK FLOW                        │
+│                                                             │
+│  1. User bấm bookmark phim                                  │
+│     POST /api/bookmarks                                     │
+│     Body: { "slug": "ten-phim" }                            │
+│                                                             │
+│  2. User vào trang bookmark → danh sách kèm tiến trình      │
+│     GET /api/bookmarks/{userId}                             │
+│     → latestEpisode, positionSeconds, lastWatchedAt         │
+│       (null nếu chưa xem lần nào)                           │
+│                                                             │
+│  3. Kiểm tra trạng thái nút bookmark                        │
+│     GET /api/bookmarks/isBookmarked/{userId}/{movieId}      │
+│                                                             │
+│  4. Xóa bookmark                                            │
+│     DELETE /api/bookmarks/{userId}/{movieId}                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### POST `/api/bookmarks` — Thêm bookmark
+
+**Header:** `Authorization: Bearer <accessToken>`
+
+**Request:**
+```json
+{
+  "slug": "nhip-dap-trai-tim-phan-5"
+}
+```
+
+> Backend tự lấy `userId` từ token và tra cứu `movieId`, `movieTitle`, `posterUrl`, `mediaType` từ DB (đã sync từ OPhim). FE chỉ cần gửi `slug` của phim.
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "data": {
+    "id": 1,
+    "userId": 3,
+    "movieId": "69dfcfeb41d6bb2c315360fb",
+    "slug": "nhip-dap-trai-tim-phan-5",
+    "movieTitle": "Nhịp Đập Trái Tim (Phần 5)",
+    "posterUrl": "nhip-dap-trai-tim-phan-5-poster.jpg",
+    "mediaType": "series",
+    "bookmarkDate": "2026-05-22T10:00:00",
+    "latestEpisode": null,
+    "positionSeconds": null,
+    "episodeCompleted": null,
+    "lastWatchedAt": null
+  }
+}
+```
+
+> `latestEpisode`, `positionSeconds`, `episodeCompleted`, `lastWatchedAt` — `null` khi user chưa xem tập nào của phim đó.
+
+**Response lỗi `400`:**
+```json
+{ "status": false, "message": "Already bookmarked" }
+{ "status": false, "message": "Phim chưa được đồng bộ, vui lòng thử lại sau" }
+```
+
+---
+
+### GET `/api/bookmarks/{userId}` — Danh sách bookmark
+
+**Header:** `Authorization: Bearer <accessToken>`
+
+```
+GET /api/bookmarks/3
+```
+
+> `userId` trong path phải khớp với token. Nếu không khớp → `403 Forbidden`.
+
+**Response `200`:** Mảng bookmark sắp xếp theo `bookmarkDate` mới nhất, kèm tiến trình tập xem gần nhất (nếu có):
+
+```json
+{
+  "status": true,
+  "data": [
+    {
+      "id": 1,
+      "userId": 3,
+      "movieId": "69dfcfeb41d6bb2c315360fb",
+      "slug": "nhip-dap-trai-tim-phan-5",
+      "movieTitle": "Nhịp Đập Trái Tim (Phần 5)",
+      "posterUrl": "nhip-dap-trai-tim-phan-5-poster.jpg",
+      "mediaType": "series",
+      "bookmarkDate": "2026-05-22T10:00:00",
+      "latestEpisode": 4,
+      "positionSeconds": 1234,
+      "episodeCompleted": false,
+      "lastWatchedAt": "2026-05-27T20:30:00"
+    }
+  ]
+}
+```
+
+---
+
+### GET `/api/bookmarks/isBookmarked/{userId}/{movieId}` — Kiểm tra đã bookmark chưa
+
+**Header:** `Authorization: Bearer <accessToken>`
+
+```
+GET /api/bookmarks/isBookmarked/3/69dfcfeb41d6bb2c315360fb
+```
+
+> `userId` trong path phải khớp với token. Nếu không khớp → `403 Forbidden`.
+
+**Response `200`:**
+```json
+{ "status": true, "data": true }
+```
+
+Dùng để FE render nút bookmark (đã bookmark / chưa bookmark).
+
+---
+
+### DELETE `/api/bookmarks/{userId}/{movieId}` — Xóa bookmark
+
+**Header:** `Authorization: Bearer <accessToken>`
+
+```
+DELETE /api/bookmarks/3/69dfcfeb41d6bb2c315360fb
+```
+
+> `userId` trong path phải khớp với token. Nếu không khớp → `403 Forbidden`.
+
+**Response `200`:**
+```json
+{ "status": true, "data": "Xóa bookmark thành công" }
+```
+
+---
+
 ## Admin Endpoints (yêu cầu ROLE_ADMIN)
 
 Tất cả endpoint dưới đây yêu cầu header `Authorization: Bearer <accessToken>` của tài khoản có `ROLE_ADMIN`.
@@ -915,6 +935,7 @@ docker compose up -d
 | `users` | 1 giờ |
 | `searchHistory` | 5 phút |
 | `syncedMovies` | 2 phút |
+| `watchProgress` (`wp:{userId}:{movieId}:{ep}`) | 2 giờ |
 
 ---
 
@@ -924,98 +945,3 @@ docker compose up -d
 - `forgot-password` luôn trả cùng message — chống dò email tồn tại
 - Password hash BCrypt, JWT ký HS512
 - CORS chỉ cho phép origin trong `cors.allowed-origins`
-=======
-## Hướng dẫn triển khai trên Ubuntu Server
-
-### Cài đặt các yêu cầu
-1. **Cài đặt Node.js và pnpm**:
-   ```bash
-   curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-   sudo apt-get install -y nodejs
-   npm install -g pnpm
-   ```
-2. **Cài đặt Java JDK 17**:
-   ```bash
-   sudo apt update
-   sudo apt install openjdk-17-jdk
-   ```
-3. **Cài đặt Maven**:
-   ```bash
-   sudo apt install maven
-   ```
-4. **Cài đặt Nginx**:
-   ```bash
-   sudo apt install nginx
-   ```
-
-### Triển khai Frontend
-1. Build ứng dụng:
-   ```bash
-   pnpm build
-   ```
-2. Copy thư mục `.next` lên server.
-3. Cấu hình Nginx để phục vụ ứng dụng:
-   - Tạo file cấu hình Nginx:
-     ```bash
-     sudo nano /etc/nginx/sites-available/mocphim-frontend
-     ```
-   - Thêm nội dung sau:
-     ```nginx
-     server {
-         listen 80;
-         server_name 103.229.53.17;
-
-         root /path/to/frontend/.next;
-         index index.html;
-
-         location / {
-             try_files $uri /index.html;
-         }
-     }
-     ```
-   - Kích hoạt cấu hình:
-     ```bash
-     sudo ln -s /etc/nginx/sites-available/mocphim-frontend /etc/nginx/sites-enabled/
-     sudo systemctl restart nginx
-     ```
-
-### Triển khai Backend
-1. Build ứng dụng:
-   ```bash
-   ./mvnw package
-   ```
-2. Chạy file JAR:
-   ```bash
-   java -jar target/backend-web-0.0.1-SNAPSHOT.jar
-   ```
-3. Cấu hình Nginx để reverse proxy đến cổng 8080:
-   - Tạo file cấu hình Nginx:
-     ```bash
-     sudo nano /etc/nginx/sites-available/mocphim-backend
-     ```
-   - Thêm nội dung sau:
-     ```nginx
-     server {
-         listen 80;
-         server_name 103.229.53.17;
-
-         location /api/ {
-             proxy_pass http://localhost:8080/;
-             proxy_set_header Host $host;
-             proxy_set_header X-Real-IP $remote_addr;
-             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-         }
-     }
-     ```
-   - Kích hoạt cấu hình:
-     ```bash
-     sudo ln -s /etc/nginx/sites-available/mocphim-backend /etc/nginx/sites-enabled/
-     sudo systemctl restart nginx
-     ```
-
-## Đóng góp
-Mọi đóng góp đều được hoan nghênh! Vui lòng fork repository và tạo pull request cho các thay đổi.
-
-## Giấy phép
-Dự án này được cấp phép theo giấy phép MIT.
->>>>>>> 3418a81b3a7d808ed65364b7b6b848762d4414a7

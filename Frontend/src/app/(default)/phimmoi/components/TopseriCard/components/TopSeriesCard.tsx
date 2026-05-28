@@ -96,7 +96,7 @@ export const TopSeriesCard = ({ index, movie, priority = false }: TopSeriesCardP
 
         {/* Tên phim */}
         <h4 className="text-white text-base font-normal line-clamp-1 m-0 relative z-0">
-          <Link href={`/phim/${movie.slug}`} className="hover:text-[#f472b6] transition-colors">
+          <Link href={`/phim/${movie.slug}`} className="text-white no-underline hover:text-[#f472b6] transition-colors">
             {movie.title}
           </Link>
         </h4>

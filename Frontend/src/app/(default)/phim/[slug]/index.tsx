@@ -17,6 +17,8 @@ interface MovieDetailTemplateProps {
   images: MoviesImagesData | null;
   keywords: KeywordsData | null;
   topMovies: { items: MovieListItem[]; cdnImage: string } | null;
+  initialTap: number;
+  initialSv: number;
 }
 
 const MovieDetailTemplatePage = ({
@@ -25,6 +27,8 @@ const MovieDetailTemplatePage = ({
   images,
   keywords,
   topMovies,
+  initialTap,
+  initialSv,
 }: MovieDetailTemplateProps) => {
   const { item, cdnImage } = movieData;
   const backdropUrl = getMovieThumb(item.poster_url || item.thumb_url, cdnImage);
@@ -38,7 +42,7 @@ const MovieDetailTemplatePage = ({
             <Sidebar movie={item} cdnImage={cdnImage} peoples={peoples} topMovies={topMovies} />
           </div>
           <div className='w-full relative z-3'>
-            <Hero movie={item} cdnImage={cdnImage} images={images} keywords={keywords} />
+            <Hero movie={item} cdnImage={cdnImage} images={images} keywords={keywords} initialTap={initialTap} initialSv={initialSv} />
           </div>
         </div>
       </div>

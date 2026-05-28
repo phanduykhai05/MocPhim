@@ -1,6 +1,7 @@
 import React from 'react';
 import HeroSection from '@/app/(home)/components/Hero';
 import TopMovies from '@/app/(home)/components/TopMovies';
+import BookmarkedMovies from '@/app/(home)/components/BookmarkedMovies';
 import SeoContent from '@/app/(home)/components/SeoContent';
 import Footer from '@/app/(home)/components/Footer';
 
@@ -13,6 +14,7 @@ export default function HomePage() {
       <main className="max-w-[1900px] mx-auto">
         <HeroSection />
         <TopMovies />
+        <BookmarkedMovies />
         <SeoContent />
       </main>
 

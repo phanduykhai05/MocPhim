@@ -1,4 +1,5 @@
 import type { WatchMovie } from '@/app/(default)/xem-phim/[slug]/types';
+import BookmarkButton from '@/components/BookmarkButton';
 
 type MovieMetaPanelProps = {
   movie: WatchMovie;
@@ -20,6 +21,12 @@ const MovieMetaPanel = ({ movie }: MovieMetaPanelProps) => {
             <span className="rounded bg-white/10 px-2 py-1 text-white/85">{movie.quality}</span>
             <span className="rounded bg-white/10 px-2 py-1 text-white/85">{movie.duration}</span>
           </div>
+          <div className="mt-3">
+            <BookmarkButton
+              movieId={movie.movieId}
+              slug={movie.slug}
+              className="flex items-center gap-2 text-sm text-white/80 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg transition select-none disabled:opacity-60"
+            /></div>
 
           <div className="mt-3 space-y-1 text-xs text-white/70">
             <p>

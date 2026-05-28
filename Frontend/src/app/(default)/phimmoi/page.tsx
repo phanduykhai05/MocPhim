@@ -1,5 +1,6 @@
 import Banner from "@/app/(default)/phimmoi/components/Banner";
 import Topics from "@/app/(default)/phimmoi/components/Topics";
+import BookmarkedMovies from "@/app/(home)/components/BookmarkedMovies";
 import { TopSeriesList } from "@/app/(default)/phimmoi/components/TopseriCard";
 import { DottedMap, type Marker } from "@/components/ui/dotted-map";
 import { NewUpdateList } from "@/app/(default)/phimmoi/components/MovieUpdate";
@@ -128,6 +129,7 @@ export default async function PhimMoi() {
     <div className="min-h-screen overflow-x-hidden bg-[#191B24] font-sans text-white selection:bg-[#764ba2] selection:text-white">
       <Banner movies={bannerMovies} />
       <Topics />
+      <BookmarkedMovies />
       <NewUpdateList movies={updateMovies} />
       <HappyMovie movies={happyMovies} />
       <TopSeriesList movies={topSeriesMovies} />

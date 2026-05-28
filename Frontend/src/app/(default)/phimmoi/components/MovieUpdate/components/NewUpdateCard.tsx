@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import images from "@/assets/images";
 
-export type BadgeItem = { type: "pd" | "lt" | "tm"; text: string };
+export type BadgeItem = { type: "pd" | "lt" | "tm"; text: string; label?: string };
 
 const BADGE_LABEL: Record<BadgeItem["type"], string> = { pd: "PĐ.", tm: "TM.", lt: "LT." };
 const BADGE_BG: Record<BadgeItem["type"], string> = {
@@ -71,7 +71,7 @@ export const NewUpdateCard = ({ title, originName, slug, thumb, badges, priority
                   className="flex items-center gap-1 px-2 py-[0.2rem] text-[11px] font-normal text-white"
                   style={{ backgroundColor: BADGE_BG[b.type] }}
                 >
-                  <span style={{ fontWeight: 200 }}>{BADGE_LABEL[b.type]}</span>
+                  <span style={{ fontWeight: 200 }}>{b.label !== undefined ? b.label : BADGE_LABEL[b.type]}</span>
                   <strong className="font-semibold" style={{ fontWeight: 200 }}>{b.text}</strong>
                 </div>
               ))}

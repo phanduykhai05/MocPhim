@@ -1,7 +1,8 @@
 ﻿import React from 'react';
 import Link from 'next/link';
-import { Play, Heart, Share, MessageCircle } from 'lucide-react';
+import { Play, Share, MessageCircle } from 'lucide-react';
 import { MovieItem } from '@/lib/api/movie';
+import BookmarkButton from '@/components/BookmarkButton';
 
 interface MovieActionBarProps {
   movie: MovieItem;
@@ -64,8 +65,8 @@ export const MovieActionBar = ({ movie }: MovieActionBarProps) => {
       {/* Action buttons + rating */}
       <div className="flex-grow flex items-center justify-between w-full overflow-x-auto pb-2 lg:pb-0 hide-scrollbar gap-4">
         <div className="flex items-center gap-2 lg:gap-4 flex-nowrap">
+          <BookmarkButton movieId={movie._id} slug={movie.slug} />
           {[
-            { name: 'Yêu thích', icon: Heart },
             { name: 'Thêm vào', icon: Play },
             { name: 'Chia sẻ', icon: Share },
             { name: 'Bình luận', icon: MessageCircle },

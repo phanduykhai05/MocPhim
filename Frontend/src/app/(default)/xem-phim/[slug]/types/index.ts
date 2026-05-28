@@ -12,6 +12,7 @@ export type WatchServer = {
 };
 
 export type WatchMovie = {
+  movieId: string;
   slug: string;
   title: string;
   altTitle: string;

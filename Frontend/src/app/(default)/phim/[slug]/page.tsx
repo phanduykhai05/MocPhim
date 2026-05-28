@@ -8,8 +8,15 @@ import {
   fetchMovieList,
 } from '@/lib/api/movie';
 
-export default async function MovieDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function MovieDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ tap?: string; sv?: string }>;
+}) {
   const { slug } = await params;
+  const query = searchParams ? await searchParams : {};
 
   const [movieData, peoplesData, imagesData, keywordsData, topMoviesData] = await Promise.all([
     fetchMovieDetail(slug),
@@ -28,6 +35,8 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ sl
       images={imagesData}
       keywords={keywordsData}
       topMovies={topMoviesData}
+      initialTap={Number(query?.tap ?? 1)}
+      initialSv={Number(query?.sv ?? 0)}
     />
   );
 }
