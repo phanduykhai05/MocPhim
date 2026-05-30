@@ -29,19 +29,22 @@ export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, s
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const elapsedRef = useRef(0);
+  const isSavingRef = useRef(false);
+  const savedKeyRef = useRef(""); // tránh React StrictMode double-invoke
 
   const saveProgress = useCallback(
     (positionSeconds: number, isCompleted: boolean) => {
-      if (!user || !movieId) {
-        console.warn("[WatchProgress] skip — user:", user?.id, "movieId:", movieId);
-        return;
-      }
-      console.log("[WatchProgress] PATCH", { userId: user.id, movieId, episode, positionSeconds, isCompleted });
+      if (!user || !movieId) return;
+      const key = `${user.id}-${movieId}-${episode}-${positionSeconds}`;
+      if (positionSeconds === 0 && savedKeyRef.current === key) return; // đã gọi rồi
+      if (isSavingRef.current) return;
+      isSavingRef.current = true;
+      if (positionSeconds === 0) savedKeyRef.current = key;
       apiUpdateProgress(user.id, movieId, episode, {
         slug: movieSlug,
         positionSeconds,
         isCompleted,
-      });
+      }).finally(() => { isSavingRef.current = false; });
     },
     [user, movieId, episode, movieSlug]
   );
@@ -72,7 +75,6 @@ export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, s
 
   // Ghi nhận bắt đầu xem & cập nhật mỗi 60 giây
   useEffect(() => {
-    console.log("[WatchProgress] effect fired — user:", user?.id ?? "null", "| movieId:", movieId || "empty");
     if (!user || !movieId) return;
     elapsedRef.current = 0;
     saveProgress(0, false);
