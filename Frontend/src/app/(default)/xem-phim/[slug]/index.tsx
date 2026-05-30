@@ -85,6 +85,7 @@ const WatchMovieTemplate = ({
             episode={currentEpisode}
             server={currentServer}
             embedUrl={currentEpisodeData?.linkEmbed || ''}
+            hasTapParam={tap !== undefined}
           />
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_450px] lg:gap-6">
@@ -98,6 +99,7 @@ const WatchMovieTemplate = ({
               />
               <EpisodeSelector
                 slug={slug}
+                movieId={movie.movieId}
                 currentEpisode={currentEpisode}
                 server={currentServer}
                 episodes={activeServer?.episodes ?? []}

@@ -226,9 +226,13 @@ function SyncManagementTab() {
     setTriggerResult(null);
     setTriggerError(null);
     try {
+      const token = localStorage.getItem("accessToken");
       const res = await fetch(
         `${API_BASE}/sync/movies/trigger?startPage=${values.startPage}&maxPages=${values.maxPages}`,
-        { method: "POST" }
+        {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
       );
       const json = await res.json();
       if (!res.ok || !json?.status) throw new Error(json?.message ?? `HTTP ${res.status}`);
@@ -250,7 +254,11 @@ function SyncManagementTab() {
     setResyncResult(null);
     setResyncError(null);
     try {
-      const res = await fetch(`${API_BASE}/sync/movies/resync?limit=${limit}`, { method: "POST" });
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_BASE}/sync/movies/resync?limit=${limit}`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const json = await res.json();
       if (!res.ok || !json?.status) throw new Error(json?.message ?? `HTTP ${res.status}`);
       setResyncResult(json.data as ResyncResult);

@@ -7,7 +7,8 @@ import { App } from "antd";
 import { ArrowLeft, Flag, Heart, ListVideo, Maximize, Plus, Share2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiAddBookmark, apiDeleteBookmark, apiIsBookmarked } from "@/lib/api/bookmarks";
-import { useEffect } from "react";
+import { apiUpdateProgress, apiGetAllProgress } from "@/lib/api/progress";
+import { useEffect, useCallback } from "react";
 
 type VideoPlayerProps = {
   movieSlug: string;
@@ -16,9 +17,10 @@ type VideoPlayerProps = {
   episode: number;
   server: number;
   embedUrl: string;
+  hasTapParam: boolean;
 };
 
-export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, server, embedUrl }: VideoPlayerProps) {
+export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, server, embedUrl, hasTapParam }: VideoPlayerProps) {
   const router = useRouter();
   const { user } = useAuth();
   const { message } = App.useApp();
@@ -26,11 +28,62 @@ export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, s
 
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const elapsedRef = useRef(0);
 
+  const saveProgress = useCallback(
+    (positionSeconds: number, isCompleted: boolean) => {
+      if (!user || !movieId) {
+        console.warn("[WatchProgress] skip — user:", user?.id, "movieId:", movieId);
+        return;
+      }
+      console.log("[WatchProgress] PATCH", { userId: user.id, movieId, episode, positionSeconds, isCompleted });
+      apiUpdateProgress(user.id, movieId, episode, {
+        slug: movieSlug,
+        positionSeconds,
+        isCompleted,
+      });
+    },
+    [user, movieId, episode, movieSlug]
+  );
+
+  // Bước 1: Resume — redirect về tập đang xem dở nếu không có ?tap= trong URL
+  useEffect(() => {
+    if (hasTapParam || !user || !movieId) return;
+    apiGetAllProgress(user.id, movieId).then((list) => {
+      if (list.length === 0) return;
+      const latest = list.reduce((a, b) =>
+        new Date(a.lastWatchedAt) > new Date(b.lastWatchedAt) ? a : b
+      );
+      if (latest.episodeNumber > 1) {
+        router.replace(`/xem-phim/${movieSlug}?tap=${latest.episodeNumber}&sv=${server}`);
+      }
+    });
+  }, [user, movieId, hasTapParam, movieSlug, server, router]);
+
+  // Tự động bookmark khi bắt đầu xem (để progress hiển thị trên trang chủ)
   useEffect(() => {
     if (!user || !movieId) return;
-    apiIsBookmarked(user.id, movieId).then(setBookmarked).catch(() => {});
-  }, [user, movieId]);
+    apiIsBookmarked(user.id, movieId).then((isAlready) => {
+      if (!isAlready) {
+        apiAddBookmark(movieSlug).then(() => setBookmarked(true)).catch(() => {});
+      }
+    }).catch(() => {});
+  }, [user, movieId, movieSlug]);
+
+  // Ghi nhận bắt đầu xem & cập nhật mỗi 60 giây
+  useEffect(() => {
+    console.log("[WatchProgress] effect fired — user:", user?.id ?? "null", "| movieId:", movieId || "empty");
+    if (!user || !movieId) return;
+    elapsedRef.current = 0;
+    saveProgress(0, false);
+
+    const interval = setInterval(() => {
+      elapsedRef.current += 60;
+      saveProgress(elapsedRef.current, false);
+    }, 60_000);
+
+    return () => clearInterval(interval);
+  }, [user, movieId, episode, saveProgress]);
 
   async function handleBookmark() {
     if (!user) {
@@ -57,6 +110,7 @@ export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, s
   }
 
   function handleNextEpisode() {
+    saveProgress(elapsedRef.current, true);
     router.replace(`/xem-phim/${movieSlug}?tap=${episode + 1}&sv=${server}`);
   }
 

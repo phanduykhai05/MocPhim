@@ -35,7 +35,7 @@ export default function BookmarkedMovies() {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
+  const fetchBookmarks = React.useCallback(() => {
     if (!user) return;
     setLoading(true);
     apiGetBookmarks(user.id)
@@ -43,6 +43,19 @@ export default function BookmarkedMovies() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    fetchBookmarks();
+  }, [fetchBookmarks]);
+
+  // Refetch khi quay lại tab/trang (sau khi xem phim)
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchBookmarks();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [fetchBookmarks]);
 
   if (authLoading || !user || (!loading && bookmarks.length === 0)) return null;
 
