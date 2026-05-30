@@ -8,7 +8,17 @@
 @import "swiper/css/navigation";
 
 @custom-variant dark (&:is(.dark *));
+@keyframes logo-shine {
+  0%   { transform: translateX(-120%) skewX(-15deg); }
+  60%  { transform: translateX(220%) skewX(-15deg); }
+  100% { transform: translateX(220%) skewX(-15deg); }
+}
+
 @layer utilities {
+  .animate-logo-shine {
+    animation: logo-shine 3s ease-in-out infinite;
+  }
+
   /* Ẩn thanh cuộn nhưng vẫn cho phép lướt */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;

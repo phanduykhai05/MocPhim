@@ -53,16 +53,21 @@ const Header = () => {
             }
           }}
         >
-          <Image 
-            src={images.logo} 
-            alt="MocPhim Logo" 
-            width={120} 
-            height={40} 
-            loading="eager"
-            priority
-            className="object-contain w-auto h-auto"
-            style={{ width: "auto", height: "auto" }}
-          />
+          <span className="relative inline-block overflow-hidden rounded-sm">
+            <Image
+              src={images.logo}
+              alt="MocPhim Logo"
+              width={120}
+              height={40}
+              loading="eager"
+              priority
+              className="object-contain"
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 -translate-x-full animate-logo-shine bg-gradient-to-r from-transparent via-white/50 to-transparent"
+            />
+          </span>
         </Link>
         <SearchBar />
         <Navigation />
