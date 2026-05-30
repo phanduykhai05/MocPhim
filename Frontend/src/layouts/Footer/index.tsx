@@ -33,8 +33,8 @@ export default function Footer() {
                             <p><i>--------Developer--------</i></p>
                             <p>FullStack Phan Duy Khai</p>
                             <p>BackEnd Vo Ho Vinh Khang.</p>
-                            <p>TestTer Tran Thi Bich Ngoc</p>
-                            <p>BA Nguyen Gia Huy</p>
+                            <p>Testing Tran Thi Bich Ngoc</p>
+                            <p>Testing Nguyen Gia Huy</p>
                             <p><i>--------Developer--------</i></p>
                         </div>
 
