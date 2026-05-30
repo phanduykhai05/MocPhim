@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mocphim.com.backend_web.dto.request.WatchProgressRequestDto;
 import mocphim.com.backend_web.dto.response.WatchProgressResponseDto;
+import mocphim.com.backend_web.entity.MovieSync;
 import mocphim.com.backend_web.entity.WatchProgress;
+import mocphim.com.backend_web.repository.MovieSyncRepository;
 import mocphim.com.backend_web.repository.WatchProgressRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 public class WatchProgressService {
 
     private final WatchProgressRepository watchProgressRepository;
+    private final MovieSyncRepository movieSyncRepository;
     private final UnifiedJedis jedis;
     private final ObjectMapper objectMapper;
 
@@ -85,6 +88,19 @@ public class WatchProgressService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public WatchProgressResponseDto getResumePoint(Long userId, String slug) {
+        String ophimId = movieSyncRepository.findBySlug(slug)
+                .map(MovieSync::getOphimId)
+                .orElse(null);
+        if (ophimId == null || ophimId.equals("NOT_FOUND")) {
+            return null;
+        }
+        return watchProgressRepository
+                .findTopByUserIdAndMovieIdOrderByLastWatchedAtDesc(userId, ophimId)
+                .map(this::toResponse)
+                .orElse(null);
     }
 
     private void cacheToRedis(WatchProgressResponseDto dto) {

@@ -801,6 +801,210 @@ DELETE /api/bookmarks/3/69dfcfeb41d6bb2c315360fb
 
 ---
 
+## Endpoints — WatchProgress (Tiến trình xem)
+
+> Prefix: `/api/v1/progress`  
+> Tất cả endpoint yêu cầu `Authorization: Bearer <accessToken>`. `userId` trong path phải khớp với token — nếu không khớp → `403 Forbidden`.
+
+### Flow tổng quan
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     WATCH PROGRESS FLOW                      │
+│                                                             │
+│  1. User mở trang phim (không có tập trong URL)             │
+│     GET /api/v1/progress/{userId}/resume/{slug}             │
+│     → episodeNumber, positionSeconds của tập gần nhất       │
+│     → null nếu chưa xem lần nào → FE load tập 1            │
+│                                                             │
+│  2. User đang xem — mỗi ~30s FE gọi để lưu vị trí          │
+│     PATCH /api/v1/progress/{userId}/{movieId}/{episode}     │
+│     Body: { "positionSeconds": 320 }                        │
+│                                                             │
+│  3. User mở lại player (click vào tập cụ thể)               │
+│     GET /api/v1/progress/{userId}/{movieId}/{episode}       │
+│     → positionSeconds để seek đúng vị trí                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> **movieId** là `_id` từ OPhim, lấy từ response của `GET /api/v1/movies/{slug}`.
+
+---
+
+### GET `/api/v1/progress/{userId}/resume/{slug}` — Lấy điểm tiếp tục
+
+Gọi khi user mở trang phim để biết cần load tập mấy. Trả về tập có `lastWatchedAt` mới nhất.
+
+```
+GET /api/v1/progress/3/resume/rick-va-morty-phan-9
+```
+
+**Response `200` (đã xem):**
+```json
+{
+  "status": true,
+  "data": {
+    "userId": 3,
+    "movieId": "68a1b2c3d4e5f6",
+    "slug": "rick-va-morty-phan-9",
+    "episodeNumber": 5,
+    "positionSeconds": 320,
+    "isCompleted": false,
+    "lastWatchedAt": "2026-05-28T20:30:00"
+  }
+}
+```
+
+**Response `200` (chưa xem lần nào):**
+```json
+{ "status": true, "data": null }
+```
+
+> Khi `data` là `null` → FE load tập 1, không cần seek.
+
+---
+
+### GET `/api/v1/progress/{userId}/{movieId}/{episodeNumber}` — Tiến trình 1 tập
+
+Gọi khi user mở player để seek đúng vị trí đã xem trước đó.
+
+```
+GET /api/v1/progress/3/68a1b2c3d4e5f6/5
+```
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "data": {
+    "userId": 3,
+    "movieId": "68a1b2c3d4e5f6",
+    "slug": "rick-va-morty-phan-9",
+    "episodeNumber": 5,
+    "positionSeconds": 320,
+    "isCompleted": false,
+    "lastWatchedAt": "2026-05-28T20:30:00"
+  }
+}
+```
+
+> Nếu chưa có tiến trình cho tập đó → trả về `positionSeconds: 0`, `isCompleted: false`.
+
+---
+
+### GET `/api/v1/progress/{userId}/{movieId}` — Tất cả tập đã xem của 1 phim
+
+Dùng cho trang chi tiết phim để đánh dấu tập nào đã xem.
+
+```
+GET /api/v1/progress/3/68a1b2c3d4e5f6
+```
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "data": [
+    { "episodeNumber": 1, "positionSeconds": 1440, "isCompleted": true, "lastWatchedAt": "..." },
+    { "episodeNumber": 5, "positionSeconds": 320, "isCompleted": false, "lastWatchedAt": "..." }
+  ]
+}
+```
+
+---
+
+### PATCH `/api/v1/progress/{userId}/{movieId}/{episodeNumber}` — Lưu/cập nhật tiến trình
+
+Gọi mỗi ~30s khi xem, khi pause, chuyển tập, hoặc đóng trang.
+
+```
+PATCH /api/v1/progress/3/68a1b2c3d4e5f6/5
+```
+
+**Request:**
+```json
+{
+  "slug": "rick-va-morty-phan-9",
+  "positionSeconds": 320,
+  "isCompleted": false
+}
+```
+
+| Field | Bắt buộc | Mô tả |
+|---|---|---|
+| `slug` | Chỉ lần đầu tiên | Bắt buộc khi record chưa tồn tại, bỏ qua được ở các lần sau |
+| `positionSeconds` | Không | Vị trí hiện tại tính bằng giây |
+| `isCompleted` | Không | `true` khi tập kết thúc |
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "data": {
+    "userId": 3,
+    "movieId": "68a1b2c3d4e5f6",
+    "slug": "rick-va-morty-phan-9",
+    "episodeNumber": 5,
+    "positionSeconds": 320,
+    "isCompleted": false,
+    "lastWatchedAt": "2026-05-28T20:35:00"
+  }
+}
+```
+
+---
+
+### Flow Progress — Frontend
+
+**1. Trang phim `/phim/{slug}`**
+```
+User mở trang → đã login?
+  Có → GET /api/v1/progress/{userId}/resume/{slug}
+        data.episodeNumber? → redirect /xem-phim/{slug}?tap=N&sv=0
+        null?               → ở lại trang, user tự chọn tập
+```
+
+**2. Trang xem `/xem-phim/{slug}?tap=N` — Restore vị trí**
+```
+HLS MANIFEST_PARSED fired
+  → đọc localStorage[progress_{slug}_{ep}]
+  → có token? → GET /api/v1/progress/{userId}/{movieId}/{ep}
+        server > 5s  → dùng server (server thắng)
+        server = 0   → giữ localStorage (không override)
+  → saved > 5s? → video.currentTime = saved
+```
+
+**3. Đang xem — Lưu tiến trình**
+
+Trigger: mỗi 30s (nếu đang play) + pause + ended + pagehide
+```
+currentTime > 5s?
+  → localStorage[progress_{slug}_{ep}] = seconds
+  → PATCH /api/v1/progress/{userId}/{movieId}/{ep}
+     { slug, positionSeconds, isCompleted }
+
+isCompleted = true khi currentTime >= 90% tổng thời lượng
+```
+
+**4. Chuyển tập (không F5)**
+```
+Click tập khác
+  → aborted = true        (chặn restoreProgress cũ)
+  → cleanup HLS cũ        (remove listeners, clear interval, destroy)
+  → HLS mới load tập mới → lặp lại bước 2
+```
+
+**Ghi chú kỹ thuật**
+
+| | |
+|---|---|
+| `userRef` | Auth load chậm không ảnh hưởng — save/restore luôn thấy user mới nhất |
+| `aborted` flag | Switch tập nhanh không bị race condition seek sai tập |
+| Server vs localStorage | Server thắng chỉ khi > 5s, tránh `server=0` ghi đè localStorage |
+| HLS deps | Không có user → HLS không restart khi auth state thay đổi |
+
+---
+
 ## Admin Endpoints (yêu cầu ROLE_ADMIN)
 
 Tất cả endpoint dưới đây yêu cầu header `Authorization: Bearer <accessToken>` của tài khoản có `ROLE_ADMIN`.

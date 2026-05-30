@@ -3,6 +3,7 @@ package mocphim.com.backend_web.controller;
 import lombok.RequiredArgsConstructor;
 import mocphim.com.backend_web.dto.response.ApiResponse;
 import mocphim.com.backend_web.entity.MovieSync;
+import mocphim.com.backend_web.repository.MovieSyncRepository;
 import mocphim.com.backend_web.scheduler.MovieSyncScheduler;
 import mocphim.com.backend_web.service.MovieSyncService;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ public class SyncController {
 
     private final MovieSyncService movieSyncService;
     private final MovieSyncScheduler movieSyncScheduler;
+    private final MovieSyncRepository movieSyncRepository;
 
     @GetMapping("/movies")
     public ResponseEntity<ApiResponse<Object>> getSyncedMovies(
@@ -57,9 +59,8 @@ public class SyncController {
     }
 
     /**
-     * Re-sync các record chưa có ophim_id (= null) — cần thiết để bookmark hoạt động.
-     * Gọi nhiều lần cho đến khi remaining = 0.
-     * @param limit số lượng slug xử lý mỗi lần gọi (mặc định 100, tối đa 500)
+     * Re-sync đồng bộ — trả về kết quả sau khi xong (dùng khi limit nhỏ).
+     * @param limit số lượng slug xử lý (mặc định 100, tối đa 500)
      */
     @PostMapping("/movies/resync")
     public ResponseEntity<ApiResponse<Object>> resyncMissingFields(
@@ -67,5 +68,21 @@ public class SyncController {
     ) {
         int safeLimit = Math.min(limit, 500);
         return ResponseEntity.ok(ApiResponse.success(movieSyncService.resyncMissingFields(safeLimit)));
+    }
+
+    /**
+     * Re-sync bất đồng bộ — trả về ngay lập tức, xử lý toàn bộ trong nền.
+     * Theo dõi tiến trình qua docker logs.
+     */
+    @PostMapping("/movies/resync-all")
+    public ResponseEntity<ApiResponse<Object>> resyncAllAsync() {
+        long remaining = movieSyncRepository.countByOphimIdIsNull();
+        if (remaining == 0) {
+            return ResponseEntity.ok(ApiResponse.success("Không có phim nào cần resync"));
+        }
+        movieSyncService.resyncAllAsync();
+        return ResponseEntity.ok(ApiResponse.success(
+            Map.of("message", "Resync đang chạy trong nền", "totalQueued", remaining)
+        ));
     }
 }

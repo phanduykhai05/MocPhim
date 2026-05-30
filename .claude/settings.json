@@ -19,7 +19,15 @@
       "PowerShell(Head -20)",
       "Bash(pnpm list *)",
       "Bash(grep -rn 'href={`/' k:/MocPhim/Frontend/src --include=\"*.tsx\")",
-      "Bash(xargs grep -l \"ExceptionHandler\\\\|ControllerAdvice\")"
+      "Bash(xargs grep -l \"ExceptionHandler\\\\|ControllerAdvice\")",
+      "Bash(git cherry-pick *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(pnpm build *)",
+      "PowerShell(Get-ChildItem -Path \"k:\\\\MocPhim\\\\Backend\" -Depth 1 -File | Where-Object { $_.Name -match \"\\\\.\\(json|ts|js|yaml|yml|env|toml\\)$\" })",
+      "PowerShell(Get-ChildItem -Path \"k:\\\\MocPhim\\\\Frontend\\\\src\\\\app\" -Recurse | Where-Object { $_.Name -match \"\\\\.\\(tsx|ts|js\\)$\" } | Select-Object -First 30)",
+      "PowerShell(Get-ChildItem -Path \"k:\\\\MocPhim\\\\Backend\\\\src\\\\main\\\\java\\\\mocphim\\\\com\\\\backend_web\" -Recurse -File | Where-Object { $_.Name -match \"\\\\.java$\" } | Select-Object -First 40 | ForEach-Object { $_.FullName.Replace\\(\"k:\\\\MocPhim\\\\Backend\\\\src\\\\main\\\\java\\\\mocphim\\\\com\\\\backend_web\\\\\", \"\"\\) })",
+      "Bash(ls -la k:\\\\\\\\MocPhim\\\\\\\\Backend\\\\\\\\src\\\\\\\\main\\\\\\\\java\\\\\\\\mocphim\\\\\\\\com\\\\\\\\backend_web\\\\\\\\controller\\\\\\\\)"
     ]
   }
 }

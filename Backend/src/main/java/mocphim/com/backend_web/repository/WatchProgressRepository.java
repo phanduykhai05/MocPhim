@@ -10,4 +10,5 @@ public interface WatchProgressRepository extends JpaRepository<WatchProgress, Lo
     Optional<WatchProgress> findByUserIdAndMovieIdAndEpisodeNumber(Long userId, String movieId, int episodeNumber);
     List<WatchProgress> findByUserIdAndMovieId(Long userId, String movieId);
     List<WatchProgress> findByUserIdAndMovieIdIn(Long userId, List<String> movieIds);
+    Optional<WatchProgress> findTopByUserIdAndMovieIdOrderByLastWatchedAtDesc(Long userId, String movieId);
 }
