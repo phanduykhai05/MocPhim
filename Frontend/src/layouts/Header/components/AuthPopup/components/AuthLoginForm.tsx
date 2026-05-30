@@ -6,9 +6,11 @@ import { AuthFormProps } from "../types";
 import { Google } from "@/components/icon/gg";
 import { useAuth } from "@/contexts/AuthContext";
 import { AUTH_BASE_URL } from "@/constants";
+import { App } from "antd";
 
 const AuthLoginForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
   const { login } = useAuth();
+  const { message } = App.useApp();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,6 +27,7 @@ const AuthLoginForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
     setIsLoading(true);
     try {
       await login(email, password);
+      message.success("Đăng nhập thành công!");
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
@@ -51,7 +54,7 @@ const AuthLoginForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="block h-11 w-full rounded-lg border border-[#2c375f] bg-[#1a2146] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
+          className="block h-11 w-full rounded-lg border border-[#1a1a1a] bg-[#4d4d4d] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
         />
         <input
           type="password"
@@ -59,7 +62,7 @@ const AuthLoginForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="block h-11 w-full rounded-lg border border-[#2c375f] bg-[#1a2146] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
+          className="block h-11 w-full rounded-lg border border-[#1a1a1a] bg-[#4d4d4d] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
         />
       </div>
 
@@ -84,7 +87,7 @@ const AuthLoginForm = ({ onSwitchMode, onClose }: AuthFormProps) => {
       <button
         type="button"
         onClick={handleGoogleLogin}
-        className="flex mt-4 h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#2c375f] bg-[#121938] text-sm font-semibold text-white transition hover:bg-[#1a2146]"
+        className="flex mt-4 h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#1a1a1a] bg-[#5a5d69] text-sm font-semibold text-white transition hover:bg-[#4d4d4d]"
       >
         <Google className="h-4 w-4 shrink-0" />
         Đăng nhập bằng Google

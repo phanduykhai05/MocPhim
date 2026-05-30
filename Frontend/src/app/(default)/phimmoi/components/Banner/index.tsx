@@ -8,7 +8,7 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/pagination';
 
-import styles from "./style.module.css";
+import styles from "./style.module.scss";
 import SlideElements from './components/SlideElements';
 import { FAKE_MOVIES, type Movie } from './components/data/movie';
 

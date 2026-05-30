@@ -100,7 +100,7 @@ function LoginContent() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="block h-11 w-full rounded-lg border border-[#2c375f] bg-[#1a2146] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
+            className="block h-11 w-full rounded-lg border border-[#1a1a1a] bg-[#4d4d4d] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
           />
           <input
             type="password"
@@ -108,7 +108,7 @@ function LoginContent() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="block h-11 w-full rounded-lg border border-[#2c375f] bg-[#1a2146] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
+            className="block h-11 w-full rounded-lg border border-[#1a1a1a] bg-[#4d4d4d] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
           />
 
           <button
@@ -130,15 +130,15 @@ function LoginContent() {
         </div>
 
         <div className="my-5 flex items-center gap-3">
-          <div className="h-px flex-1 bg-[#2c375f]" />
+          <div className="h-px flex-1 bg-[#1a1a1a]" />
           <span className="text-xs text-[#8f99bb]">hoặc</span>
-          <div className="h-px flex-1 bg-[#2c375f]" />
+          <div className="h-px flex-1 bg-[#1a1a1a]" />
         </div>
 
         <button
           type="button"
           onClick={handleGoogleLogin}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#2c375f] bg-[#121938] text-sm font-semibold text-white transition hover:bg-[#1a2146]"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#1a1a1a] bg-[#5a5d69] text-sm font-semibold text-white transition hover:bg-[#4d4d4d]"
         >
           <Google className="h-4 w-4 shrink-0" />
           Đăng nhập bằng Google

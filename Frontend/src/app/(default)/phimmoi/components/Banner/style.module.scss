@@ -1,0 +1,338 @@
+// ─── Variables ───────────────────────────────────────────────
+$primary-gold: #fecf59;
+$primary-gold-light: #fff1cc;
+$imdb-yellow: #f0d25c;
+$dark-bg: #191b24;
+$border-dim: rgba(255, 255, 255, 0.2);
+$tag-bg: rgba(255, 255, 255, 0.063);
+
+// ─── Container ───────────────────────────────────────────────
+.bannerContainer {
+  position: relative;
+
+  // Gradient fade ở dưới cùng
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 220px;
+    z-index: 20;
+    pointer-events: none;
+    background: linear-gradient(0deg, rgba($dark-bg, 1) 0%, rgba($dark-bg, 0) 100%);
+  }
+
+  // ── Swiper pagination thumbnails ──
+  :global(.swiper-pagination) {
+    position: absolute !important;
+    bottom: 215px !important;
+    right: clamp(16px, 4vw, 64px) !important;
+    left: auto !important;
+    width: auto !important;
+    display: flex !important;
+    gap: 5px;
+    z-index: 50;
+  }
+
+  :global(.custom-thumb) {
+    width: 65px !important;
+    height: 45px !important;
+    background-size: cover;
+    background-position: center;
+    border-radius: 0.5rem;
+    opacity: 0.5;
+    border: 2px solid rgba(255, 255, 255, 0.14);
+    cursor: pointer;
+    transform: scale(0.95);
+    transition: all 0.25s ease;
+    margin: 0 !important;
+    overflow: hidden;
+
+    &:hover {
+      opacity: 0.85;
+      transform: scale(1);
+    }
+  }
+
+  :global(.swiper-pagination-bullet-active.custom-thumb) {
+    opacity: 1;
+    border-color: #f4cd6d;
+    transform: scale(1);
+  }
+
+  // ── Slide active animations ──
+  :global(.swiper-slide-active) {
+    .mediaTitle  { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s    forwards; opacity: 0; }
+    .mediaAlias  { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s  forwards; opacity: 0; }
+    .hlTags      { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.18s forwards; opacity: 0; }
+    .description { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.26s forwards; opacity: 0; }
+    .touch       { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.34s forwards; opacity: 0; }
+  }
+
+  @media (max-width: 1024px) {
+    :global(.swiper-pagination) { display: none !important; }
+  }
+}
+
+// ─── Blurred background ──────────────────────────────────────
+.backgroundFade {
+  background-size: cover;
+  background-position: 50% 50%;
+  filter: blur(50px);
+  -webkit-filter: blur(80px);
+  opacity: 0.2;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// ─── Dotted overlay ──────────────────────────────────────────
+.dottedOverlay {
+  background-image: url('/images/dotted.png');
+  background-repeat: repeat;
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  z-index: 1;
+  pointer-events: none;
+}
+
+// ─── Cover fade (top/bottom mask) ────────────────────────────
+.coverFade {
+  position: absolute;
+  top: 0;
+  height: calc(100% - 60px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1900px;
+  mask-image: linear-gradient(0deg, transparent, #000 20%, #000 80%, transparent);
+  -webkit-mask-image: linear-gradient(0deg, transparent, #000 20%, #000 80%, transparent);
+}
+
+// ─── Cover image (left/right mask) ───────────────────────────
+.coverImage {
+  display: block;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  mask-image: linear-gradient(90deg, transparent 10px, rgba(0, 0, 0, 0.2) 15%, #000 40%, #000 80%, transparent 99%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 10px, rgba(0, 0, 0, 0.2) 15%, #000 40%, #000 80%, transparent 99%);
+}
+
+.coverImg {
+  bottom: 0; height: 100%; left: 0;
+  object-fit: cover;
+  object-position: center 25%;
+  position: absolute;
+  right: 0; top: 0; width: 100%;
+  animation: imgFadeIn 0.6s ease-in forwards;
+}
+
+@keyframes imgFadeIn {
+  from { opacity: 0; filter: blur(12px); }
+  to   { opacity: 1; filter: blur(0); }
+}
+
+// ─── Safe area ───────────────────────────────────────────────
+.safeArea {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  z-index: 2;
+}
+
+.safeAreaInner {
+  width: 100%;
+  max-width: 1900px;
+  margin: 0 auto;
+  height: calc(100% - 100px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  position: relative;
+}
+
+// ─── Slide content ───────────────────────────────────────────
+.slideContent {
+  padding: 0 clamp(1rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2.5rem);
+  max-width: 680px;
+  width: 100%;
+  margin-bottom: 150px;
+}
+
+.mediaTitle {
+  color: #fff;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 1px rgba(0, 0, 0, 0.3);
+}
+
+.mediaAlias {
+  font-size: 1.1em;
+  font-weight: 300;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+// ─── Tags ────────────────────────────────────────────────────
+.hlTags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+%tag-base {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.33rem;
+  font-size: 12px;
+  height: 26px;
+  padding: 0 0.4rem;
+}
+
+.tagImdb {
+  @extend %tag-base;
+  border: 1px solid $imdb-yellow;
+  color: #fff;
+  font-weight: 500;
+  cursor: default;
+  flex-shrink: 0;
+  line-height: 24px;
+
+  &::before {
+    content: "IMDb";
+    color: $imdb-yellow;
+    font-size: 10px;
+    font-weight: 500;
+    padding-right: 4px;
+  }
+}
+
+.tagQuality {
+  @extend %tag-base;
+  background: linear-gradient(220deg, #ffd875, #fff);
+  color: #000;
+  font-weight: 700;
+  justify-content: center;
+}
+
+.tagModel {
+  @extend %tag-base;
+  background-color: #fff;
+  color: #000;
+  font-weight: 500;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 0 0.5rem;
+}
+
+.tagClassic {
+  @extend %tag-base;
+  border: 1px solid #fff;
+  background-color: $tag-bg;
+  color: #fff;
+}
+
+.tagTopic {
+  @extend %tag-base;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: $tag-bg;
+  color: #fff;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+
+  &:hover {
+    border-color: $imdb-yellow;
+    color: $imdb-yellow;
+  }
+}
+
+// ─── Description ─────────────────────────────────────────────
+.description {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  line-height: 1.65;
+  margin-bottom: 1.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ─── Action buttons ──────────────────────────────────────────
+.touch {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.buttonPlay {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(39deg, $primary-gold, $primary-gold-light);
+  color: #1a1a1a;
+  box-shadow: 0 5px 10px 5px rgba(255, 218, 125, 0.1);
+  opacity: 0.95;
+  transition: transform 0.2s ease, opacity 0.2s, color 0.2s;
+  text-decoration: none;
+
+  &:hover {
+    transform: scale(1.06);
+    opacity: 1;
+    color: #fff;
+  }
+}
+
+.touchGroup {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid $border-dim;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.touchItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  height: 50px;
+  min-width: 68px;
+  padding: 0 0.2rem;
+  position: relative;
+  color: #fff !important;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff !important;
+  }
+
+  & + & { border-left: 2px solid $border-dim; }
+
+  &:first-child { padding-left: 0.4rem; }
+  &:last-child  { padding-right: 0.4rem; }
+}
+
+// ─── Keyframes ───────────────────────────────────────────────
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

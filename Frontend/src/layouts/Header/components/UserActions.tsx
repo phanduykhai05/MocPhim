@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "motion/react";
 import MagnifierIcon from "@/components/icon/magnifier-icon";
 import AuthPopup from "@/layouts/Header/components/AuthPopup";
 import { useAuth } from "@/contexts/AuthContext";
+import { App } from "antd";
 
 const UserActions = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -21,6 +22,7 @@ const UserActions = () => {
   const [cdnImage, setCdnImage] = useState("");
   const suggestTimeout = useRef<NodeJS.Timeout | null>(null);
   const { user, isLoading, logout } = useAuth();
+  const { message } = App.useApp();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -35,6 +37,7 @@ const UserActions = () => {
   const handleLogout = () => {
     logout();
     setIsUserMenuOpen(false);
+    message.success("Đăng xuất thành công!");
   };
 
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "?";

@@ -5,12 +5,15 @@ export interface ApiMovie {
   origin_name: string;
   type: string;
   thumb_url: string;
+  poster_url?: string;
   episode_current: string;
   quality: string;
   lang: string;
   year: number;
   category: { id: string; name: string; slug: string }[];
   country: { id: string; name: string; slug: string }[];
+  imdb?: { id: string; vote_average: number; vote_count: number };
+  tmdb?: { type: string; id: string; season: number; vote_average: number; vote_count: number };
 }
 
 export interface HomeData {

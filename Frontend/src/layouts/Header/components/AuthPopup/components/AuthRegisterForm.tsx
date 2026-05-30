@@ -49,7 +49,7 @@ const AuthRegisterForm = ({ onSwitchMode }: AuthFormProps) => {
     return (
       <div className="space-y-6 text-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1a2146] text-3xl">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#4d4d4d] text-3xl">
             📧
           </div>
           <p className="text-sm leading-relaxed text-[#bec8e6]">{successMsg}</p>
@@ -68,29 +68,31 @@ const AuthRegisterForm = ({ onSwitchMode }: AuthFormProps) => {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-4">
-        <input
-          type="text"
-          placeholder="Họ và tên"
-          autoComplete="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="block h-11 w-full rounded-lg border border-[#2c375f] bg-[#1a2146] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="block h-11 w-full rounded-lg border border-[#2c375f] bg-[#1a2146] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
-        />
+        <div className="flex gap-3">
+          <input
+            type="text"
+            placeholder="Họ và tên"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="block h-11 w-full rounded-lg border border-[#1a1a1a] bg-[#4d4d4d] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="block h-11 w-full rounded-lg border border-[#1a1a1a] bg-[#4d4d4d] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
+          />
+        </div>
         <input
           type="password"
           placeholder="Mật khẩu"
           autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="block h-11 w-full rounded-lg border border-[#2c375f] bg-[#1a2146] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
+          className="block h-11 w-full rounded-lg border border-[#1a1a1a] bg-[#4d4d4d] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
         />
         <input
           type="password"
@@ -98,7 +100,7 @@ const AuthRegisterForm = ({ onSwitchMode }: AuthFormProps) => {
           autoComplete="new-password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="block h-11 w-full rounded-lg border border-[#2c375f] bg-[#1a2146] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
+          className="block h-11 w-full rounded-lg border border-[#1a1a1a] bg-[#4d4d4d] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
         />
       </div>
 

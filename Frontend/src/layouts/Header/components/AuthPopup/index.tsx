@@ -6,6 +6,7 @@ import AuthLoginForm from "./components/AuthLoginForm";
 import AuthRegisterForm from "./components/AuthRegisterForm";
 import AuthTabs from "./components/AuthTabs";
 import { AuthMode, AuthPopupProps } from "./types";
+import AuthDecor from "./components/AuthDecor";
 
 const AuthPopup = ({ isOpen, onClose }: AuthPopupProps) => {
   const [mode, setMode] = useState<AuthMode>("login");
@@ -36,14 +37,14 @@ const AuthPopup = ({ isOpen, onClose }: AuthPopupProps) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[120] bg-[#050918]/80 backdrop-blur-md"
+          className="fixed inset-0 z-[120] bg-[#050918]/85 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
           <motion.div
-            className="mx-4 mt-[80px] md:mt-[100px] lg:mt-[120px] max-h-[calc(100vh-120px)] overflow-y-auto rounded-2xl border border-[#22305d] bg-[#171f45] shadow-[0_30px_80px_rgba(0,0,0,0.45)] md:mx-auto md:max-w-[760px]"
+            className="mx-4 mt-[80px] md:mt-[100px] lg:mt-[120px] max-h-[calc(100vh-120px)] overflow-y-auto rounded-2xl border border-[#191b24] bg-[#191b24] shadow-[0_30px_80px_rgba(5,9,40,0.7)] md:mx-auto md:max-w-[760px]"
             initial={{ opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -51,28 +52,27 @@ const AuthPopup = ({ isOpen, onClose }: AuthPopupProps) => {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="grid md:grid-cols-[1.1fr_1fr]">
-              <div className="relative hidden min-h-[500px] overflow-hidden rounded-l-2xl md:block">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,216,117,0.22),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(87,115,255,0.28),transparent_42%),linear-gradient(160deg,#0d1433_0%,#141d43_55%,#0b132f_100%)]" />
-                <div className="absolute inset-0 opacity-40 [background:linear-gradient(110deg,transparent_0%,transparent_47%,rgba(255,255,255,0.08)_50%,transparent_53%,transparent_100%)]" />
-                <div className="relative z-10 flex h-full flex-col justify-end p-8 text-white">
+              <div className="relative hidden min-h-[500px] max-h-[500px] overflow-hidden rounded-l-2xl md:block">
+                <AuthDecor />
+                <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col justify-end p-8 text-white bg-gradient-to-t from-[#111111]/95 to-transparent">
                   <p className="mb-3 text-xs uppercase tracking-[0.3em] text-[#ffd875]">
                     MocPhim
                   </p>
                   <h3 className="text-2xl font-semibold leading-tight">
                     Kho phim chất lượng cao, cập nhật mỗi ngày.
                   </h3>
-                  <p className="mt-3 text-sm text-[#b5c0e7]">
+                  <p className="mt-3 text-sm text-white/60">
                     Đăng nhập để đồng bộ danh sách yêu thích và tiếp tục xem trên mọi thiết bị.
                   </p>
                 </div>
               </div>
 
-              <div className="relative p-5 text-white md:p-8">
+              <div className="relative p-5 text-white md:p-8 bg-[#191b24]">
                 <button
                   type="button"
                   onClick={onClose}
                   aria-label="Đóng cửa sổ đăng nhập"
-                  className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-[#c8d0ee] transition hover:bg-[#22305d] hover:text-white"
+                  className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-[#c8d0ee] transition hover:bg-[#1a2650] hover:text-white"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

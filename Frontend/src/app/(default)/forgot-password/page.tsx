@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
         {submitted ? (
           <div className="space-y-6 text-center">
             <div className="flex flex-col items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1a2146] text-3xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#4d4d4d] text-3xl">
                 📧
               </div>
               <p className="text-sm leading-relaxed text-[#bec8e6]">
@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="block h-11 w-full rounded-lg border border-[#2c375f] bg-[#1a2146] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
+              className="block h-11 w-full rounded-lg border border-[#1a1a1a] bg-[#4d4d4d] px-4 text-sm text-white outline-none transition focus:border-[#ffd875]"
             />
 
             {error && <p className="text-xs text-red-400">{error}</p>}

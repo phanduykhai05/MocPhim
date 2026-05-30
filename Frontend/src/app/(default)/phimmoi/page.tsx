@@ -9,10 +9,12 @@ import HappyMovie from "@/app/(default)/phimmoi/components/HappyMovie";
 import { fetchHomeData, getThumbUrl, type ApiMovie } from "@/lib/api/home";
 import type { Movie } from "@/app/(default)/phimmoi/components/Banner/components/data/movie";
 import type { MovieHorizontal } from "@/app/(default)/phimmoi/components/HappyMovie/components/types/movie";
-
+import { File, Search, Settings } from "lucide-react";
+import { OrbitingCircles } from "@/components/ui/orbiting-circles";
 type VietnamMarker = Marker & {
   overlay: {
     label: string;
+    type?: "main" | "city" | "island";
   };
 };
 
@@ -27,8 +29,9 @@ function toBannerMovies(items: ApiMovie[], cdn: string): Movie[] {
     status: item.episode_current,
     genres: item.category.map((c) => c.name),
     description: "",
-    poster: getThumbUrl(item.thumb_url, cdn),
+    poster: getThumbUrl(item.poster_url || item.thumb_url, cdn),
     slug: item.slug,
+    imdbScore: item.imdb?.vote_average || item.tmdb?.vote_average || undefined,
   }));
 }
 
@@ -109,21 +112,25 @@ export default async function PhimMoi() {
   const topSeriesMovies = toTopSeriesMovies(items, cdn);
   const happyMovies = toHappyMovies(items, cdn);
 
+  // SVG coordinate space: width=22, height=40
+  //   region lng 101→110 (9°), lat 7.5→24 (16.5°)
+  //   x = (lng - 101) / 9 * 22,  y = (24 - lat) / 16.5 * 40
   const markers: VietnamMarker[] = [
-    {
-      lat: 16.047079,
-      lng: 108.20623,
-      size: 0.8,
-      pulse: true,
-      overlay: { label: "FPT Hồ Chí Minh" },
-    },
-    {
-      lat: 41.0278,
-      lng: 105.8342,
-      size: 0.8,
-      pulse: true,
-      overlay: { label: "Server Hà Nội" },
-    },
+    // index 0 – Hà Nội          x≈11.8  y≈7.2
+    { lat: 21.0278, lng: 105.8342, size: 0.5,  pulse: true,  overlay: { label: "Server Hà Nội",    type: "main" } },
+    // index 1 – Hồ Chí Minh     x≈13.8  y≈31.9
+    { lat: 10.8231, lng: 106.6297, size: 0.5,  pulse: true,  overlay: { label: "FPT Hồ Chí Minh", type: "main" } },
+    // index 2-8 – thành phố nội địa
+    { lat: 20.8449, lng: 106.6881, size: 0.32, pulse: false, overlay: { label: "Hải Phòng", type: "city" } },
+    { lat: 18.6796, lng: 105.6813, size: 0.32, pulse: false, overlay: { label: "Vinh",      type: "city" } },
+    { lat: 16.0544, lng: 108.2022, size: 0.32, pulse: false, overlay: { label: "Đà Nẵng",  type: "city" } },
+    { lat: 13.7829, lng: 109.2196, size: 0.32, pulse: false, overlay: { label: "Quy Nhơn", type: "city" } },
+    { lat: 12.2388, lng: 109.1967, size: 0.32, pulse: false, overlay: { label: "Nha Trang",type: "city" } },
+    { lat: 11.9465, lng: 108.4419, size: 0.32, pulse: false, overlay: { label: "Đà Lạt",   type: "city" } },
+    { lat: 10.0452, lng: 105.7469, size: 0.32, pulse: false, overlay: { label: "Cần Thơ",  type: "city" } },
+    // index 9-10 – hải đảo (ngoài region mainland, hiển thị qua SVG clip)
+    { lat: 16.5000, lng: 112.3400, size: 0.38, pulse: true,  overlay: { label: "Hoàng Sa",  type: "island" } },
+    { lat: 10.0000, lng: 114.1700, size: 0.38, pulse: true,  overlay: { label: "Trường Sa", type: "island" } },
   ];
 
   return (
@@ -135,35 +142,124 @@ export default async function PhimMoi() {
       <NewUpdateList movies={updateMovies} />
       <HappyMovie movies={happyMovies} />
       <TopSeriesList movies={topSeriesMovies} />
-      <div className="relative z-30 isolate -mt-6 h-[220px] w-full overflow-hidden sm:h-[280px] md:mt-0 md:h-[400px]">
-        <DottedMap<VietnamMarker>
-          className="relative z-10 h-full w-full text-[#5f6987]"
-          markers={markers}
-          markerColor="#22c55e"
-          pulse
-          renderMarkerOverlay={({ marker, x, y }) => (
-            <g transform={`translate(${x + 1.4} ${y - 1.8})`} pointerEvents="none">
-              <rect x="1.1" y="-1.15" width="3.2" height="2.2" rx="0.35" fill="#da251d" />
-              <text x="2.7" y="0.45" textAnchor="middle" fill="#ffde00" fontSize="1.1" fontWeight="700">★</text>
-              <text
-                x="5.9"
-                y="0.85"
-                fill="#ffffff"
-                fontSize="2.15"
-                fontWeight="700"
-                letterSpacing="0.28"
-                stroke="#0b0f18"
-                strokeWidth="0.22"
-                paintOrder="stroke"
-                style={{ fontFamily: "var(--font-sora), var(--font-roboto), sans-serif" }}
-              >
-                {marker.overlay.label}
-              </text>
-            </g>
-          )}
-        />
+
+      {/* Divider PTIT */}
+      <div className="w-full max-w-[1900px] px-4 md:px-[50px] mx-auto my-6 3xl:max-w-[2400px] 4xl:max-w-[3200px]">
+        <div className="flex items-center gap-4">
+          <div className="flex-1 h-px bg-gray-300 dark:bg-white/10" />
+          <p className="shrink-0 text-[11px] text-gray-400 dark:text-white/30 font-normal tracking-wide text-center whitespace-nowrap">
+            Website Này Được 1 Nhóm Sinh Viên PTIT Tạo Ra Để Nộp Đồ Án&nbsp;&nbsp;|&nbsp;&nbsp;D23VHCN01-N&nbsp;&nbsp;|
+          </p>
+          <div className="flex-1 h-px bg-gray-300 dark:bg-white/10" />
+        </div>
+      </div>
+
+      <div className="relative z-30 isolate w-full overflow-hidden h-[360px] md:h-[440px] flex">
+
+        {/* ── Bên trái: Tech stack OrbitingCircles ── */}
+        <div className="relative flex-1 flex items-center justify-center">
+          {/* Center label */}
+          <div className="absolute z-10 flex flex-col items-center gap-1 pointer-events-none select-none">
+            <span className="text-xs font-semibold text-gray-500 dark:text-white/40 tracking-widest uppercase">Tech Stack</span>
+          </div>
+
+          {/* Outer orbit — 6 icons */}
+          <OrbitingCircles iconSize={38} radius={155} speed={0.6}>
+            <img src="https://thesvg.org/icons/nextdotjs/default.svg"   alt="Next.js"     className="w-8 h-8" title="Next.js" />
+            <img src="https://thesvg.org/icons/react/default.svg"       alt="React"       className="w-8 h-8" title="React" />
+            <img src="https://thesvg.org/icons/typescript/default.svg"  alt="TypeScript"  className="w-8 h-8" title="TypeScript" />
+            <img src="https://thesvg.org/icons/spring-boot/default.svg" alt="Spring Boot" className="w-8 h-8" title="Spring Boot" />
+            <img src="https://thesvg.org/icons/docker/default.svg"      alt="Docker"      className="w-8 h-8" title="Docker" />
+            <img src="https://thesvg.org/icons/vercel/default.svg"      alt="Vercel"      className="w-8 h-8" title="Vercel" />
+          </OrbitingCircles>
+
+          {/* Inner orbit — 4 icons, reverse */}
+          <OrbitingCircles iconSize={32} radius={88} reverse speed={0.9}>
+            <img src="https://thesvg.org/icons/tailwind-css/default.svg" alt="Tailwind CSS"  className="w-10 h-10" title="Tailwind CSS" />
+            <img src="https://thesvg.org/icons/java/default.svg"         alt="Java"          className="w-10 h-10" title="Java" />
+            <img src="https://thesvg.org/icons/postgresql/default.svg"   alt="PostgreSQL"    className="w-10 h-10" title="PostgreSQL" />
+            <img src="https://thesvg.org/icons/redis/default.svg"        alt="Redis"         className="w-10 h-10" title="Redis" />
+          </OrbitingCircles>
+        </div>
+
+        {/* ── Bên phải: DottedMap ── */}
+        <div className="relative flex-1">
+          <DottedMap<VietnamMarker>
+            className="absolute inset-0 z-10 h-full w-full text-[#5f6987]"
+            markers={markers}
+            markerColor="#22c55e"
+            pulse
+            width={22}
+            height={40}
+            mapSamples={1200}
+            dotRadius={0.3}
+            countries={["VNM"]}
+            region={{ lat: { min: 7.5, max: 24 }, lng: { min: 101, max: 110 } }}
+            connections={[
+              // HN → HCM — trục chính xanh lá
+              { from: 0, to: 1, color: '#22c55e', packetColor: '#86efac', dashArray: '0.7 0.45', duration: 2.2, delay: 0,   curve: 0.22 },
+              // HCM → nội địa — xanh dương
+              { from: 1, to: 2, color: '#60a5fa', packetColor: '#93c5fd', dashArray: '0.5 0.35', duration: 1.6, delay: 0.3, curve: 0.18 },
+              { from: 1, to: 3, color: '#60a5fa', packetColor: '#93c5fd', dashArray: '0.5 0.35', duration: 1.6, delay: 0.6, curve: 0.18 },
+              { from: 1, to: 4, color: '#60a5fa', packetColor: '#93c5fd', dashArray: '0.5 0.35', duration: 1.6, delay: 0.9, curve: 0.18 },
+              { from: 1, to: 5, color: '#60a5fa', packetColor: '#93c5fd', dashArray: '0.5 0.35', duration: 1.6, delay: 1.2, curve: 0.18 },
+              { from: 1, to: 6, color: '#60a5fa', packetColor: '#93c5fd', dashArray: '0.5 0.35', duration: 1.6, delay: 1.5, curve: 0.18 },
+              { from: 1, to: 7, color: '#60a5fa', packetColor: '#93c5fd', dashArray: '0.5 0.35', duration: 1.6, delay: 1.8, curve: 0.18 },
+              { from: 1, to: 8, color: '#60a5fa', packetColor: '#93c5fd', dashArray: '0.5 0.35', duration: 1.6, delay: 2.1, curve: 0.18 },
+              // HCM → đảo chủ quyền (clip ngoài viewBox, vẫn render đường animate hướng ra biển)
+              { from: 1, to: 9,  color: '#fbbf24', packetColor: '#fde68a', dashArray: '0.6 0.4', duration: 2.4, delay: 2.4, curve: 0.1 },
+              { from: 1, to: 10, color: '#fbbf24', packetColor: '#fde68a', dashArray: '0.6 0.4', duration: 2.4, delay: 2.8, curve: 0.1 },
+            ]}
+            renderMarkerOverlay={({ marker, x, y }) => {
+              const t = marker.overlay.type ?? "city"
+
+              if (t === "main") {
+                return (
+                  <g transform={`translate(${x + 0.8} ${y - 1.2})`} pointerEvents="none">
+                    <rect x="0" y="-0.85" width="2.2" height="1.6" rx="0.25" fill="#da251d" />
+                    <text x="1.1" y="0.35" textAnchor="middle" fill="#ffde00" fontSize="0.85" fontWeight="700">★</text>
+                    <text
+                      x="2.8" y="0.6"
+                      fill="#ffffff" fontSize="1.55" fontWeight="700" letterSpacing="0.18"
+                      stroke="#0b0f18" strokeWidth="0.2" paintOrder="stroke"
+                      style={{ fontFamily: "var(--font-sora), var(--font-roboto), sans-serif" }}
+                    >{marker.overlay.label}</text>
+                  </g>
+                )
+              }
+
+              if (t === "island") {
+                return (
+                  <g transform={`translate(${x + 0.6} ${y - 0.9})`} pointerEvents="none">
+                    <rect x="0" y="-0.7" width="1.7" height="1.2" rx="0.2" fill="#da251d" />
+                    <text x="0.85" y="0.25" textAnchor="middle" fill="#ffde00" fontSize="0.7" fontWeight="700">★</text>
+                    <text
+                      x="2.2" y="0.45"
+                      fill="#fde68a" fontSize="1.3" fontWeight="700" letterSpacing="0.1"
+                      stroke="#0b0f18" strokeWidth="0.18" paintOrder="stroke"
+                      style={{ fontFamily: "var(--font-sora), var(--font-roboto), sans-serif" }}
+                    >{marker.overlay.label}</text>
+                  </g>
+                )
+              }
+
+              // city
+              return (
+                <g transform={`translate(${x + 0.5} ${y - 0.8})`} pointerEvents="none">
+                  <text
+                    x="0" y="0"
+                    fill="#ffffff" fontSize="1.2" fontWeight="600" letterSpacing="0.08"
+                    stroke="#0b0f18" strokeWidth="0.18" paintOrder="stroke"
+                    style={{ fontFamily: "var(--font-sora), var(--font-roboto), sans-serif" }}
+                  >{marker.overlay.label}</text>
+                </g>
+              )
+            }}
+          />
+        </div>
       </div>
     </div>
     
   );
 }
+

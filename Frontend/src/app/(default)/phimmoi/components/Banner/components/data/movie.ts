@@ -10,6 +10,8 @@ export interface Movie {
   description: string;
   poster: string;
   slug: string;
+  imdbScore?: number;
+  ageRating?: string;
 }
 
 export const FAKE_MOVIES: Movie[] = [

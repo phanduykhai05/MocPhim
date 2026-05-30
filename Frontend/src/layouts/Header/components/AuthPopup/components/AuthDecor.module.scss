@@ -1,0 +1,105 @@
+.panel {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 15%, #2a2a2a 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, #1a1a1a 0%, transparent 55%),
+    #111111;
+  overflow: hidden;
+}
+
+/* ── Background glow orbs ─────────────────────────────── */
+.orb1,
+.orb2,
+.orb3 {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(72px);
+  will-change: transform;
+}
+
+.orb1 {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(200, 200, 200, 0.18) 0%, transparent 70%);
+  top: -90px;
+  left: -70px;
+  animation: floatOrb 11s ease-in-out infinite;
+}
+
+.orb2 {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(160, 160, 160, 0.14) 0%, transparent 70%);
+  top: 38%;
+  right: -55px;
+  animation: floatOrb 14s ease-in-out infinite reverse;
+  animation-delay: -6s;
+}
+
+.orb3 {
+  width: 290px;
+  height: 290px;
+  background: radial-gradient(circle, rgba(120, 120, 120, 0.12) 0%, transparent 70%);
+  bottom: -60px;
+  left: 10%;
+  animation: floatOrb 17s ease-in-out infinite;
+  animation-delay: -10s;
+}
+
+/* ── 3-D floating balls ───────────────────────────────── */
+.ball {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  animation: ballFloat ease-in-out infinite;
+}
+
+/* Trắng bóng */
+.white {
+  background: radial-gradient(circle at 34% 30%, #ffffff, #ffd875 48%, #888888 86%);
+  box-shadow:
+    inset -5px -5px 12px rgba(0, 0, 0, 0.35),
+    inset 4px  4px  9px  rgba(255, 255, 255, 0.7),
+    0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Xám sáng */
+.silver {
+  background: radial-gradient(circle at 34% 30%, #e8e8e8, #aaaaaa 48%, #666666 86%);
+  box-shadow:
+    inset -5px -5px 12px rgba(0, 0, 0, 0.4),
+    inset 4px  4px  9px  rgba(255, 255, 255, 0.5),
+    0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* Xám trung */
+.gray {
+  background: radial-gradient(circle at 34% 30%, #cccccc, #888888 48%, #444444 86%);
+  box-shadow:
+    inset -5px -5px 12px rgba(0, 0, 0, 0.45),
+    inset 4px  4px  9px  rgba(255, 255, 255, 0.38),
+    0 10px 26px rgba(0, 0, 0, 0.5);
+}
+
+/* Xám tối */
+.dark {
+  background: radial-gradient(circle at 34% 30%, #999999, #555555 48%, #222222 86%);
+  box-shadow:
+    inset -5px -5px 12px rgba(0, 0, 0, 0.55),
+    inset 4px  4px  9px  rgba(255, 255, 255, 0.22),
+    0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Animations ───────────────────────────────────────── */
+@keyframes floatOrb {
+  0%,  100% { transform: translate(0,     0)     scale(1);    }
+  50%        { transform: translate(18px, -28px) scale(1.07); }
+}
+
+@keyframes ballFloat {
+  0%,  100% { transform: translateY(0)     rotate(0deg);  }
+  25%        { transform: translateY(-20px) rotate(4deg);  }
+  75%        { transform: translateY(14px)  rotate(-3deg); }
+}
