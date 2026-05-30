@@ -302,7 +302,8 @@ Frontend/
 │   │   ├── home.ts                 # API trang chủ
 │   │   ├── movie.ts                # API phim
 │   │   ├── auth.ts                 # API xác thực
-│   │   └── bookmark.ts             # API bookmark
+│   │   ├── bookmarks.ts            # API bookmark
+│   │   └── progress.ts             # API tiến độ xem (/api/v1/progress)
 │   ├── contexts/
 │   │   └── AuthContext/            # Quản lý trạng thái đăng nhập
 │   ├── hooks/
@@ -341,7 +342,7 @@ Backend/
 │   │   │   │   ├── YearController.java          # /api/v1/years
 │   │   │   │   ├── AuthController.java          # /auth/*
 │   │   │   │   ├── BookmarkController.java      # /api/bookmarks
-│   │   │   │   ├── WatchProgressController.java # /api/watch-progress
+│   │   │   │   ├── WatchProgressController.java # /api/v1/progress
 │   │   │   │   ├── SyncController.java          # /api/sync
 │   │   │   │   ├── CacheController.java         # /api/cache
 │   │   │   │   └── AdminController.java         # /api/admin
@@ -531,14 +532,53 @@ docker-compose up -d
 
 ### User (cần xác thực — Bearer Token)
 
+#### Bookmark
+
 | Method | Endpoint | Mô tả |
 |---|---|---|
 | GET | `/api/bookmarks/{userId}` | Lấy danh sách phim đã bookmark |
-| POST | `/api/bookmarks` | Thêm bookmark |
+| POST | `/api/bookmarks` | Thêm bookmark (`{ slug }`) |
 | DELETE | `/api/bookmarks/{userId}/{movieId}` | Xoá bookmark |
 | GET | `/api/bookmarks/isBookmarked/{userId}/{movieId}` | Kiểm tra đã bookmark chưa |
-| GET | `/api/watch-progress/{userId}/{movieId}` | Lấy tiến độ xem |
-| POST | `/api/watch-progress` | Cập nhật tiến độ xem |
+
+#### Watch Progress — `/api/v1/progress`
+
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| GET | `/api/v1/progress/{userId}/{movieId}/{episodeNumber}` | Lấy tiến độ một tập cụ thể |
+| GET | `/api/v1/progress/{userId}/{movieId}` | Lấy toàn bộ tiến độ của phim |
+| GET | `/api/v1/progress/{userId}/resume/{slug}` | Lấy điểm tiếp tục xem mới nhất |
+| PATCH | `/api/v1/progress/{userId}/{movieId}/{episodeNumber}` | Tạo / cập nhật tiến độ xem |
+
+**Request body (PATCH):**
+```json
+{
+  "slug": "one-piece",
+  "positionSeconds": 120,
+  "isCompleted": false
+}
+```
+
+**Response:**
+```json
+{
+  "status": true,
+  "data": {
+    "userId": 1,
+    "movieId": "abc123",
+    "slug": "one-piece",
+    "episodeNumber": 5,
+    "positionSeconds": 120,
+    "isCompleted": false,
+    "lastWatchedAt": "2026-05-30T10:00:00"
+  }
+}
+```
+
+**Luồng hoạt động trên Frontend:**
+1. User vào trang xem phim → gọi PATCH với `positionSeconds=0, isCompleted=false`
+2. Mỗi 60 giây → gọi PATCH với `positionSeconds` tăng dần (đếm thời gian xem tích lũy)
+3. User bấm "Chuyển tập" → gọi PATCH với `isCompleted=true` trước khi redirect
 
 ### Response mẫu
 
