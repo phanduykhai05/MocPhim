@@ -5,13 +5,14 @@ import MovieMetaPanel from '@/app/(default)/xem-phim/[slug]/components/MovieMeta
 import ServerSelector from '@/app/(default)/xem-phim/[slug]/components/ServerSelector';
 import VideoPlayer from '@/app/(default)/xem-phim/[slug]/components/VideoPlayer';
 import type { WatchMovie } from '@/app/(default)/xem-phim/[slug]/types';
-import { MovieDetailResult, MovieListItem, getMovieThumb } from '@/lib/api/movie';
+import { MovieDetailResult, MovieListItem, PeoplesData, getMovieThumb } from '@/lib/api/movie';
 
 type WatchMovieTemplateProps = {
   slug: string;
   movieData: MovieDetailResult;
   topMovies: MovieListItem[];
   topMoviesCdnImage: string;
+  peoplesData?: PeoplesData | null;
   tap?: string;
   sv?: string;
 };
@@ -31,6 +32,7 @@ const WatchMovieTemplate = ({
   movieData,
   topMovies,
   topMoviesCdnImage,
+  peoplesData,
   tap,
   sv,
 }: WatchMovieTemplateProps) => {
@@ -90,7 +92,7 @@ const WatchMovieTemplate = ({
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_450px] lg:gap-6">
             <div className="grid gap-4">
-              <MovieMetaPanel movie={movie} />
+              <MovieMetaPanel movie={movie} peoplesData={peoplesData} />
               <ServerSelector
                 slug={slug}
                 episode={currentEpisode}

@@ -1,68 +1,49 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import {
   PageContainer,
   ProTable,
-  ModalForm,
-  DrawerForm,
-  ProFormText,
-  ProFormSelect,
-  ProFormTextArea,
 } from "@ant-design/pro-components";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
-import { Button, Tag, Space, Popconfirm, Image, App } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Button, Tag, Space, Image } from "antd";
+import { EditOutlined, ExportOutlined } from "@ant-design/icons";
+import { fetchSyncMovies, type MovieSyncItem } from "@/lib/api/sync";
+import { getMovieThumb } from "@/lib/api/movie";
 
-type Movie = {
-  id: number;
-  title: string;
-  slug: string;
-  category: string;
-  status: "active" | "pending" | "hidden";
-  views: number;
-  episodes: string;
-  thumb: string;
-  createdAt: string;
+const TYPE_LABEL: Record<string, { text: string; color: string }> = {
+  series:   { text: "Phim bộ",   color: "blue" },
+  single:   { text: "Phim lẻ",   color: "green" },
+  hoathinh: { text: "Hoạt hình", color: "orange" },
+  tvshows:  { text: "TV Shows",  color: "purple" },
 };
 
-const mockMovies: Movie[] = [
-  { id: 1, title: "Huyền Thoại Aang: Tiết Khí Sư Cuối Cùng", slug: "huyen-thoai-aang", category: "Hoạt Hình", status: "active", views: 12400, episodes: "Full", thumb: "https://rophims.vip/wp-content/uploads/2026/04/huyen-thoai-aang-tiet-khi-su-cuoi-cung-48635-thumb.jpg", createdAt: "20/04/2026" },
-  { id: 2, title: "One Piece", slug: "one-piece", category: "Anime", status: "active", views: 98000, episodes: "Tập 1157", thumb: "https://rophims.vip/wp-content/uploads/2026/04/one-piece-39120-thumb-149.jpg", createdAt: "19/04/2026" },
-  { id: 3, title: "Nguyệt Lân Ỷ Kỷ", slug: "nguyet-lan-y-ky", category: "Phim bộ", status: "pending", views: 7200, episodes: "Tập 29", thumb: "https://rophims.vip/wp-content/uploads/2026/04/nguyet-lan-y-ky-38622-thumb-196.jpg", createdAt: "19/04/2026" },
-  { id: 4, title: "Trục Ngọc", slug: "truc-ngoc", category: "Phim bộ", status: "active", views: 5100, episodes: "Hoàn tất", thumb: "https://rophims.vip/wp-content/uploads/2026/03/truc-ngoc-23313-thumb-4.jpg", createdAt: "18/04/2026" },
-  { id: 5, title: "MF GHOST (Phần 3)", slug: "mf-ghost-phan-3", category: "Anime", status: "active", views: 4100, episodes: "Tập 12", thumb: "https://eduk.com.mx/wp-content/uploads/2026/04/mf-ghost-phan-3-9469-thumb.webp", createdAt: "18/04/2026" },
-  { id: 6, title: "Bất hòa (Phần 2)", slug: "bat-hoa-phan-2", category: "Phim bộ", status: "hidden", views: 3200, episodes: "Tập 6", thumb: "https://eduk.com.mx/wp-content/uploads/2026/04/bat-hoa-phan-2-9472-thumb.webp", createdAt: "17/04/2026" },
-];
-
-const statusMap: Record<string, { text: string; color: string }> = {
-  active: { text: "Hoạt động", color: "success" },
-  pending: { text: "Chờ duyệt", color: "warning" },
-  hidden: { text: "Ẩn", color: "default" },
-};
+function formatDateTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" });
+  } catch { return iso; }
+}
 
 export default function PhimPage() {
   const actionRef = useRef<ActionType | undefined>(undefined);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [editingMovie, setEditingMovie] = useState<Movie | null>(null);
-  const { message } = App.useApp();
 
-  const columns: ProColumns<Movie>[] = [
+  const columns: ProColumns<MovieSyncItem>[] = [
     {
       title: "Ảnh",
-      dataIndex: "thumb",
+      dataIndex: "thumbUrl",
       search: false,
-      width: 70,
-      render: (_, record) => (
-        <Image
-          src={record.thumb}
-          width={44}
-          height={62}
-          style={{ objectFit: "cover", borderRadius: 4 }}
-          alt={record.title}
-        />
-      ),
+      width: 60,
+      render: (_, record) =>
+        record.thumbUrl ? (
+          <Image
+            src={record.thumbUrl.startsWith("http") ? record.thumbUrl : getMovieThumb(record.thumbUrl)}
+            width={40}
+            height={56}
+            style={{ objectFit: "cover", borderRadius: 4 }}
+            alt={record.title}
+            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+          />
+        ) : null,
     },
     {
       title: "Tên phim",
@@ -70,199 +51,113 @@ export default function PhimPage() {
       ellipsis: true,
       render: (_, record) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{record.title}</div>
-          <div style={{ fontSize: 12, color: "#8c8c8c" }}>{record.slug}</div>
+          <a href={`/phim/${record.slug}`} target="_blank" rel="noreferrer" style={{ fontWeight: 500 }}>
+            {record.title}
+          </a>
+          {record.originName && (
+            <div style={{ fontSize: 11, color: "#8c8c8c" }}>{record.originName}</div>
+          )}
         </div>
       ),
     },
     {
-      title: "Thể loại",
-      dataIndex: "category",
+      title: "Loại",
+      dataIndex: "type",
+      width: 110,
       valueType: "select",
-      valueEnum: {
-        "Phim bộ": { text: "Phim bộ" },
-        "Phim lẻ": { text: "Phim lẻ" },
-        Anime: { text: "Anime" },
-        "Hoạt Hình": { text: "Hoạt Hình" },
-      },
-    },
-    {
-      title: "Tập",
-      dataIndex: "episodes",
-      search: false,
-    },
-    {
-      title: "Lượt xem",
-      dataIndex: "views",
-      search: false,
-      sorter: (a, b) => a.views - b.views,
-      render: (v) => Number(v).toLocaleString("vi-VN"),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      valueType: "select",
-      valueEnum: {
-        active: { text: "Hoạt động", status: "Success" },
-        pending: { text: "Chờ duyệt", status: "Warning" },
-        hidden: { text: "Ẩn", status: "Default" },
-      },
-      render: (_, record) => (
-        <Tag color={statusMap[record.status].color}>
-          {statusMap[record.status].text}
-        </Tag>
+      valueEnum: Object.fromEntries(
+        Object.entries(TYPE_LABEL).map(([k, v]) => [k, { text: v.text }])
       ),
+      render: (_, record) => {
+        const t = TYPE_LABEL[record.type ?? ""] ?? { text: record.type ?? "-", color: "default" };
+        return <Tag color={t.color}>{t.text}</Tag>;
+      },
     },
     {
-      title: "Ngày thêm",
-      dataIndex: "createdAt",
+      title: "Tập hiện tại",
+      dataIndex: "episodeCurrent",
       search: false,
+      width: 120,
+    },
+    {
+      title: "Chất lượng",
+      dataIndex: "quality",
+      search: false,
+      width: 90,
+      render: (v) => v ? <Tag color="cyan">{String(v)}</Tag> : "-",
+    },
+    {
+      title: "Ngôn ngữ",
+      dataIndex: "lang",
+      search: false,
+      width: 90,
+      render: (v) => v ? <Tag color="geekblue">{String(v)}</Tag> : "-",
+    },
+    {
+      title: "Năm",
+      dataIndex: "year",
+      search: false,
+      width: 65,
+    },
+    {
+      title: "Cập nhật",
+      dataIndex: "modifiedAt",
+      search: false,
+      width: 135,
+      render: (v) => formatDateTime(String(v)),
     },
     {
       title: "Thao tác",
       valueType: "option",
-      width: 100,
+      width: 90,
       render: (_, record) => (
         <Space>
           <Button
             type="link"
             size="small"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setEditingMovie(record);
-              setEditOpen(true);
-            }}
+            icon={<ExportOutlined />}
+            href={`/phim/${record.slug}`}
+            target="_blank"
           />
-          <Popconfirm
-            title="Xoá phim này?"
-            okText="Xoá"
-            cancelText="Huỷ"
-            onConfirm={() => message.success("Đã xoá")}
-          >
-            <Button danger type="link" size="small" icon={<DeleteOutlined />} />
-          </Popconfirm>
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => {}}
+          />
         </Space>
       ),
     },
   ];
 
   return (
-    <PageContainer title="Quản lý Phim">
-      <ProTable<Movie>
+    <PageContainer title="Quản lý Phim" subTitle="Danh sách phim đã sync từ nguồn">
+      <ProTable<MovieSyncItem>
         actionRef={actionRef}
         rowKey="id"
         columns={columns}
         request={async (params) => {
-          let data = [...mockMovies];
+          const page = (params.current ?? 1) - 1;
+          const size = params.pageSize ?? 20;
+          const res = await fetchSyncMovies(page, size);
+          if (!res) return { data: [], success: false, total: 0 };
+          let data = res.items;
           if (params.title) {
+            const q = String(params.title).toLowerCase();
             data = data.filter((m) =>
-              m.title.toLowerCase().includes(params.title.toLowerCase())
+              m.title.toLowerCase().includes(q) || m.slug.toLowerCase().includes(q)
             );
           }
-          if (params.status) data = data.filter((m) => m.status === params.status);
-          if (params.category) data = data.filter((m) => m.category === params.category);
-          return { data, success: true, total: data.length };
+          if (params.type) {
+            data = data.filter((m) => m.type === params.type);
+          }
+          return { data, success: true, total: res.pagination.totalItems };
         }}
+        pagination={{ pageSize: 20, showSizeChanger: true }}
+        scroll={{ x: 1000 }}
         rowSelection={{}}
-        toolBarRender={() => [
-          <Button
-            key="create"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setCreateOpen(true)}
-          >
-            Thêm phim
-          </Button>,
-        ]}
-        pagination={{ pageSize: 10, showSizeChanger: true }}
         dateFormatter="string"
       />
-
-      <ModalForm
-        title="Thêm phim mới"
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        onFinish={async (values) => {
-          console.log(values);
-          message.success("Đã thêm phim thành công!");
-          setCreateOpen(false);
-          return true;
-        }}
-        modalProps={{ destroyOnHidden: true }}
-      >
-        <ProFormText name="title" label="Tên phim" rules={[{ required: true }]} />
-        <ProFormText name="slug" label="Slug" rules={[{ required: true }]} />
-        <ProFormSelect
-          name="category"
-          label="Thể loại"
-          options={["Phim bộ", "Phim lẻ", "Anime", "Hoạt Hình"].map((c) => ({ label: c, value: c }))}
-          rules={[{ required: true }]}
-        />
-        <ProFormSelect
-          name="status"
-          label="Trạng thái"
-          options={[
-            { label: "Hoạt động", value: "active" },
-            { label: "Chờ duyệt", value: "pending" },
-            { label: "Ẩn", value: "hidden" },
-          ]}
-          initialValue="pending"
-        />
-        <ProFormText name="thumb" label="URL ảnh thumbnail" />
-        <ProFormTextArea name="description" label="Mô tả" />
-      </ModalForm>
-
-      <DrawerForm
-        title={editingMovie ? `Sửa phim: ${editingMovie.title}` : "Sửa phim"}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        initialValues={
-          editingMovie
-            ? {
-                title: editingMovie.title,
-                slug: editingMovie.slug,
-                category: editingMovie.category,
-                status: editingMovie.status,
-                thumb: editingMovie.thumb,
-                episodes: editingMovie.episodes,
-              }
-            : undefined
-        }
-        drawerProps={{
-          destroyOnHidden: true,
-          placement: "right",
-          width: 520,
-        }}
-        key={editingMovie?.id ?? "edit-drawer"}
-        onFinish={async (values) => {
-          console.log("edit", editingMovie?.id, values);
-          message.success("Đã cập nhật phim thành công!");
-          setEditOpen(false);
-          return true;
-        }}
-      >
-        <ProFormText name="title" label="Tên phim" rules={[{ required: true }]} />
-        <ProFormText name="slug" label="Slug" rules={[{ required: true }]} />
-        <ProFormSelect
-          name="category"
-          label="Thể loại"
-          options={["Phim bộ", "Phim lẻ", "Anime", "Hoạt Hình"].map((c) => ({ label: c, value: c }))}
-          rules={[{ required: true }]}
-        />
-        <ProFormSelect
-          name="status"
-          label="Trạng thái"
-          options={[
-            { label: "Hoạt động", value: "active" },
-            { label: "Chờ duyệt", value: "pending" },
-            { label: "Ẩn", value: "hidden" },
-          ]}
-          rules={[{ required: true }]}
-        />
-        <ProFormText name="episodes" label="Tập" />
-        <ProFormText name="thumb" label="URL ảnh thumbnail" />
-        <ProFormTextArea name="description" label="Mô tả" />
-      </DrawerForm>
     </PageContainer>
   );
 }

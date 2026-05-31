@@ -1,11 +1,16 @@
+"use client";
+
 import type { WatchMovie } from '@/app/(default)/xem-phim/[slug]/types';
+import type { PeoplesData } from '@/lib/api/movie';
 import BookmarkButton from '@/components/BookmarkButton';
 
 type MovieMetaPanelProps = {
   movie: WatchMovie;
+  peoplesData?: PeoplesData | null;
 };
 
-const MovieMetaPanel = ({ movie }: MovieMetaPanelProps) => {
+const MovieMetaPanel = ({ movie, peoplesData }: MovieMetaPanelProps) => {
+  const imgBase = peoplesData?.profile_sizes?.w185 ?? '';
   return (
     <section className="rounded-2xl border border-gray-300 dark:border-white/5 bg-gray-100 dark:bg-[#191b24]/60 p-4 lg:p-5 transition-colors duration-300">
       <div className="grid gap-4 lg:grid-cols-[96px_minmax(0,1fr)_240px] lg:items-start">
@@ -44,12 +49,28 @@ const MovieMetaPanel = ({ movie }: MovieMetaPanelProps) => {
         <div className="rounded-xl border border-gray-300 dark:border-white/5 bg-white/70 dark:bg-white/[0.03] p-3">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Diễn viên</h3>
           <div className="mt-3 grid grid-cols-3 gap-2">
-            {movie.casts.slice(0, 6).map((cast) => (
-              <div key={cast} className="text-center">
-                <div className="mx-auto h-12 w-12 rounded-full bg-gray-200 dark:bg-white/10" />
-                <p className="mt-1 truncate text-[10px] text-gray-500 dark:text-white/65">{cast}</p>
-              </div>
-            ))}
+            {movie.casts.slice(0, 6).map((cast) => {
+              const person = peoplesData?.peoples?.find(
+                (p) => p.name === cast || p.original_name === cast
+              );
+              const imgUrl = person?.profile_path ? `${imgBase}${person.profile_path}` : null;
+              return (
+                <div key={cast} className="text-center">
+                  <div className="mx-auto h-12 w-12 rounded-full overflow-hidden bg-gray-200 dark:bg-white/10">
+                    {imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt={cast}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : null}
+                  </div>
+                  <p className="mt-1 truncate text-[10px] text-gray-500 dark:text-white/65">{cast}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

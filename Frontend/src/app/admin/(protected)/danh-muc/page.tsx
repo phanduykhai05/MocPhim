@@ -7,39 +7,19 @@ import {
   ModalForm,
   ProFormText,
   ProFormSelect,
-  ProFormSwitch,
   ProFormTextArea,
 } from "@ant-design/pro-components";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { Button, Tag, Space, Popconfirm, App } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { fetchCategories, fetchCountries } from "@/lib/api/movie";
 
 type Taxonomy = {
-  id: number;
+  id: string;
   name: string;
   slug: string;
-  type: "genre" | "country" | "tag" | "studio" | "year";
-  itemCount: number;
-  isActive: boolean;
-  description: string;
-  updatedAt: string;
+  type: "genre" | "country";
 };
-
-const taxonomyTypeMap: Record<Taxonomy["type"], string> = {
-  genre: "Thể loại",
-  country: "Quốc gia",
-  tag: "Tag",
-  studio: "Studio",
-  year: "Năm phát hành",
-};
-
-const mockTaxonomies: Taxonomy[] = [
-  { id: 1, name: "Hành động", slug: "hanh-dong", type: "genre", itemCount: 248, isActive: true, description: "Danh mục phim hành động", updatedAt: "06/05/2026" },
-  { id: 2, name: "Hàn Quốc", slug: "han-quoc", type: "country", itemCount: 141, isActive: true, description: "Phim đến từ Hàn Quốc", updatedAt: "05/05/2026" },
-  { id: 3, name: "Top trending", slug: "top-trending", type: "tag", itemCount: 42, isActive: true, description: "Nhãn gắn phim thịnh hành", updatedAt: "05/05/2026" },
-  { id: 4, name: "Netflix", slug: "netflix", type: "studio", itemCount: 33, isActive: false, description: "Nguồn studio Netflix", updatedAt: "04/05/2026" },
-  { id: 5, name: "2026", slug: "2026", type: "year", itemCount: 120, isActive: true, description: "Phim phát hành năm 2026", updatedAt: "03/05/2026" },
-];
 
 export default function DanhMucPage() {
   const actionRef = useRef<ActionType | undefined>(undefined);
@@ -62,38 +42,14 @@ export default function DanhMucPage() {
       dataIndex: "type",
       valueType: "select",
       valueEnum: {
-        genre: { text: "Thể loại" },
+        genre:   { text: "Thể loại" },
         country: { text: "Quốc gia" },
-        tag: { text: "Tag" },
-        studio: { text: "Studio" },
-        year: { text: "Năm" },
-      },
-      render: (_, record) => <Tag color="blue">{taxonomyTypeMap[record.type]}</Tag>,
-    },
-    {
-      title: "Số phim",
-      dataIndex: "itemCount",
-      search: false,
-      sorter: (a, b) => a.itemCount - b.itemCount,
-      render: (v) => <Tag color="green">{v}</Tag>,
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "isActive",
-      valueType: "select",
-      valueEnum: {
-        true: { text: "Bật" },
-        false: { text: "Tắt" },
       },
       render: (_, record) => (
-        <Tag color={record.isActive ? "success" : "default"}>{record.isActive ? "Đang dùng" : "Đã tắt"}</Tag>
+        <Tag color={record.type === "genre" ? "blue" : "green"}>
+          {record.type === "genre" ? "Thể loại" : "Quốc gia"}
+        </Tag>
       ),
-    },
-    {
-      title: "Cập nhật",
-      dataIndex: "updatedAt",
-      search: false,
-      width: 120,
     },
     {
       title: "Thao tác",
@@ -101,7 +57,7 @@ export default function DanhMucPage() {
       width: 120,
       render: (_, record) => (
         <Space>
-          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => message.info(`Sửa danh mục: ${record.name}`)} />
+          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => message.info(`Sửa: ${record.name}`)} />
           <Popconfirm
             title="Xóa danh mục này?"
             okText="Xóa"
@@ -116,18 +72,26 @@ export default function DanhMucPage() {
   ];
 
   return (
-    <PageContainer title="Quản lý danh mục" subTitle="Category / Taxonomy cho phim">
+    <PageContainer title="Quản lý danh mục" subTitle="Thể loại & Quốc gia">
       <ProTable<Taxonomy>
         actionRef={actionRef}
         rowKey="id"
         columns={columns}
         request={async (params) => {
-          let data = [...mockTaxonomies];
+          const [categories, countries] = await Promise.all([
+            fetchCategories(),
+            fetchCountries(),
+          ]);
+          let data: Taxonomy[] = [
+            ...categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug, type: "genre" as const })),
+            ...countries.map((c)  => ({ id: c.id, name: c.name, slug: c.slug, type: "country" as const })),
+          ];
           if (params.name) {
-            data = data.filter((item) => item.name.toLowerCase().includes(String(params.name).toLowerCase()));
+            const q = String(params.name).toLowerCase();
+            data = data.filter((d) => d.name.toLowerCase().includes(q) || d.slug.toLowerCase().includes(q));
           }
           if (params.type) {
-            data = data.filter((item) => item.type === params.type);
+            data = data.filter((d) => d.type === params.type);
           }
           return { data, success: true, total: data.length };
         }}
@@ -136,7 +100,7 @@ export default function DanhMucPage() {
             Thêm danh mục
           </Button>,
         ]}
-        pagination={{ pageSize: 10 }}
+        pagination={{ pageSize: 20 }}
       />
 
       <ModalForm
@@ -154,17 +118,13 @@ export default function DanhMucPage() {
         <ProFormText name="slug" label="Slug" rules={[{ required: true }]} />
         <ProFormSelect
           name="type"
-          label="Loại taxonomy"
+          label="Loại"
           options={[
             { label: "Thể loại", value: "genre" },
             { label: "Quốc gia", value: "country" },
-            { label: "Tag", value: "tag" },
-            { label: "Studio", value: "studio" },
-            { label: "Năm phát hành", value: "year" },
           ]}
           rules={[{ required: true }]}
         />
-        <ProFormSwitch name="isActive" label="Kích hoạt" initialValue />
         <ProFormTextArea name="description" label="Mô tả" fieldProps={{ rows: 3 }} />
       </ModalForm>
     </PageContainer>

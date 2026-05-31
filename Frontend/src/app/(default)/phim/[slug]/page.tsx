@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import MovieDetailTemplate from './index';
 import {
@@ -7,6 +8,38 @@ import {
   fetchMovieKeywords,
   fetchMovieList,
 } from '@/lib/api/movie';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const data = await fetchMovieDetail(slug);
+  if (!data) return {};
+  const { item, cdnImage } = data;
+  const title = `${item.name} (${item.origin_name}) - MocPhim`;
+  const description = item.content?.replace(/<[^>]*>/g, '').slice(0, 160) ?? `Xem phim ${item.name} vietsub HD miễn phí tại MocPhim.`;
+  const image = item.thumb_url?.startsWith('http')
+    ? item.thumb_url
+    : `${cdnImage}/uploads/movies/${item.thumb_url}`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: image }],
+      type: 'video.movie',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
 
 export default async function MovieDetailPage({
   params,

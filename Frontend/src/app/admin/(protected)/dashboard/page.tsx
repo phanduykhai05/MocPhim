@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PageContainer, ProCard, StatisticCard } from "@ant-design/pro-components";
 import {
   VideoCameraOutlined,
@@ -8,52 +8,165 @@ import {
   EyeOutlined,
   CommentOutlined,
 } from "@ant-design/icons";
-import { Table, Tag, Avatar, Progress } from "antd";
+import { Table, Tag, Avatar, Progress, Spin } from "antd";
+import { fetchSyncMovies, fetchSyncMoviesAll, fetchSyncCount, type MovieSyncItem } from "@/lib/api/sync";
+import { apiGetAdminUsers, type AdminUser } from "@/lib/api/admin";
 
+const TYPE_LABEL: Record<string, string> = {
+  single: "Phim lẻ",
+  series: "Phim bộ",
+  tvshows: "TV Shows",
+  hoathinh: "Hoạt hình",
+};
 
-const recentMovies = [
-  { key: 1, title: "Huyền Thoại Aang", category: "Hoạt Hình", status: "active", views: 12400, date: "20/04/2026" },
-  { key: 2, title: "One Piece Tập 1157", category: "Anime", status: "active", views: 9800, date: "20/04/2026" },
-  { key: 3, title: "Nguyệt Lân Ỷ Kỷ", category: "Phim bộ", status: "pending", views: 7200, date: "19/04/2026" },
-  { key: 4, title: "Bất hòa (Phần 2)", category: "Phim bộ", status: "active", views: 5400, date: "19/04/2026" },
-  { key: 5, title: "MF Ghost (Phần 3)", category: "Anime", status: "active", views: 4100, date: "18/04/2026" },
-];
+function formatDateTime(iso: string) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" });
+  } catch { return iso; }
+}
 
 const recentColumns = [
   {
-    title: "Phim",
+    title: "Tên phim",
     dataIndex: "title",
-    render: (text: string) => (
-      <span style={{ fontWeight: 500 }}>{text}</span>
+    ellipsis: true,
+    render: (text: string, row: MovieSyncItem) => (
+      <a href={`/phim/${row.slug}`} target="_blank" rel="noreferrer" style={{ fontWeight: 500 }}>
+        {text}
+        {row.originName && <div style={{ fontSize: 11, color: "#8c8c8c", fontWeight: 400 }}>{row.originName}</div>}
+      </a>
     ),
   },
-  { title: "Thể loại", dataIndex: "category" },
   {
-    title: "Trạng thái",
-    dataIndex: "status",
-    render: (s: string) =>
-      s === "active" ? (
-        <Tag color="success">Hoạt động</Tag>
-      ) : (
-        <Tag color="warning">Chờ duyệt</Tag>
-      ),
+    title: "Loại",
+    dataIndex: "type",
+    width: 100,
+    render: (t: string) => <Tag color="blue">{TYPE_LABEL[t] ?? t}</Tag>,
   },
   {
-    title: "Lượt xem",
-    dataIndex: "views",
-    render: (v: number) => v.toLocaleString("vi-VN"),
+    title: "Tập hiện tại",
+    dataIndex: "episodeCurrent",
+    width: 130,
   },
-  { title: "Ngày thêm", dataIndex: "date" },
+  {
+    title: "Chất lượng",
+    dataIndex: "quality",
+    width: 90,
+  },
+  {
+    title: "Ngôn ngữ",
+    dataIndex: "lang",
+    width: 90,
+    render: (lang: string) => <Tag color="purple">{lang}</Tag>,
+  },
+  {
+    title: "Năm",
+    dataIndex: "year",
+    width: 65,
+  },
+  {
+    title: "Cập nhật",
+    dataIndex: "modifiedAt",
+    width: 140,
+    render: (v: string) => formatDateTime(v),
+  },
 ];
 
-const topUsers = [
-  { name: "Nguyễn Văn A", email: "a@mocphim.vn", comments: 142, avatar: "A" },
-  { name: "Trần Thị B", email: "b@mocphim.vn", comments: 98, avatar: "B" },
-  { name: "Lê Văn C", email: "c@mocphim.vn", comments: 76, avatar: "C" },
-  { name: "Phạm Thị D", email: "d@mocphim.vn", comments: 54, avatar: "D" },
-];
+const ROLE_LABEL: Record<string, string> = {
+  ROLE_ADMIN: "Admin",
+  ROLE_USER: "Thành viên",
+};
+const ROLE_COLOR: Record<string, string> = {
+  ROLE_ADMIN: "gold",
+  ROLE_USER: "blue",
+};
+
+function calcMonthGrowth(dates: string[]): { value: number; trend: "up" | "down" } | null {
+  const now = new Date();
+  const curY = now.getFullYear(), curM = now.getMonth();
+  const prevY = curM === 0 ? curY - 1 : curY, prevM = curM === 0 ? 11 : curM - 1;
+  let cur = 0, prev = 0;
+  for (const d of dates) {
+    const dt = new Date(d);
+    if (dt.getFullYear() === curY  && dt.getMonth() === curM)  cur++;
+    if (dt.getFullYear() === prevY && dt.getMonth() === prevM) prev++;
+  }
+  if (prev === 0) return cur > 0 ? { value: 100, trend: "up" } : null;
+  const pct = Math.round(((cur - prev) / prev) * 1000) / 10;
+  return { value: Math.abs(pct), trend: pct >= 0 ? "up" : "down" };
+}
 
 export default function DashboardPage() {
+  const [recentMovies, setRecentMovies] = useState<MovieSyncItem[]>([]);
+  const [moviesLoading, setMoviesLoading] = useState(true);
+
+  type DistItem = { label: string; count: number; percent: number; color: string };
+  const [distribution, setDistribution] = useState<DistItem[]>([]);
+  const [distLoading, setDistLoading] = useState(true);
+
+  const [totalMovies, setTotalMovies] = useState<number | null>(null);
+  const [totalUsers, setTotalUsers] = useState<number | null>(null);
+  const [movieGrowth, setMovieGrowth] = useState<{ value: number; trend: "up" | "down" } | null>(null);
+  const [userGrowth, setUserGrowth]   = useState<{ value: number; trend: "up" | "down" } | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSyncCount().then((n) => setTotalMovies(n));
+  }, []);
+
+  useEffect(() => {
+    // Fetch enough users to calculate monthly growth
+    apiGetAdminUsers({ page: 1, pageSize: 500 })
+      .then((res) => {
+        setUsers(res.data.slice(0, 6));
+        setTotalUsers(res.total);
+        const growth = calcMonthGrowth(res.data.map((u) => u.createdAt));
+        if (growth !== null) setUserGrowth(growth);
+      })
+      .catch(() => {})
+      .finally(() => setUsersLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchSyncMovies(0, 10)
+      .then((res) => setRecentMovies(res?.items ?? []))
+      .finally(() => setMoviesLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const TYPE_MAP: Record<string, { label: string; color: string }> = {
+      series:   { label: "Phim bộ",   color: "#1677ff" },
+      single:   { label: "Phim lẻ",   color: "#52c41a" },
+      hoathinh: { label: "Hoạt hình", color: "#faad14" },
+      tvshows:  { label: "TV Shows",  color: "#f5222d" },
+    };
+    fetchSyncMoviesAll()
+      .then((all) => {
+        if (!all) return;
+        const growth = calcMonthGrowth(all.map((m) => m.createdAt));
+        if (growth) setMovieGrowth(growth);
+        const counts: Record<string, number> = {};
+        for (const m of all) {
+          const t = m.type ?? "other";
+          counts[t] = (counts[t] ?? 0) + 1;
+        }
+        const total = all.length || 1;
+        setDistribution(
+          Object.entries(TYPE_MAP)
+            .map(([type, meta]) => ({
+              label: meta.label,
+              color: meta.color,
+              count: counts[type] ?? 0,
+              percent: Math.round(((counts[type] ?? 0) / total) * 100),
+            }))
+            .filter((d) => d.count > 0)
+        );
+      })
+      .finally(() => setDistLoading(false));
+  }, []);
+
   return (
     <PageContainer
       title="Tổng quan"
@@ -65,20 +178,20 @@ export default function DashboardPage() {
           <StatisticCard
             statistic={{
               title: "Tổng phim",
-              value: 1248,
+              value: totalMovies ?? "-",
               icon: (
                 <VideoCameraOutlined
                   style={{ color: "#1677ff", fontSize: 24, background: "#e6f4ff", borderRadius: 8, padding: 8 }}
                 />
               ),
-              description: (
+              description: movieGrowth ? (
                 <StatisticCard.Statistic
                   title="So với tháng trước"
-                  value={8.2}
+                  value={movieGrowth.value}
                   suffix="%"
-                  trend="up"
+                  trend={movieGrowth.trend}
                 />
-              ),
+              ) : undefined,
             }}
           />
         </ProCard>
@@ -87,20 +200,20 @@ export default function DashboardPage() {
           <StatisticCard
             statistic={{
               title: "Người dùng",
-              value: 32540,
+              value: totalUsers ?? "-",
               icon: (
                 <UserOutlined
                   style={{ color: "#52c41a", fontSize: 24, background: "#f6ffed", borderRadius: 8, padding: 8 }}
                 />
               ),
-              description: (
+              description: userGrowth ? (
                 <StatisticCard.Statistic
                   title="So với tháng trước"
-                  value={12.5}
+                  value={userGrowth.value}
                   suffix="%"
-                  trend="up"
+                  trend={userGrowth.trend}
                 />
-              ),
+              ) : undefined,
             }}
           />
         </ProCard>
@@ -131,7 +244,7 @@ export default function DashboardPage() {
           <StatisticCard
             statistic={{
               title: "Bình luận mới",
-              value: 426,
+              value: 0,
               icon: (
                 <CommentOutlined
                   style={{ color: "#722ed1", fontSize: 24, background: "#f9f0ff", borderRadius: 8, padding: 8 }}
@@ -140,7 +253,7 @@ export default function DashboardPage() {
               description: (
                 <StatisticCard.Statistic
                   title="So với hôm qua"
-                  value={5.8}
+                  value={0}
                   suffix="%"
                   trend="up"
                 />
@@ -159,63 +272,75 @@ export default function DashboardPage() {
           bordered
           extra={<a href="/admin/phim">Xem tất cả</a>}
         >
-          <Table
-            dataSource={recentMovies}
-            columns={recentColumns}
-            pagination={false}
-            size="small"
-          />
+          <Spin spinning={moviesLoading}>
+            <Table
+              dataSource={recentMovies}
+              rowKey="id"
+              columns={recentColumns}
+              pagination={false}
+              size="small"
+            />
+          </Spin>
         </ProCard>
 
         {/* Right column */}
         <ProCard colSpan={{ xs: 24, lg: 8 }} ghost gutter={[16, 16]} direction="column">
           {/* Category distribution */}
           <ProCard title="Phân bố thể loại" bordered>
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {[
-                { label: "Phim bộ", value: 42, color: "#1677ff" },
-                { label: "Phim lẻ", value: 35, color: "#52c41a" },
-                { label: "Anime", value: 23, color: "#faad14" },
-              ].map((item) => (
-                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <Progress
-                    type="circle"
-                    percent={item.value}
-                    size={44}
-                    strokeColor={item.color}
-                    strokeWidth={8}
-                    format={(p) => `${p}%`}
-                    style={{ flexShrink: 0 }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 500 }}>{item.label}</div>
-                    <div style={{ fontSize: 12, color: "#8c8c8c" }}>{item.value}% tổng phim</div>
+            <Spin spinning={distLoading}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {distribution.map((item) => (
+                  <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <Progress
+                      type="circle"
+                      percent={item.percent}
+                      size={44}
+                      strokeColor={item.color}
+                      strokeWidth={8}
+                      format={(p) => `${p}%`}
+                      style={{ flexShrink: 0 }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 500 }}>{item.label}</div>
+                      <div style={{ fontSize: 12, color: "#8c8c8c" }}>
+                        {item.percent}% · {item.count.toLocaleString("vi-VN")} phim
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </Spin>
           </ProCard>
 
           {/* Top active users */}
-          <ProCard title="Người dùng tích cực" bordered>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {topUsers.map((u, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <Avatar style={{ backgroundColor: "#1677ff", flexShrink: 0 }}>
-                    {u.avatar}
-                  </Avatar>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {u.name}
+          <ProCard title="Người dùng" bordered extra={<a href="/admin/users">Xem tất cả</a>}>
+            <Spin spinning={usersLoading}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {users.map((u) => {
+                  const topRole = u.roles.includes("ROLE_ADMIN") ? "ROLE_ADMIN" : "ROLE_USER";
+                  const initial = u.name ? u.name.charAt(0).toUpperCase() : "?";
+                  return (
+                    <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <Avatar
+                        src={u.avatar || undefined}
+                        style={{ backgroundColor: topRole === "ROLE_ADMIN" ? "#faad14" : "#1677ff", flexShrink: 0 }}
+                      >
+                        {!u.avatar && initial}
+                      </Avatar>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {u.name}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#8c8c8c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {u.email}
+                        </div>
+                      </div>
+                      <Tag color={ROLE_COLOR[topRole]}>{ROLE_LABEL[topRole]}</Tag>
                     </div>
-                    <div style={{ fontSize: 12, color: "#8c8c8c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {u.email}
-                    </div>
-                  </div>
-                  <Tag color="blue">{u.comments} CM</Tag>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            </Spin>
           </ProCard>
         </ProCard>
       </ProCard>
