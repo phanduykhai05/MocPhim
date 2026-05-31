@@ -7,6 +7,8 @@ import { DottedMap, type Marker } from "@/components/ui/dotted-map";
 import { NewUpdateList } from "@/app/(default)/phimmoi/components/MovieUpdate";
 import HappyMovie from "@/app/(default)/phimmoi/components/HappyMovie";
 import { fetchHomeData, getThumbUrl, type ApiMovie } from "@/lib/api/home";
+import { fetchMovieList, type MovieListItem, fetchCountryMovies } from "@/lib/api/movie";
+import CountryMovieSection, { type CountryMovie } from "@/app/(default)/phimmoi/components/CountryMovies";
 import type { Movie } from "@/app/(default)/phimmoi/components/Banner/components/data/movie";
 import type { MovieHorizontal } from "@/app/(default)/phimmoi/components/HappyMovie/components/types/movie";
 import { File, Search, Settings } from "lucide-react";
@@ -86,31 +88,62 @@ function toTopSeriesMovies(items: ApiMovie[], cdn: string) {
     });
 }
 
-function toHappyMovies(items: ApiMovie[], cdn: string): MovieHorizontal[] {
-  return items
-    .filter((item) => item.type === "single")
-    .slice(0, 8)
-    .map((item) => ({
-      id: item._id,
-      title: item.name,
-      originalTitle: item.origin_name,
+function toHappyMovies(items: MovieListItem[], cdn: string): MovieHorizontal[] {
+  return items.slice(0, 8).map((item) => ({
+    id: item._id,
+    title: item.name,
+    originalTitle: item.origin_name,
+    slug: item.slug,
+    posterUrl: getThumbUrl(item.thumb_url, cdn),
+    thumbUrl: getThumbUrl(item.thumb_url, cdn),
+    tags: [String(item.year), item.quality],
+    badgeStatus: item.episode_current,
+  }));
+}
+
+function toCountryMovies(items: MovieListItem[], cdn: string): CountryMovie[] {
+  return items.slice(0, 12).map((item) => {
+    const epShort = parseEpisodeShort(item.episode_current);
+    const lang = item.lang.toLowerCase();
+    const badges: { type: "pd" | "lt" | "tm"; text: string }[] = [];
+    if (lang.includes("vietsub")) badges.push({ type: "pd", text: epShort });
+    if (lang.includes("thuyết minh")) badges.push({ type: "tm", text: epShort });
+    if (lang.includes("lồng tiếng")) badges.push({ type: "lt", text: epShort });
+    if (badges.length === 0) badges.push({ type: "pd", text: epShort });
+    return {
+      _id: item._id,
+      name: item.name,
+      origin_name: item.origin_name,
       slug: item.slug,
-      posterUrl: getThumbUrl(item.thumb_url, cdn),
-      thumbUrl: getThumbUrl(item.thumb_url, cdn),
-      tags: [String(item.year), item.quality],
-      badgeStatus: item.episode_current,
-    }));
+      thumb_url: getThumbUrl(item.thumb_url, cdn),
+      quality: item.quality,
+      lang: item.lang,
+      year: item.year,
+      episode_current: item.episode_current,
+      badges,
+    };
+  });
 }
 
 export default async function PhimMoi() {
-  const homeData = await fetchHomeData();
+  const [homeData, theaterData, vnData, krData, cnData] = await Promise.all([
+    fetchHomeData(),
+    fetchMovieList({ list: 'phim-chieu-rap', sort_field: 'modified_time', sort_type: 'desc' }),
+    fetchCountryMovies('viet-nam', { sort_field: 'modified_time', sort_type: 'desc', size: 12 }),
+    fetchCountryMovies('han-quoc',  { sort_field: 'modified_time', sort_type: 'desc', size: 12 }),
+    fetchCountryMovies('trung-quoc', { sort_field: 'modified_time', sort_type: 'desc', size: 12 }),
+  ]);
   const items = homeData?.items ?? [];
   const cdn = homeData?.cdnImage ?? process.env.NEXT_PUBLIC_CDN_IMAGE!;
 
   const bannerMovies = toBannerMovies(items, cdn);
   const updateMovies = toUpdateMovies(items, cdn);
   const topSeriesMovies = toTopSeriesMovies(items, cdn);
-  const happyMovies = toHappyMovies(items, cdn);
+  const theaterCdn = theaterData?.cdnImage ?? cdn;
+  const happyMovies = toHappyMovies(theaterData?.items ?? [], theaterCdn);
+  const vnMovies  = toCountryMovies(vnData?.items  ?? [], vnData?.cdnImage  ?? cdn);
+  const krMovies  = toCountryMovies(krData?.items  ?? [], krData?.cdnImage  ?? cdn);
+  const cnMovies  = toCountryMovies(cnData?.items  ?? [], cnData?.cdnImage  ?? cdn);
 
   // SVG coordinate space: width=22, height=40
   //   region lng 101→110 (9°), lat 7.5→24 (16.5°)
@@ -139,6 +172,30 @@ export default async function PhimMoi() {
       <Topics />
       <BookmarkedMovies />
       <WatchedMovies />
+      <div className="rounded-2xl py-8 mx-4 md:mx-[50px] mb-10 3xl:mx-[80px] 4xl:mx-[120px]" style={{ background: 'linear-gradient(0deg, rgba(40, 43, 58, 0) 20%, rgb(40, 43, 58))' }}>
+        <CountryMovieSection
+        id="viet-nam"
+        title="Phim Việt Nam Mới"
+        viewAllLink="/quoc-gia/viet-nam"
+        movies={vnMovies}
+        gradient="linear-gradient(235deg, rgb(255, 255, 255) 30%, rgb(218, 37, 29) 130%)"
+      />
+      <CountryMovieSection
+        id="han-quoc"
+        title="Phim Hàn Quốc Mới"
+        viewAllLink="/quoc-gia/han-quoc"
+        movies={krMovies}
+        gradient="linear-gradient(235deg, rgb(255, 255, 255) 30%, rgb(0, 100, 255) 130%)"
+      />
+      <CountryMovieSection
+        id="trung-quoc"
+        title="Phim Trung Quốc Mới"
+        viewAllLink="/quoc-gia/trung-quoc"
+        movies={cnMovies}
+        gradient="linear-gradient(235deg, rgb(255, 255, 255) 30%, rgb(255, 180, 0) 130%)"
+      />
+      </div>
+      
       <NewUpdateList movies={updateMovies} />
       <HappyMovie movies={happyMovies} />
       <TopSeriesList movies={topSeriesMovies} />

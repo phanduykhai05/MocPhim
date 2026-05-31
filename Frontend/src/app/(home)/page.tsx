@@ -15,11 +15,8 @@ export default function HomePage() {
       <main className="max-w-[1900px] mx-auto 3xl:max-w-[2400px] 4xl:max-w-[3200px]">
         <HeroSection />
         <TopMovies />
-        <BookmarkedMovies />
-        <WatchedMovies />
         <SeoContent />
       </main>
-
       <Footer />
     </div>
   );

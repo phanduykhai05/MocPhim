@@ -80,8 +80,13 @@ export const NewUpdateCard = ({ title, originName, slug, thumb, badges, priority
 
           {/* Play button */}
           <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <span className="w-[60px] h-[60px] rounded-full bg-[#fadfa3] text-[#2D1B0D] flex items-center justify-center text-[22px]">
-              ▶
+            <span
+              className="w-[60px] h-[60px] rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 hover:scale-105"
+              style={{ background: 'linear-gradient(39deg, #fecf59, #fff1cc)', color: '#1a1a1a', boxShadow: '0 5px 10px 5px rgba(255, 218, 125, 0.1)' }}
+            >
+              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 384 512" height="22" width="22" xmlns="http://www.w3.org/2000/svg">
+                <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" />
+              </svg>
             </span>
           </span>
         </Link>

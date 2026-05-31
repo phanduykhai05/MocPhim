@@ -17,6 +17,7 @@ const UserActions = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const iconRef = useRef(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const [suggestions, setSuggestions] = useState([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [cdnImage, setCdnImage] = useState("");
@@ -26,7 +27,10 @@ const UserActions = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const inDesktop = userMenuRef.current?.contains(target);
+      const inMobile = mobileMenuRef.current?.contains(target);
+      if (!inDesktop && !inMobile) {
         setIsUserMenuOpen(false);
       }
     };
@@ -68,13 +72,70 @@ const UserActions = () => {
 
   return (
     <>
-      {/* Mobile - Search Icon Only */}
-      <div className="flex lg:hidden items-center ml-auto">
+      {/* Mobile - Search + Auth */}
+      <div className="flex lg:hidden items-center gap-1 ml-auto">
+        {/* Login / User avatar */}
+        {!isLoading && (
+          user ? (
+            <motion.button
+              aria-label="Tài khoản"
+              onClick={() => setIsUserMenuOpen((v) => !v)}
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-[#ffd875] text-[#121931] font-bold text-sm shrink-0"
+              whileTap={{ scale: 0.9 }}
+            >
+              {userInitial}
+            </motion.button>
+          ) : (
+            <motion.button
+              aria-label="Đăng nhập"
+              onClick={() => setIsAuthPopupOpen(true)}
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-[#f8f9fa] text-[#212529] shrink-0"
+              whileTap={{ scale: 0.9 }}
+            >
+              <svg fill="currentColor" viewBox="0 0 448 512" height="18" width="18">
+                <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z" />
+              </svg>
+            </motion.button>
+          )
+        )}
+
+        {/* User dropdown (mobile) */}
+        <AnimatePresence>
+          {isUserMenuOpen && user && (
+            <motion.div
+              ref={mobileMenuRef}
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.96 }}
+              transition={{ duration: 0.15 }}
+              className="absolute right-4 top-full mt-2 w-48 rounded-xl border border-[#22305d] bg-[#171f45] py-1 shadow-xl z-50"
+            >
+              <div className="border-b border-[#22305d] px-4 py-2">
+                <p className="text-xs text-[#8f99bb]">Đăng nhập với</p>
+                <p className="truncate text-sm font-medium text-white">{user.email}</p>
+              </div>
+              {user.roles.includes("ROLE_ADMIN") && (
+                <a href="/admin" className="block px-4 py-2 text-sm text-[#ffd875] hover:bg-[#22305d] transition-colors">
+                  Quản trị
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full px-4 py-2 text-left text-sm text-[#bec8e6] hover:bg-[#22305d] hover:text-white transition-colors"
+              >
+                Đăng xuất
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Search icon */}
         <motion.button
           ref={iconRef}
           onClick={() => setIsSearchOpen(!isSearchOpen)}
           aria-label="Tìm kiếm"
-          className="ml-auto p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+          className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >
