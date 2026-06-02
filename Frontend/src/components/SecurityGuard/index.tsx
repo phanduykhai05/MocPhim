@@ -10,6 +10,7 @@ import {
 } from "@/lib/security-settings";
 
 function isBlockedShortcut(event: KeyboardEvent, settings: SecuritySettings): boolean {
+  if (!event.key) return false;
   const key = event.key.toLowerCase();
   const ctrlOrMeta = event.ctrlKey || event.metaKey;
 

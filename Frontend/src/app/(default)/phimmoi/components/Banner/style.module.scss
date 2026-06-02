@@ -9,6 +9,7 @@ $tag-bg: rgba(255, 255, 255, 0.063);
 // ─── Container ───────────────────────────────────────────────
 .bannerContainer {
   position: relative;
+  contain: layout paint;
 
   // Gradient fade ở dưới cùng
   &::before {
@@ -43,7 +44,7 @@ $tag-bg: rgba(255, 255, 255, 0.063);
     border: 2px solid rgba(255, 255, 255, 0.14);
     cursor: pointer;
     transform: scale(0.95);
-    transition: all 0.25s ease;
+    transition: opacity 0.2s, transform 0.2s;
     margin: 0 !important;
     overflow: hidden;
 
@@ -61,11 +62,16 @@ $tag-bg: rgba(255, 255, 255, 0.063);
 
   // ── Slide active animations ──
   :global(.swiper-slide-active) {
-    .mediaTitle  { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s    forwards; opacity: 0; }
-    .mediaAlias  { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s  forwards; opacity: 0; }
-    .hlTags      { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.18s forwards; opacity: 0; }
-    .description { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.26s forwards; opacity: 0; }
-    .touch       { animation: slideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.34s forwards; opacity: 0; }
+    .mediaTitle  { animation: slideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s    both; }
+    .mediaAlias  { animation: slideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.07s both; }
+    .hlTags      { animation: slideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.13s both; }
+    .description { animation: slideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.18s both; }
+    .touch       { animation: slideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.23s both; }
+  }
+
+  // Khi không active — ẩn ngay, không giữ GPU layer
+  :global(.swiper-slide:not(.swiper-slide-active)) {
+    .mediaTitle, .mediaAlias, .hlTags, .description, .touch { opacity: 0; }
   }
 
   @media (max-width: 1024px) {
@@ -73,17 +79,22 @@ $tag-bg: rgba(255, 255, 255, 0.063);
   }
 }
 
-// ─── Blurred background ──────────────────────────────────────
+// ─── Background tối (không dùng filter:blur) ─────────────────
 .backgroundFade {
   background-size: cover;
   background-position: 50% 50%;
-  filter: blur(50px);
-  -webkit-filter: blur(80px);
-  opacity: 0.2;
+  opacity: 0.35;
+  position: absolute;
+  inset: -20px;
+  transform: translateZ(0);
+}
+
+// ─── Dark overlay thay thế blur ──────────────────────────────
+.backgroundFade::after {
+  content: "";
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  background: rgba($dark-bg, 0.55);
 }
 
 // ─── Dotted overlay ──────────────────────────────────────────
@@ -126,12 +137,12 @@ $tag-bg: rgba(255, 255, 255, 0.063);
   object-position: center 25%;
   position: absolute;
   right: 0; top: 0; width: 100%;
-  animation: imgFadeIn 0.6s ease-in forwards;
+  animation: imgFadeIn 0.45s ease-out both;
 }
 
 @keyframes imgFadeIn {
-  from { opacity: 0; filter: blur(12px); }
-  to   { opacity: 1; filter: blur(0); }
+  from { opacity: 0; transform: scale(1.02); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 // ─── Safe area ───────────────────────────────────────────────
@@ -169,6 +180,7 @@ $tag-bg: rgba(255, 255, 255, 0.063);
   line-height: 1.3;
   margin-bottom: 0.5rem;
   text-shadow: 0 2px 1px rgba(0, 0, 0, 0.3);
+  font-family: cursive;
 }
 
 .mediaAlias {
@@ -285,7 +297,7 @@ $tag-bg: rgba(255, 255, 255, 0.063);
   color: #1a1a1a;
   box-shadow: 0 5px 10px 5px rgba(255, 218, 125, 0.1);
   opacity: 0.95;
-  transition: transform 0.2s ease, opacity 0.2s, color 0.2s;
+  transition: transform 0.2s ease, opacity 0.2s;
   text-decoration: none;
 
   &:hover {
@@ -333,6 +345,16 @@ $tag-bg: rgba(255, 255, 255, 0.063);
 
 // ─── Keyframes ───────────────────────────────────────────────
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-40px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translate3d(-28px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(.swiper-slide-active) {
+    .mediaTitle, .mediaAlias, .hlTags, .description, .touch {
+      animation: none !important;
+      opacity: 1 !important;
+    }
+  }
+  .coverImg { animation: none !important; opacity: 1 !important; transform: none !important; }
 }

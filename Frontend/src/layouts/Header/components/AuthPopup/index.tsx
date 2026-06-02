@@ -37,7 +37,7 @@ const AuthPopup = ({ isOpen, onClose }: AuthPopupProps) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[120] bg-[#050918]/85 backdrop-blur-sm"
+          className="fixed inset-0 z-[120] bg-[#050918]/90"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
