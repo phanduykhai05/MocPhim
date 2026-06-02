@@ -81,6 +81,11 @@ body {
   color: #1f2937;
 }
 
+.dark body {
+  background-color: #0d0f14;
+  color: #e5e7eb;
+}
+
 h1,
 h2,
 h3,
