@@ -32,7 +32,7 @@ const TopicGrid = () => {
   useEffect(() => {
     fetchCategories().then((data) => {
       setTopics(
-        data.map((cat, i) => ({
+        data.filter((cat) => cat.slug !== 'phim-18').map((cat, i) => ({
           id: cat.slug,
           name: cat.name,
           color: TOPIC_COLORS[i % TOPIC_COLORS.length],

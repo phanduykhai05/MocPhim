@@ -82,7 +82,7 @@ const Navigation = () => {
 
   useEffect(() => {
     fetchCategories().then((data) => {
-      setCategories(data);
+      setCategories(data.filter((cat) => cat.slug !== 'phim-18'));
       setCatLoading(false);
     });
     fetchCountries().then((data) => {
