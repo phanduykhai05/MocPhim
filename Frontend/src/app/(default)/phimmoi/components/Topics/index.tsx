@@ -48,7 +48,7 @@ const TopicGrid = () => {
   const remainingCount = topics.length - initialDisplayCount;
 
   return (
-    <section className="w-full max-w-[1900px] mx-auto px-4 md:px-[50px] py-0 relative z-10 overflow-hidden md:mt-[-80px] z-30 mt-[-50px] 3xl:max-w-[2400px] 4xl:max-w-[3200px] 3xl:px-[80px] 4xl:px-[120px]">
+    <section className="w-full max-w-[1900px] mx-auto px-4 md:px-[50px] py-0 relative z-10 overflow-hidden md:mt-[-80px] z-30 mt-[-50px] 3xl:max-w-[2400px] 4xl:max-w-[3200px] 3xl:px-[80px] 4xl:px-[120px] mb-5">
       <div className="flex items-center gap-4 mb-6">
         <h2 className="text-2xl md:text-[2rem] font-semibold text-gray-900 dark:text-white drop-shadow-[0_2px_1px_rgba(0,0,0,0.3)]">
           <Highlighter action="underline" iterations={1} animationDuration={1000}>{`Bạn đang quan tâm gì?`}</Highlighter>
