@@ -27,7 +27,10 @@
       "PowerShell(Get-ChildItem -Path \"k:\\\\MocPhim\\\\Backend\" -Depth 1 -File | Where-Object { $_.Name -match \"\\\\.\\(json|ts|js|yaml|yml|env|toml\\)$\" })",
       "PowerShell(Get-ChildItem -Path \"k:\\\\MocPhim\\\\Frontend\\\\src\\\\app\" -Recurse | Where-Object { $_.Name -match \"\\\\.\\(tsx|ts|js\\)$\" } | Select-Object -First 30)",
       "PowerShell(Get-ChildItem -Path \"k:\\\\MocPhim\\\\Backend\\\\src\\\\main\\\\java\\\\mocphim\\\\com\\\\backend_web\" -Recurse -File | Where-Object { $_.Name -match \"\\\\.java$\" } | Select-Object -First 40 | ForEach-Object { $_.FullName.Replace\\(\"k:\\\\MocPhim\\\\Backend\\\\src\\\\main\\\\java\\\\mocphim\\\\com\\\\backend_web\\\\\", \"\"\\) })",
-      "Bash(ls -la k:\\\\\\\\MocPhim\\\\\\\\Backend\\\\\\\\src\\\\\\\\main\\\\\\\\java\\\\\\\\mocphim\\\\\\\\com\\\\\\\\backend_web\\\\\\\\controller\\\\\\\\)"
+      "Bash(ls -la k:\\\\\\\\MocPhim\\\\\\\\Backend\\\\\\\\src\\\\\\\\main\\\\\\\\java\\\\\\\\mocphim\\\\\\\\com\\\\\\\\backend_web\\\\\\\\controller\\\\\\\\)",
+      "Bash(Remove-Item \"k:/MocPhim/Frontend/src/app/\\(default\\)/phimmoi/components/Banner/style.module.css\" -Force)",
+      "Bash(Write-Output \"Done\")",
+      "WebFetch(domain:thesvg.org)"
     ]
   }
 }
