@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MovieItem, MoviesImagesData, KeywordsData } from '@/lib/api/movie';
 import { MovieActionBar } from '@/app/(default)/phim/[slug]/components/Hero/components/MovieActionBar';
 import { CommentSection } from '@/app/(default)/phim/[slug]/components/Hero/components/CommentSection';
+import { apiIncrementView } from '@/lib/api/comments';
 
 interface HeroProps {
   movie: MovieItem;
@@ -27,6 +28,10 @@ export const MovieMainContent = ({ movie, images, keywords, initialTap, initialS
   const [activeTab, setActiveTab] = useState('episodes');
   const [selectedServerIdx, setSelectedServerIdx] = useState(initialSv);
   const [selectedEpIdx, setSelectedEpIdx] = useState(Math.max(0, initialTap - 1));
+
+  useEffect(() => {
+    apiIncrementView(movie.slug).catch(() => {});
+  }, [movie.slug]);
 
   const servers = movie.episodes ?? [];
   const currentServer = servers[selectedServerIdx];
@@ -238,7 +243,7 @@ export const MovieMainContent = ({ movie, images, keywords, initialTap, initialS
         )}
 
         <hr className="border-white/5 mx-6 lg:mx-10" />
-        <CommentSection />
+        <CommentSection slug={movie.slug} />
       </div>
     </div>
   );

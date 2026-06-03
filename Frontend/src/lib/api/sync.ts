@@ -9,15 +9,31 @@ export interface MovieSyncItem {
   originName?: string;
   type?: string;
   thumbUrl?: string;
+  posterUrl?: string;
   episodeCurrent?: string;
   quality?: string;
   lang?: string;
   year?: number;
   duration?: string;
+  subDocquyen?: boolean;
   category?: { id: string; name: string; slug: string }[];
   country?: { id: string; name: string; slug: string }[];
   modifiedAt: string;
   createdAt: string;
+}
+
+export interface UpdateMoviePayload {
+  title?: string;
+  originName?: string;
+  type?: string;
+  quality?: string;
+  lang?: string;
+  year?: number;
+  episodeCurrent?: string;
+  duration?: string;
+  thumbUrl?: string;
+  posterUrl?: string;
+  subDocquyen?: boolean;
 }
 
 export interface SyncPagination {
@@ -174,6 +190,30 @@ export async function triggerResync(
     `${API}/sync/movies/resync?limit=${limit}`,
     accessToken,
   );
+}
+
+export async function updateMovie(
+  slug: string,
+  payload: UpdateMoviePayload,
+  accessToken?: string,
+): Promise<MovieSyncItem | null> {
+  try {
+    const token = accessToken ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
+    const res = await fetch(`${API}/sync/movies/${slug}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.status ? json.data : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function deleteAdminCache(

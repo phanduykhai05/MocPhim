@@ -9,6 +9,7 @@ export interface Movie {
   genres: string[];
   description: string;
   poster: string;
+  thumb?: string;
   slug: string;
   imdbScore?: number;
   ageRating?: string;

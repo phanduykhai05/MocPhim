@@ -21,20 +21,27 @@ type VietnamMarker = Marker & {
 };
 
 function toBannerMovies(items: ApiMovie[], cdn: string): Movie[] {
-  return items.slice(0, 8).map((item) => ({
-    id: item._id,
-    title: item.name,
-    alias: item.origin_name,
-    year: String(item.year),
-    quality: item.quality,
-    subtitle: item.lang,
-    status: item.episode_current,
-    genres: item.category.map((c) => c.name),
-    description: "",
-    poster: getThumbUrl(item.poster_url || item.thumb_url, cdn),
-    slug: item.slug,
-    imdbScore: item.imdb?.vote_average || item.tmdb?.vote_average || undefined,
-  }));
+  return items.slice(0, 8).map((item) => {
+    const images = item.image_url ?? item.image_urls;
+    const desktopImage = images?.desktop || item.poster_url || item.thumb_url;
+    const mobileImage = images?.mobile || item.thumb_url || item.poster_url;
+
+    return {
+      id: item._id,
+      title: item.name,
+      alias: item.origin_name,
+      year: String(item.year),
+      quality: item.quality,
+      subtitle: item.lang,
+      status: item.episode_current,
+      genres: item.category.map((c) => c.name),
+      description: "",
+      poster: getThumbUrl(desktopImage, cdn),
+      thumb: getThumbUrl(mobileImage, cdn),
+      slug: item.slug,
+      imdbScore: item.imdb?.vote_average || item.tmdb?.vote_average || undefined,
+    };
+  });
 }
 
 function toUpdateMovies(items: ApiMovie[], cdn: string) {

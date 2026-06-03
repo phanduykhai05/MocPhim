@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   PageContainer,
   ProTable,
 } from "@ant-design/pro-components";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
-import { Button, Tag, Space, Image } from "antd";
-import { EditOutlined, ExportOutlined } from "@ant-design/icons";
+import { Button, Tag, Space, Image, Tooltip, App } from "antd";
+import { EditOutlined, ExportOutlined, EyeOutlined } from "@ant-design/icons";
 import { fetchSyncMovies, type MovieSyncItem } from "@/lib/api/sync";
 import { getMovieThumb } from "@/lib/api/movie";
+import { apiGetViewsBatch } from "@/lib/api/comments";
+import MovieEditDrawer from "./MovieEditDrawer";
 
 const TYPE_LABEL: Record<string, { text: string; color: string }> = {
   series:   { text: "Phim bộ",   color: "blue" },
@@ -26,6 +28,19 @@ function formatDateTime(iso: string) {
 
 export default function PhimPage() {
   const actionRef = useRef<ActionType | undefined>(undefined);
+  const [viewMap, setViewMap] = useState<Record<string, number>>({});
+  const [editMovie, setEditMovie] = useState<MovieSyncItem | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  function openEdit(movie: MovieSyncItem) {
+    setEditMovie(movie);
+    setDrawerOpen(true);
+  }
+
+  function handleSaved(updated: MovieSyncItem) {
+    // Update row in table without full reload
+    actionRef.current?.reload();
+  }
 
   const columns: ProColumns<MovieSyncItem>[] = [
     {
@@ -100,6 +115,21 @@ export default function PhimPage() {
       width: 65,
     },
     {
+      title: "Lượt xem",
+      dataIndex: "slug",
+      search: false,
+      width: 100,
+      sorter: (a, b) => (viewMap[a.slug] ?? 0) - (viewMap[b.slug] ?? 0),
+      render: (_, record) => (
+        <Tooltip title="Tổng lượt xem">
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <EyeOutlined style={{ color: "#faad14" }} />
+            {(viewMap[record.slug] ?? 0).toLocaleString("vi-VN")}
+          </span>
+        </Tooltip>
+      ),
+    },
+    {
       title: "Cập nhật",
       dataIndex: "modifiedAt",
       search: false,
@@ -112,52 +142,69 @@ export default function PhimPage() {
       width: 90,
       render: (_, record) => (
         <Space>
-          <Button
-            type="link"
-            size="small"
-            icon={<ExportOutlined />}
-            href={`/phim/${record.slug}`}
-            target="_blank"
-          />
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => {}}
-          />
+          <Tooltip title="Xem trang phim">
+            <Button
+              type="link"
+              size="small"
+              icon={<ExportOutlined />}
+              href={`/phim/${record.slug}`}
+              target="_blank"
+            />
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa">
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => openEdit(record)}
+            />
+          </Tooltip>
         </Space>
       ),
     },
   ];
 
   return (
-    <PageContainer title="Quản lý Phim" subTitle="Danh sách phim đã sync từ nguồn">
-      <ProTable<MovieSyncItem>
-        actionRef={actionRef}
-        rowKey="id"
-        columns={columns}
-        request={async (params) => {
-          const page = (params.current ?? 1) - 1;
-          const size = params.pageSize ?? 20;
-          const res = await fetchSyncMovies(page, size);
-          if (!res) return { data: [], success: false, total: 0 };
-          let data = res.items;
-          if (params.title) {
-            const q = String(params.title).toLowerCase();
-            data = data.filter((m) =>
-              m.title.toLowerCase().includes(q) || m.slug.toLowerCase().includes(q)
+    <App>
+      <PageContainer title="Quản lý Phim" subTitle="Danh sách phim đã sync từ nguồn">
+        <ProTable<MovieSyncItem>
+          actionRef={actionRef}
+          rowKey="id"
+          columns={columns}
+          request={async (params) => {
+            const page = (params.current ?? 1) - 1;
+            const size = params.pageSize ?? 20;
+            const res = await fetchSyncMovies(page, size);
+            if (!res) return { data: [], success: false, total: 0 };
+            let data = res.items;
+            if (params.title) {
+              const q = String(params.title).toLowerCase();
+              data = data.filter((m) =>
+                m.title.toLowerCase().includes(q) || m.slug.toLowerCase().includes(q)
+              );
+            }
+            if (params.type) {
+              data = data.filter((m) => m.type === params.type);
+            }
+            const slugs = data.map((m) => m.slug);
+            apiGetViewsBatch(slugs).then((map) =>
+              setViewMap((prev) => ({ ...prev, ...map }))
             );
-          }
-          if (params.type) {
-            data = data.filter((m) => m.type === params.type);
-          }
-          return { data, success: true, total: res.pagination.totalItems };
-        }}
-        pagination={{ pageSize: 20, showSizeChanger: true }}
-        scroll={{ x: 1000 }}
-        rowSelection={{}}
-        dateFormatter="string"
-      />
-    </PageContainer>
+            return { data, success: true, total: res.pagination.totalItems };
+          }}
+          pagination={{ pageSize: 20, showSizeChanger: true }}
+          scroll={{ x: 1100 }}
+          rowSelection={{}}
+          dateFormatter="string"
+        />
+
+        <MovieEditDrawer
+          movie={editMovie}
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          onSaved={handleSaved}
+        />
+      </PageContainer>
+    </App>
   );
 }

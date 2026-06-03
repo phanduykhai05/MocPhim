@@ -6,6 +6,14 @@ export interface ApiMovie {
   type: string;
   thumb_url: string;
   poster_url?: string;
+  image_url?: {
+    desktop?: string | null;
+    mobile?: string | null;
+  };
+  image_urls?: {
+    desktop?: string | null;
+    mobile?: string | null;
+  };
   episode_current: string;
   quality: string;
   lang: string;
@@ -27,6 +35,8 @@ const CDN_IMAGE = process.env.NEXT_PUBLIC_CDN_IMAGE!;
 const DOMAIN_FRONTEND = process.env.NEXT_PUBLIC_DOMAIN_FRONTEND!;
 
 export function getThumbUrl(thumb_url: string, cdn?: string): string {
+  if (!thumb_url) return '';
+  if (thumb_url.startsWith('http')) return thumb_url;
   return `${cdn || CDN_IMAGE}/uploads/movies/${thumb_url}`;
 }
 

@@ -11,6 +11,7 @@ import {
 import { Table, Tag, Avatar, Progress, Spin } from "antd";
 import { fetchSyncMovies, fetchSyncMoviesAll, fetchSyncCount, type MovieSyncItem } from "@/lib/api/sync";
 import { apiGetAdminUsers, type AdminUser } from "@/lib/api/admin";
+import { apiGetTodayViews } from "@/lib/api/comments";
 
 const TYPE_LABEL: Record<string, string> = {
   single: "Phim lẻ",
@@ -111,9 +112,11 @@ export default function DashboardPage() {
   const [userGrowth, setUserGrowth]   = useState<{ value: number; trend: "up" | "down" } | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
+  const [todayViews, setTodayViews] = useState<number | null>(null);
 
   useEffect(() => {
     fetchSyncCount().then((n) => setTotalMovies(n));
+    apiGetTodayViews().then(setTodayViews);
   }, []);
 
   useEffect(() => {
@@ -222,7 +225,7 @@ export default function DashboardPage() {
           <StatisticCard
             statistic={{
               title: "Lượt xem hôm nay",
-              value: 84290,
+              value: todayViews ?? "-",
               icon: (
                 <EyeOutlined
                   style={{ color: "#faad14", fontSize: 24, background: "#fffbe6", borderRadius: 8, padding: 8 }}

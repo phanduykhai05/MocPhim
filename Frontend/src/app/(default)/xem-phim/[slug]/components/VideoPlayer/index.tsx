@@ -8,6 +8,7 @@ import { ArrowLeft, Flag, Heart, ListVideo, Maximize, Plus, Share2 } from "lucid
 import { useAuth } from "@/contexts/AuthContext";
 import { apiAddBookmark, apiDeleteBookmark, apiIsBookmarked } from "@/lib/api/bookmarks";
 import { apiUpdateProgress, apiGetAllProgress } from "@/lib/api/progress";
+import { apiIncrementView } from "@/lib/api/comments";
 import { useEffect, useCallback } from "react";
 
 type VideoPlayerProps = {
@@ -48,6 +49,11 @@ export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, s
     },
     [user, movieId, episode, movieSlug]
   );
+
+  // Tính lượt xem khi bắt đầu xem (chỉ tính 1 lần per slug)
+  useEffect(() => {
+    apiIncrementView(movieSlug).catch(() => {});
+  }, [movieSlug]);
 
   // Bước 1: Resume — redirect về tập đang xem dở nếu không có ?tap= trong URL
   useEffect(() => {

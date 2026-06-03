@@ -43,6 +43,7 @@ const SlideElements = ({ movie, priority = false }: { movie: Movie; priority?: b
     name.toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g, '')
       .replace(/đ/g, 'd').replace(/\s+/g, '-');
+  const mobilePoster = movie.thumb || movie.poster;
 
   return (
     <div className="relative w-full h-[560px] md:h-[680px] xl:h-[760px] overflow-hidden">
@@ -52,7 +53,11 @@ const SlideElements = ({ movie, priority = false }: { movie: Movie; priority?: b
 
       {/* 2. Blurred background */}
       <div
-        className={s.backgroundFade}
+        className={`${s.backgroundFade} md:hidden`}
+        style={{ backgroundImage: `url('${mobilePoster}')` }}
+      />
+      <div
+        className={`${s.backgroundFade} hidden md:block`}
         style={{ backgroundImage: `url('${movie.poster}')` }}
       />
 
@@ -60,13 +65,15 @@ const SlideElements = ({ movie, priority = false }: { movie: Movie; priority?: b
       <div className={s.coverFade}>
         {/* 4. Cover image — left/right mask */}
         <div className={s.coverImage}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={movie.poster}
-            alt={movie.title}
-            className={s.coverImg}
-            loading={priority ? 'eager' : 'lazy'}
-          />
+          <picture>
+            <source media="(min-width: 768px)" srcSet={movie.poster} />
+            <img
+              src={mobilePoster}
+              alt={movie.title}
+              className={s.coverImg}
+              loading={priority ? 'eager' : 'lazy'}
+            />
+          </picture>
         </div>
       </div>
 

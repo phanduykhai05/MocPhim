@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND = process.env.NEXT_PUBLIC_AUTH_URL ?? "https://moc-phim-api.duckdns.org";
+const BACKEND = process.env.NEXT_PUBLIC_AUTH_URL ?? "http://localhost:8080";
 
 export async function POST(
   req: NextRequest,
