@@ -128,7 +128,7 @@ function toCountryMovies(items: MovieListItem[], cdn: string): CountryMovie[] {
 export default async function PhimMoi() {
   const [homeData, theaterData, vnData, krData, cnData] = await Promise.all([
     fetchHomeData(),
-    fetchMovieList({ list: 'phim-chieu-rap', sort_field: 'modified_time', sort_type: 'desc' }),
+    fetchMovieList({ list: 'phim-chieu-rap', sort_field: 'year', sort_type: 'desc' }),
     fetchCountryMovies('viet-nam', { sort_field: 'year', sort_type: 'desc', size: 12 }),
     fetchCountryMovies('han-quoc',  { sort_field: 'year', sort_type: 'desc', size: 12 }),
     fetchCountryMovies('trung-quoc', { sort_field: 'year', sort_type: 'desc', size: 12 }),
