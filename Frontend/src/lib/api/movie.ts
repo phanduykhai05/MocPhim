@@ -327,7 +327,7 @@ export async function fetchCountries(): Promise<{ id: string; name: string; slug
 
 export async function fetchCountryMovies(
   slug: string,
-  params: { page?: number; size?: number; sort_field?: string; sort_type?: string } = {}
+  params: { page?: number; size?: number; sort_field?: string; sort_type?: string; year?: number } = {}
 ): Promise<{ items: MovieListItem[]; cdnImage: string; totalItems: number; totalPages: number } | null> {
   try {
     const url = new URL(`${API}/countries/${slug}/movies`);
@@ -335,6 +335,7 @@ export async function fetchCountryMovies(
     if (params.size) url.searchParams.set('size', String(params.size));
     if (params.sort_field) url.searchParams.set('sort_field', params.sort_field);
     if (params.sort_type) url.searchParams.set('sort_type', params.sort_type);
+    if (params.year) url.searchParams.set('year', String(params.year));
     const res = await fetch(url.toString(), { next: { revalidate: 300 } });
     if (!res.ok) return null;
     const json = await res.json();

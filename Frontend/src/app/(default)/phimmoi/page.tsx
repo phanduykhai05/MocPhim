@@ -126,12 +126,13 @@ function toCountryMovies(items: MovieListItem[], cdn: string): CountryMovie[] {
 }
 
 export default async function PhimMoi() {
+  const currentYear = new Date().getFullYear();
   const [homeData, theaterData, vnData, krData, cnData] = await Promise.all([
     fetchHomeData(),
-    fetchMovieList({ list: 'phim-chieu-rap', sort_field: 'modified_time', sort_type: 'desc' }),
-    fetchCountryMovies('viet-nam', { sort_field: 'year', sort_type: 'desc', size: 12 }),
-    fetchCountryMovies('han-quoc',  { sort_field: 'year', sort_type: 'desc', size: 12 }),
-    fetchCountryMovies('trung-quoc', { sort_field: 'year', sort_type: 'desc', size: 12 }),
+    fetchMovieList({ list: 'phim-chieu-rap', sort_field: 'year', sort_type: 'desc' }),
+    fetchCountryMovies('viet-nam',   { sort_field: 'modified_time', sort_type: 'desc', size: 12, year: currentYear }),
+    fetchCountryMovies('han-quoc',   { sort_field: 'modified_time', sort_type: 'desc', size: 12, year: currentYear }),
+    fetchCountryMovies('trung-quoc', { sort_field: 'modified_time', sort_type: 'desc', size: 12, year: currentYear }),
   ]);
   const items = homeData?.items ?? [];
   const cdn = homeData?.cdnImage ?? process.env.NEXT_PUBLIC_CDN_IMAGE!;
