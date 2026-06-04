@@ -58,6 +58,7 @@ export class BookmarksService {
           slug: p.slug,
           movieTitle: item.name ?? item.title ?? p.slug,
           posterUrl: item.poster_url ?? item.thumb_url,
+          thumbUrl: item.thumb_url ?? item.poster_url,
           mediaType: item.type,
         }));
         added++;
@@ -88,6 +89,7 @@ export class BookmarksService {
       slug: dto.slug,
       movieTitle: item.name ?? item.title,
       posterUrl: item.poster_url ?? item.thumb_url,
+      thumbUrl: item.thumb_url ?? item.poster_url,
       mediaType: item.type,
     });
     return this.bookmarkRepo.save(bm);

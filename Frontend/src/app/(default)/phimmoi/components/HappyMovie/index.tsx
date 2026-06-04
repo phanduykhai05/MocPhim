@@ -45,19 +45,22 @@ const FALLBACK_MOVIES: MovieHorizontal[] = [
 
 interface HappyMovieProps {
   movies?: MovieHorizontal[];
+  title?: string;
+  viewAllHref?: string;
 }
 
-export default function MovieTheatersSection({ movies }: HappyMovieProps) {
+export default function MovieTheatersSection({ movies, title, viewAllHref }: HappyMovieProps) {
   const list = movies && movies.length > 0 ? movies : FALLBACK_MOVIES;
 
   return (
     // fadeIn effect & Container
     <div className="w-full px-5 lg:px-[50px] mx-auto max-w-[1900px] relative animate-[fadeInUp_0.5s_ease-out_forwards] 3xl:max-w-[2400px] 4xl:max-w-[3200px] 3xl:px-[80px] 4xl:px-[120px]">
       <div className="relative">
-        
-        <SectionHeader 
-          title="Mãn Nhãn với Phim Chiếu Rạp" 
-          slug="man-nhan-voi-phim-chieu-rap" 
+
+        <SectionHeader
+          title={title ?? "Mãn Nhãn với Phim Chiếu Rạp"}
+          slug="man-nhan-voi-phim-chieu-rap"
+          href={viewAllHref}
         />
 
         <div className="relative group">

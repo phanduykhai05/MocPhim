@@ -1,156 +1,249 @@
 "use client";
 
-import React, { useState } from "react";
+import { useRef, useState } from "react";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
-import type { ProColumns } from "@ant-design/pro-components";
-import { App, Button, Popconfirm, Space, Tag } from "antd";
+import type { ActionType, ProColumns } from "@ant-design/pro-components";
+import {
+  App, Button, Form, Input, Modal, Popconfirm, Space, Tag, Tooltip,
+} from "antd";
+import { LockOutlined, UnlockOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  apiGetAdminUsers, apiToggleUserStatus,
+  type AdminUser,
+} from "@/lib/api/admin";
 
-type ActiveUser = {
-  id: number;
-  name: string;
-  email: string;
-  role: "admin" | "editor" | "user";
-  lastLogin: string;
-};
-
-type LockedUser = {
-  id: number;
-  name: string;
-  email: string;
-  reason: string;
-  lockedBy: string;
-  lockedAt: string;
-};
-
-const activeSeed: ActiveUser[] = [
-  { id: 1, name: "Nguyen Van A", email: "a@mocphim.vn", role: "admin", lastLogin: "06/05/2026 09:20" },
-  { id: 2, name: "Tran Thi B", email: "b@mocphim.vn", role: "editor", lastLogin: "06/05/2026 08:01" },
-  { id: 3, name: "Le Van C", email: "c@mocphim.vn", role: "user", lastLogin: "05/05/2026 23:49" },
-  { id: 4, name: "Pham Thi D", email: "d@mocphim.vn", role: "user", lastLogin: "05/05/2026 22:17" },
-];
-
-const lockedSeed: LockedUser[] = [
-  {
-    id: 1001,
-    name: "Vo Van E",
-    email: "e@mocphim.vn",
-    reason: "Đăng nhập sai nhiều lần",
-    lockedBy: "admin@mocphim.vn",
-    lockedAt: "04/05/2026 18:15",
-  },
-];
+function getRoleTag(roles: string[]) {
+  if (roles.includes("ROLE_ADMIN")) return <Tag color="red">Admin</Tag>;
+  if (roles.includes("ROLE_EDITOR")) return <Tag color="blue">Editor</Tag>;
+  return <Tag>Thành viên</Tag>;
+}
 
 export default function KhoaTaiKhoanPage() {
   const { message } = App.useApp();
-  const [activeUsers, setActiveUsers] = useState<ActiveUser[]>(activeSeed);
-  const [lockedUsers, setLockedUsers] = useState<LockedUser[]>(lockedSeed);
+  const activeRef = useRef<ActionType | undefined>(undefined);
+  const lockedRef = useRef<ActionType | undefined>(undefined);
 
-  const activeColumns: ProColumns<ActiveUser>[] = [
-    { title: "Họ tên", dataIndex: "name" },
-    { title: "Email", dataIndex: "email" },
+  // Modal nhập lý do khoá
+  const [lockTarget, setLockTarget] = useState<AdminUser | null>(null);
+  const [lockReason, setLockReason] = useState("");
+  const [locking, setLocking] = useState(false);
+
+  async function confirmLock() {
+    if (!lockTarget) return;
+    setLocking(true);
+    try {
+      await apiToggleUserStatus(lockTarget.id, false);
+      message.success(`Đã khoá: ${lockTarget.name}`);
+      setLockTarget(null);
+      setLockReason("");
+      activeRef.current?.reload();
+      lockedRef.current?.reload();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Khoá thất bại");
+    } finally {
+      setLocking(false);
+    }
+  }
+
+  async function handleUnlock(record: AdminUser) {
+    try {
+      await apiToggleUserStatus(record.id, true);
+      message.success(`Đã mở khoá: ${record.name}`);
+      activeRef.current?.reload();
+      lockedRef.current?.reload();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Mở khoá thất bại");
+    }
+  }
+
+  const activeColumns: ProColumns<AdminUser>[] = [
+    {
+      title: "Người dùng",
+      dataIndex: "name",
+      render: (_, r) => (
+        <Space>
+          <UserOutlined style={{ color: "#1677ff" }} />
+          <div>
+            <div style={{ fontWeight: 500 }}>{r.name}</div>
+            <div style={{ fontSize: 12, color: "#8c8c8c" }}>{r.email}</div>
+          </div>
+        </Space>
+      ),
+    },
     {
       title: "Vai trò",
-      dataIndex: "role",
-      render: (_, record) => {
-        const map = {
-          admin: { color: "red", text: "Admin" },
-          editor: { color: "blue", text: "Editor" },
-          user: { color: "default", text: "User" },
-        } as const;
-        return <Tag color={map[record.role].color}>{map[record.role].text}</Tag>;
-      },
+      dataIndex: "roles",
+      search: false,
+      render: (_, r) => getRoleTag(r.roles ?? []),
     },
-    { title: "Đăng nhập cuối", dataIndex: "lastLogin", search: false },
+    {
+      title: "Xác thực",
+      dataIndex: "isVerified",
+      search: false,
+      render: (_, r) => (
+        <Tag color={r.isVerified ? "blue" : "default"}>
+          {r.isVerified ? "Đã xác thực" : "Chưa xác thực"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Ngày tham gia",
+      dataIndex: "createdAt",
+      search: false,
+      render: (_, r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString("vi-VN") : "—",
+    },
     {
       title: "Thao tác",
       valueType: "option",
       width: 100,
-      render: (_, record) => (
-        <Popconfirm
-          title="Khóa tài khoản này?"
-          description="Người dùng sẽ không thể đăng nhập."
-          okText="Khóa"
-          cancelText="Hủy"
-          okButtonProps={{ danger: true }}
-          onConfirm={() => {
-            const locked: LockedUser = {
-              id: record.id,
-              name: record.name,
-              email: record.email,
-              reason: "Khóa thủ công bởi quản trị viên",
-              lockedBy: "admin@mocphim.vn",
-              lockedAt: new Date().toLocaleString("vi-VN"),
-            };
-            setActiveUsers((prev) => prev.filter((u) => u.id !== record.id));
-            setLockedUsers((prev) => [locked, ...prev]);
-            message.success(`Đã khóa: ${record.name}`);
-          }}
-        >
-          <Button type="link" size="small" danger>
-            Khóa
-          </Button>
-        </Popconfirm>
-      ),
+      render: (_, r) => {
+        const isSuperAdmin = r.email === "admin@mocphim.com";
+        return (
+          <Tooltip title={isSuperAdmin ? "Tài khoản superadmin được bảo vệ" : "Khoá tài khoản"}>
+            <Button
+              type="link" size="small" danger icon={<LockOutlined />}
+              disabled={isSuperAdmin}
+              onClick={() => { if (!isSuperAdmin) { setLockTarget(r); setLockReason(""); } }}
+            >
+              Khoá
+            </Button>
+          </Tooltip>
+        );
+      },
     },
   ];
 
-  const lockedColumns: ProColumns<LockedUser>[] = [
-    { title: "Họ tên", dataIndex: "name" },
-    { title: "Email", dataIndex: "email" },
-    { title: "Lý do", dataIndex: "reason", ellipsis: true },
-    { title: "Khóa bởi", dataIndex: "lockedBy", search: false },
-    { title: "Thời gian khóa", dataIndex: "lockedAt", search: false },
+  const lockedColumns: ProColumns<AdminUser>[] = [
+    {
+      title: "Người dùng",
+      dataIndex: "name",
+      render: (_, r) => (
+        <Space>
+          <LockOutlined style={{ color: "#ff4d4f" }} />
+          <div>
+            <div style={{ fontWeight: 500 }}>{r.name}</div>
+            <div style={{ fontSize: 12, color: "#8c8c8c" }}>{r.email}</div>
+          </div>
+        </Space>
+      ),
+    },
+    {
+      title: "Vai trò",
+      dataIndex: "roles",
+      search: false,
+      render: (_, r) => getRoleTag(r.roles ?? []),
+    },
+    {
+      title: "Ngày tham gia",
+      dataIndex: "createdAt",
+      search: false,
+      render: (_, r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString("vi-VN") : "—",
+    },
     {
       title: "Thao tác",
       valueType: "option",
-      width: 100,
-      render: (_, record) => (
-        <Space>
-          <Popconfirm
-            title="Mở khóa tài khoản này?"
-            okText="Mở khóa"
-            cancelText="Hủy"
-            onConfirm={() => {
-              const restore: ActiveUser = {
-                id: record.id,
-                name: record.name,
-                email: record.email,
-                role: "user",
-                lastLogin: "-",
-              };
-              setLockedUsers((prev) => prev.filter((u) => u.id !== record.id));
-              setActiveUsers((prev) => [restore, ...prev]);
-              message.success(`Đã mở khóa: ${record.name}`);
-            }}
-          >
-            <Button type="link" size="small">Mở khóa</Button>
-          </Popconfirm>
-        </Space>
-      ),
+      width: 110,
+      render: (_, r) => {
+        const isSuperAdmin = r.email === "admin@mocphim.com";
+        return (
+          <Tooltip title={isSuperAdmin ? "Tài khoản superadmin được bảo vệ" : undefined}>
+            <Popconfirm
+              title="Mở khoá tài khoản này?"
+              description="Người dùng có thể đăng nhập trở lại."
+              okText="Mở khoá" cancelText="Huỷ"
+              disabled={isSuperAdmin}
+              onConfirm={() => handleUnlock(r)}
+            >
+              <Button type="link" size="small" icon={<UnlockOutlined />} disabled={isSuperAdmin}>
+                Mở khoá
+              </Button>
+            </Popconfirm>
+          </Tooltip>
+        );
+      },
     },
   ];
 
   return (
-    <PageContainer title="Khóa tài khoản" subTitle="Khóa/mở khóa tài khoản người dùng">
-      <ProCard title="Danh sách người dùng đang hoạt động" bordered>
-        <ProTable<ActiveUser>
+    <PageContainer title="Khoá tài khoản" subTitle="Khoá / mở khoá tài khoản người dùng">
+      <ProCard title="Đang hoạt động" bordered style={{ marginBottom: 16 }}>
+        <ProTable<AdminUser>
+          actionRef={activeRef}
           rowKey="id"
           columns={activeColumns}
-          dataSource={activeUsers}
-          request={async () => ({ data: activeUsers, success: true, total: activeUsers.length })}
-          pagination={{ pageSize: 8 }}
+          request={async (params) => {
+            try {
+              const res = await apiGetAdminUsers({
+                page: params.current,
+                pageSize: params.pageSize,
+                name: params.name as string | undefined,
+                enabled: true,
+              });
+              return { data: res.data, success: true, total: res.total };
+            } catch {
+              return { data: [], success: false, total: 0 };
+            }
+          }}
+          pagination={{ pageSize: 8, showSizeChanger: true }}
+          search={{ labelWidth: "auto" }}
         />
       </ProCard>
 
-      <ProCard title="Tài khoản đã khóa" bordered style={{ marginTop: 16 }}>
-        <ProTable<LockedUser>
+      <ProCard title="Đã bị khoá" bordered>
+        <ProTable<AdminUser>
+          actionRef={lockedRef}
           rowKey="id"
           columns={lockedColumns}
-          dataSource={lockedUsers}
-          request={async () => ({ data: lockedUsers, success: true, total: lockedUsers.length })}
-          pagination={{ pageSize: 8 }}
+          request={async (params) => {
+            try {
+              const res = await apiGetAdminUsers({
+                page: params.current,
+                pageSize: params.pageSize,
+                name: params.name as string | undefined,
+                enabled: false,
+              });
+              return { data: res.data, success: true, total: res.total };
+            } catch {
+              return { data: [], success: false, total: 0 };
+            }
+          }}
+          pagination={{ pageSize: 8, showSizeChanger: true }}
+          search={{ labelWidth: "auto" }}
         />
       </ProCard>
+
+      {/* ── Modal nhập lý do khoá ─────────────────────────────────────────────── */}
+      <Modal
+        title={<Space><LockOutlined style={{ color: "#ff4d4f" }} /> Khoá tài khoản</Space>}
+        open={!!lockTarget}
+        onCancel={() => setLockTarget(null)}
+        onOk={confirmLock}
+        okText="Xác nhận khoá"
+        okButtonProps={{ danger: true, loading: locking }}
+        cancelText="Huỷ"
+        destroyOnHidden
+      >
+        {lockTarget && (
+          <div>
+            <p>
+              Bạn sắp khoá tài khoản{" "}
+              <strong>{lockTarget.name}</strong>{" "}
+              (<span style={{ color: "#8c8c8c" }}>{lockTarget.email}</span>).
+              Người dùng sẽ bị đăng xuất ngay lập tức và không thể đăng nhập lại.
+            </p>
+            <Form layout="vertical" style={{ marginTop: 12 }}>
+              <Form.Item label="Lý do khoá (tuỳ chọn)">
+                <Input.TextArea
+                  rows={3}
+                  placeholder="VD: Vi phạm điều khoản sử dụng..."
+                  value={lockReason}
+                  onChange={(e) => setLockReason(e.target.value)}
+                />
+              </Form.Item>
+            </Form>
+          </div>
+        )}
+      </Modal>
     </PageContainer>
   );
 }

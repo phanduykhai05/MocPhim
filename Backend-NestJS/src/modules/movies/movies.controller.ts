@@ -1,12 +1,33 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { OphimService } from '../ophim/ophim.service';
+import { MovieSync } from '../../entities/movie-sync.entity';
 import { ApiResponse } from '../../common/dto/api-response.dto';
+
+/** Map MovieSync overrides onto an OPhim item object (only non-null fields). */
+function applyLocalOverrides(item: Record<string, any>, local: MovieSync): void {
+  if (local.title)          item.name            = local.title;
+  if (local.originName)     item.origin_name      = local.originName;
+  if (local.type)           item.type             = local.type;
+  if (local.quality)        item.quality          = local.quality;
+  if (local.lang)           item.lang             = local.lang;
+  if (local.year)           item.year             = local.year;
+  if (local.episodeCurrent) item.episode_current  = local.episodeCurrent;
+  if (local.duration)       item.time             = local.duration;
+  if (local.thumbUrl)       item.thumb_url        = local.thumbUrl;
+  if (local.posterUrl)      item.poster_url       = local.posterUrl;
+  if (local.subDocquyen != null) item.sub_docquyen = local.subDocquyen;
+}
 
 @ApiTags('Movies')
 @Controller('api/v1')
 export class MoviesController {
-  constructor(private ophim: OphimService) {}
+  constructor(
+    private ophim: OphimService,
+    @InjectRepository(MovieSync) private syncRepo: Repository<MovieSync>,
+  ) {}
 
   @Get('home')
   @ApiOperation({ summary: 'Dữ liệu trang chủ từ OPhim (items có ảnh desktop/mobile)' })
@@ -91,10 +112,19 @@ export class MoviesController {
   }
 
   @Get('movies/:slug')
-  @ApiOperation({ summary: 'Chi tiết phim theo slug' })
+  @ApiOperation({ summary: 'Chi tiết phim theo slug (merge local overrides)' })
   @ApiParam({ name: 'slug', example: 'one-piece' })
   async getMovie(@Param('slug') slug: string) {
-    const data = await this.ophim.getMovieDetail(slug);
+    const [data, local] = await Promise.all([
+      this.ophim.getMovieDetail(slug),
+      this.syncRepo.findOne({ where: { slug } }),
+    ]);
+
+    if (local) {
+      const item = data?.data?.item ?? data?.item;
+      if (item) applyLocalOverrides(item, local);
+    }
+
     return ApiResponse.ok(data);
   }
 

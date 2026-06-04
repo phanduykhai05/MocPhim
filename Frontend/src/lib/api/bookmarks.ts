@@ -7,6 +7,7 @@ export interface BookmarkItem {
   slug: string;
   movieTitle: string;
   posterUrl: string;
+  thumbUrl: string | null;
   mediaType: string;
   bookmarkDate: string;
   latestEpisode: number | null;

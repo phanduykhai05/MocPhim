@@ -9,12 +9,21 @@ import { apiGetBookmarks, type BookmarkItem } from "@/lib/api/bookmarks";
 import { getMovieThumb } from "@/lib/api/movie";
 import { TopSeriesCard } from "@/app/(default)/phimmoi/components/TopseriCard/components/TopSeriesCard";
 
+function resolveThumb(item: BookmarkItem): string {
+  if (item.thumbUrl) return item.thumbUrl;
+  // derive thumb from poster URL: *-poster.jpg → *-thumb.jpg
+  if (item.posterUrl?.includes('-poster.')) {
+    return item.posterUrl.replace('-poster.', '-thumb.');
+  }
+  return item.posterUrl;
+}
+
 function toCardProps(item: BookmarkItem, index: number) {
   return {
     title: item.movieTitle,
     alias: item.mediaType === "single" ? "Phim Lẻ" : "Phim Bộ",
     slug: item.slug,
-    thumb: getMovieThumb(item.posterUrl),
+    thumb: getMovieThumb(resolveThumb(item)),
     episodeText: item.latestEpisode != null
       ? `Đang xem tập ${item.latestEpisode}`
       : "Chưa xem",

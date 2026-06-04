@@ -14,8 +14,14 @@ import { SearchHistory } from './entities/search-history.entity';
 import { Comment } from './entities/comment.entity';
 import { CommentVote } from './entities/comment-vote.entity';
 import { MovieViewCount } from './entities/movie-view-count.entity';
+import { SeoConfig } from './entities/seo-config.entity';
+import { LoginLog } from './entities/login-log.entity';
+import { SecurityConfig } from './entities/security-config.entity';
+import { BackupRecord } from './entities/backup-record.entity';
 
 import { OphimModule } from './modules/ophim/ophim.module';
+import { SeoModule } from './modules/seo/seo.module';
+import { SecurityModule } from './modules/security/security.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MoviesModule } from './modules/movies/movies.module';
 import { SearchModule } from './modules/search/search.module';
@@ -42,7 +48,7 @@ import { ViewsModule } from './modules/views/views.module';
         username: config.get('DB_USERNAME', 'postgres'),
         password: config.get('DB_PASSWORD', '12345678'),
         database: config.get('DB_DATABASE', 'mocphim'),
-        entities: [User, MovieSync, Bookmark, WatchProgress, SearchHistory, Comment, CommentVote, MovieViewCount],
+        entities: [User, MovieSync, Bookmark, WatchProgress, SearchHistory, Comment, CommentVote, MovieViewCount, SeoConfig, LoginLog, SecurityConfig, BackupRecord],
         synchronize: true,
         logging: config.get('NODE_ENV') === 'development',
       }),
@@ -59,6 +65,8 @@ import { ViewsModule } from './modules/views/views.module';
     WatchProgressModule,
     SyncModule,
     AdminModule,
+    SeoModule,
+    SecurityModule,
     CommentsModule,
     ViewsModule,
   ],

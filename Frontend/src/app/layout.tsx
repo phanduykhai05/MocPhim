@@ -9,55 +9,73 @@ import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const roboto = Roboto({ subsets: ["vietnamese"], variable: "--font-roboto" });
+const sora   = Sora({ subsets: ["latin"], variable: "--font-sora" });
 
-const roboto = Roboto({
-    subsets: ["vietnamese"],
-    variable: "--font-roboto",
-});
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL  || 'https://moc-phim.vercel.app';
+const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_URL  || 'http://localhost:8080';
 
-const sora = Sora({
-    subsets: ["latin"],
-    variable: "--font-sora",
-});
+interface SiteMeta {
+  siteTitle: string;
+  titleTemplate: string;
+  defaultDescription: string;
+  defaultKeywords: string;
+  canonicalDomain: string;
+  autoOpenGraph: boolean;
+  autoTwitterCard: boolean;
+}
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://moc-phim.vercel.app';
+async function fetchSiteMeta(): Promise<SiteMeta | null> {
+  try {
+    const res = await fetch(`${AUTH_URL}/api/v1/seo/meta`, {
+      next: { tags: ['seo-meta'], revalidate: 300 },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data ?? null;
+  } catch {
+    return null;
+  }
+}
 
-export const metadata: Metadata = {
-    metadataBase: new URL(SITE_URL),
-    title: {
-        default: "Móc Phim - Xem Phim Online Miễn Phí HD 2026",
-        template: "%s | Móc Phim",
-    },
-    description: "Móc Phim - Xem phim online miễn phí chất lượng HD. Cập nhật phim mới nhất 2026, phim bộ, phim lẻ, phim chiếu rạp. Vietsub, thuyết minh, lồng tiếng.",
-    keywords: ["xem phim online", "phim mới nhất", "phim miễn phí", "phim vietsub", "phim thuyết minh", "phim hd", "phim bộ", "phim lẻ", "móc phim"],
-    authors: [{ name: "Móc Phim" }],
-    creator: "Móc Phim",
-    publisher: "Móc Phim",
+export async function generateMetadata(): Promise<Metadata> {
+  const meta = await fetchSiteMeta();
+
+  const title       = meta?.siteTitle        ?? "Móc Phim - Xem Phim Online Miễn Phí HD 2026";
+  const template    = meta?.titleTemplate    ?? "%s | Móc Phim";
+  const description = meta?.defaultDescription ?? "Móc Phim - Xem phim online miễn phí chất lượng HD. Cập nhật phim mới nhất 2026.";
+  const keywords    = meta?.defaultKeywords  ?? "xem phim online, phim mới nhất, phim miễn phí, phim vietsub";
+  const canonical   = meta?.canonicalDomain  ?? SITE_URL;
+
+  return {
+    metadataBase: new URL(canonical),
+    title:       { default: title, template },
+    description,
+    keywords:    keywords.split(",").map((k) => k.trim()),
+    authors:     [{ name: "Móc Phim" }],
+    creator:     "Móc Phim",
+    publisher:   "Móc Phim",
     robots: {
-        index: true,
-        follow: true,
-        googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+      index: true, follow: true,
+      googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
     },
-    alternates: {
-        canonical: SITE_URL,
-    },
-    openGraph: {
-        type: "website",
-        locale: "vi_VN",
-        url: SITE_URL,
-        siteName: "Móc Phim",
-        title: "Móc Phim - Xem Phim Online Miễn Phí HD 2026",
-        description: "Xem phim online miễn phí chất lượng HD. Cập nhật phim mới nhất 2026, phim bộ, phim lẻ, phim chiếu rạp.",
-    },
-    twitter: {
+    alternates: { canonical },
+    ...(meta?.autoOpenGraph !== false && {
+      openGraph: {
+        type: "website", locale: "vi_VN",
+        url: canonical, siteName: "Móc Phim",
+        title, description,
+      },
+    }),
+    ...(meta?.autoTwitterCard !== false && {
+      twitter: {
         card: "summary_large_image",
-        title: "Móc Phim - Xem Phim Online Miễn Phí HD 2026",
-        description: "Xem phim online miễn phí chất lượng HD. Cập nhật phim mới nhất 2026.",
-    },
-    icons: {
-        icon: "/favicon.ico",
-    },
-};
+        title, description,
+      },
+    }),
+    icons: { icon: "/favicon.ico" },
+  };
+}
 
 
 export default function RootLayout({

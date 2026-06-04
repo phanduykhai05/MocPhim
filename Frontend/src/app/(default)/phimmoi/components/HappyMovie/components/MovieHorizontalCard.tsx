@@ -1,4 +1,3 @@
-import React from 'react';
 import Link from 'next/link';
 import MoviePoster from '@/components/MoviePoster';
 import { MovieHorizontal } from '@/app/(default)/phimmoi/components/HappyMovie/components/types/movie'; // Điều chỉnh path phù hợp

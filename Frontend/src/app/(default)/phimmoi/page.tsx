@@ -7,7 +7,7 @@ import { DottedMap, type Marker } from "@/components/ui/dotted-map";
 import { NewUpdateList } from "@/app/(default)/phimmoi/components/MovieUpdate";
 import HappyMovie from "@/app/(default)/phimmoi/components/HappyMovie";
 import { fetchHomeData, getThumbUrl, type ApiMovie } from "@/lib/api/home";
-import { fetchMovieList, type MovieListItem, fetchCountryMovies } from "@/lib/api/movie";
+import { type MovieListItem, fetchCountryMovies, fetchYearMovies } from "@/lib/api/movie";
 import CountryMovieSection, { type CountryMovie } from "@/app/(default)/phimmoi/components/CountryMovies";
 import type { Movie } from "@/app/(default)/phimmoi/components/Banner/components/data/movie";
 import type { MovieHorizontal } from "@/app/(default)/phimmoi/components/HappyMovie/components/types/movie";
@@ -101,7 +101,7 @@ function toHappyMovies(items: MovieListItem[], cdn: string): MovieHorizontal[] {
     title: item.name,
     originalTitle: item.origin_name,
     slug: item.slug,
-    posterUrl: getThumbUrl(item.thumb_url, cdn),
+    posterUrl: getThumbUrl(item.poster_url || item.thumb_url, cdn),
     thumbUrl: getThumbUrl(item.thumb_url, cdn),
     tags: [String(item.year), item.quality],
     badgeStatus: item.episode_current,
@@ -133,12 +133,13 @@ function toCountryMovies(items: MovieListItem[], cdn: string): CountryMovie[] {
 }
 
 export default async function PhimMoi() {
-  const [homeData, theaterData, vnData, krData, cnData] = await Promise.all([
+  const currentYear = new Date().getFullYear();
+  const [homeData, latestYearData, vnData, krData, cnData] = await Promise.all([
     fetchHomeData(),
-    fetchMovieList({ list: 'phim-chieu-rap', sort_field: 'modified_time', sort_type: 'desc' }),
-    fetchCountryMovies('viet-nam', { sort_field: 'year', sort_type: 'desc', size: 12 }),
-    fetchCountryMovies('han-quoc',  { sort_field: 'year', sort_type: 'desc', size: 12 }),
-    fetchCountryMovies('trung-quoc', { sort_field: 'year', sort_type: 'desc', size: 12 }),
+    fetchYearMovies(currentYear, { sort_field: 'year', sort_type: 'desc', size: 8 }),
+    fetchCountryMovies('viet-nam', { sort_field: 'year', sort_type: 'desc', size: 12, year: currentYear }),
+    fetchCountryMovies('han-quoc',  { sort_field: 'year', sort_type: 'desc', size: 12, year: currentYear }),
+    fetchCountryMovies('trung-quoc', { sort_field: 'year', sort_type: 'desc', size: 12, year: currentYear }),
   ]);
   const items = homeData?.items ?? [];
   const cdn = homeData?.cdnImage ?? process.env.NEXT_PUBLIC_CDN_IMAGE!;
@@ -146,8 +147,8 @@ export default async function PhimMoi() {
   const bannerMovies = toBannerMovies(items, cdn);
   const updateMovies = toUpdateMovies(items, cdn);
   const topSeriesMovies = toTopSeriesMovies(items, cdn);
-  const theaterCdn = theaterData?.cdnImage ?? cdn;
-  const happyMovies = toHappyMovies(theaterData?.items ?? [], theaterCdn);
+  const latestCdn = latestYearData?.cdnImage ?? cdn;
+  const happyMovies = toHappyMovies(latestYearData?.items ?? [], latestCdn);
   const vnMovies  = toCountryMovies(vnData?.items  ?? [], vnData?.cdnImage  ?? cdn);
   const krMovies  = toCountryMovies(krData?.items  ?? [], krData?.cdnImage  ?? cdn);
   const cnMovies  = toCountryMovies(cnData?.items  ?? [], cnData?.cdnImage  ?? cdn);
@@ -204,7 +205,11 @@ export default async function PhimMoi() {
       </div>
       
       <NewUpdateList movies={updateMovies} />
-      <HappyMovie movies={happyMovies} />
+      <HappyMovie
+        movies={happyMovies}
+        title={`Phim Mới Nhất ${currentYear}`}
+        viewAllHref={`/nam-phat-hanh/${currentYear}`}
+      />
       <TopSeriesList movies={topSeriesMovies} />
 
       {/* Divider PTIT */}

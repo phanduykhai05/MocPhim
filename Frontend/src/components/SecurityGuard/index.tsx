@@ -1,13 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   DEFAULT_SECURITY_SETTINGS,
   loadSecuritySettings,
+  saveSecuritySettings,
   SECURITY_SETTINGS_EVENT,
   type SecuritySettings,
 } from "@/lib/security-settings";
+
+const PUBLIC_SETTINGS_URL = `${process.env.NEXT_PUBLIC_AUTH_URL ?? "http://localhost:8080"}/api/v1/security/client-settings`;
+// Revalidate every 60s to pick up admin changes across browsers
+const POLL_INTERVAL_MS = 60_000;
+
+async function fetchRemoteSettings(): Promise<Partial<SecuritySettings> | null> {
+  try {
+    const res = await fetch(PUBLIC_SETTINGS_URL, { cache: "no-store" });
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json.status) return null;
+    return json.data as Partial<SecuritySettings>;
+  } catch {
+    return null;
+  }
+}
 
 function isBlockedShortcut(event: KeyboardEvent, settings: SecuritySettings): boolean {
   if (!event.key) return false;
@@ -28,21 +45,36 @@ function isBlockedShortcut(event: KeyboardEvent, settings: SecuritySettings): bo
 
 export default function SecurityGuard() {
   const pathname = usePathname();
-  const [settings, setSettings] = useState<SecuritySettings>(DEFAULT_SECURITY_SETTINGS);
-
+  const [settings, setSettings] = useState<SecuritySettings>(() => loadSecuritySettings());
   const isAdminRoute = useMemo(() => pathname?.startsWith("/admin"), [pathname]);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Load from backend and sync to localStorage so other logic stays intact
+  async function syncFromBackend() {
+    const remote = await fetchRemoteSettings();
+    if (!remote) return;
+    const merged = saveSecuritySettings(remote); // merges + persists + dispatches event
+    setSettings(merged);
+  }
 
   useEffect(() => {
-    setSettings(loadSecuritySettings());
+    // Fetch immediately on mount
+    syncFromBackend();
 
-    const syncSettings = () => setSettings(loadSecuritySettings());
-    window.addEventListener(SECURITY_SETTINGS_EVENT, syncSettings);
-    window.addEventListener("storage", syncSettings);
+    // Poll every 5 minutes to catch changes made from other browsers/devices
+    pollRef.current = setInterval(syncFromBackend, POLL_INTERVAL_MS);
+
+    // Also react to local changes (same-tab admin saves)
+    const onLocalChange = () => setSettings(loadSecuritySettings());
+    window.addEventListener(SECURITY_SETTINGS_EVENT, onLocalChange);
+    window.addEventListener("storage", onLocalChange);
 
     return () => {
-      window.removeEventListener(SECURITY_SETTINGS_EVENT, syncSettings);
-      window.removeEventListener("storage", syncSettings);
+      if (pollRef.current) clearInterval(pollRef.current);
+      window.removeEventListener(SECURITY_SETTINGS_EVENT, onLocalChange);
+      window.removeEventListener("storage", onLocalChange);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -82,7 +114,7 @@ export default function SecurityGuard() {
           window.top.location.href = window.location.href;
         }
       } catch {
-        // Ignore cross-origin frame busting errors.
+        // ignore cross-origin errors
       }
     }
 

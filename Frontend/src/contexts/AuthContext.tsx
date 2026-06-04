@@ -89,6 +89,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restoreSession();
   }, []);
 
+  // Lắng nghe sự kiện auth:unauthorized được phát từ bất kỳ API call nào nhận 401
+  useEffect(() => {
+    function handleUnauthorized() {
+      clearTokens();
+      setUser(null);
+    }
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
+  }, []);
+
+  // Poll mỗi 30 giây để kiểm tra tài khoản có bị khoá không
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(async () => {
+      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+      if (!token) return;
+      try {
+        await apiGetMe(token);
+      } catch {
+        clearTokens();
+        setUser(null);
+      }
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [user]);
+
   const login = useCallback(
     async (email: string, password: string): Promise<AuthUser> => {
       const tokens = await apiLogin(email, password);

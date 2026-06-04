@@ -6,6 +6,7 @@ import {
   Switch, Button, Space, App, Image, Divider,
 } from "antd";
 import { type MovieSyncItem, type UpdateMoviePayload, updateMovie } from "@/lib/api/sync";
+import { triggerRevalidate } from "@/lib/revalidate";
 import { getMovieThumb } from "@/lib/api/movie";
 
 const { Option } = Select;
@@ -58,6 +59,8 @@ export default function MovieEditDrawer({ movie, open, onClose, onSaved }: Props
       message.success("Đã lưu thành công");
       onSaved({ ...movie, ...values });
       onClose();
+      // Flush Next.js cache cho trang phim và trang chủ
+      triggerRevalidate([`/phim/${movie.slug}`, `/xem-phim/${movie.slug}`, "/"]);
     } catch (err: any) {
       if (err?.errorFields) return; // validation error
       message.error("Có lỗi xảy ra");

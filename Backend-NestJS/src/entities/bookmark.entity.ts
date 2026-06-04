@@ -26,6 +26,9 @@ export class Bookmark {
   posterUrl: string;
 
   @Column({ nullable: true })
+  thumbUrl: string;
+
+  @Column({ nullable: true })
   mediaType: string;
 
   @CreateDateColumn()

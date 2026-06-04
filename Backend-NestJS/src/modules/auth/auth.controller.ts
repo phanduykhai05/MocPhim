@@ -1,5 +1,5 @@
 import {
-  Controller, Post, Get, Body, Query, UseGuards, Req,
+  Controller, Post, Get, Body, Query, UseGuards, Req, Headers,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -31,8 +31,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Đăng nhập bằng email/password' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 201, description: '{ accessToken, refreshToken, expiresIn, userId, email, roles }' })
-  async login(@Body() dto: LoginDto) {
-    const data = await this.authService.login(dto);
+  async login(
+    @Body() dto: LoginDto,
+    @Req() req: any,
+    @Headers('user-agent') ua?: string,
+  ) {
+    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? req.ip ?? '0.0.0.0';
+    const data = await this.authService.login(dto, ip, ua);
     return ApiRes.ok(data, 'Login successful');
   }
 

@@ -3,9 +3,10 @@ import React from 'react';
 interface HeaderProps {
   title: string;
   slug: string;
+  href?: string;
 }
 
-export default function SectionHeader({ title, slug }: HeaderProps) {
+export default function SectionHeader({ title, slug, href }: HeaderProps) {
   return (
     <div className="flex items-center justify-start gap-4 relative min-h-[44px] mb-5">
       <h2 className="text-2xl sm:text-[2rem] leading-tight font-semibold m-0 text-gray-900 dark:text-white drop-shadow-md">
@@ -13,7 +14,7 @@ export default function SectionHeader({ title, slug }: HeaderProps) {
       </h2>
       <div className="ml-auto sm:ml-0">
         <a
-          href={`/c/${slug}`}
+          href={href ?? `/c/${slug}`}
           className="flex items-center gap-1.5 text-sm sm:text-base text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
         >
           <span>Xem thêm</span>

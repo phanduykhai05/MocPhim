@@ -53,6 +53,6 @@ export class WatchProgressController {
     @Body() dto: UpdateProgressDto,
     @CurrentUser() me: any,
   ) {
-    return ApiResponse.ok(await this.service.updateProgress(userId, movieId, ep, dto, me.id));
+    return ApiResponse.ok(await this.service.updateProgress(userId, movieId, ep, dto, String(me.id)));
   }
 }

@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { User, AuthProvider, Role } from '../../entities/user.entity';
+import { LoginLog } from '../../entities/login-log.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
@@ -16,9 +17,25 @@ import { LoginDto } from './dto/login.dto';
 export class AuthService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(LoginLog) private loginLogRepo: Repository<LoginLog>,
     private jwtService: JwtService,
     private config: ConfigService,
   ) {}
+
+  private async writeLoginLog(
+    email: string, ip: string, ua: string | undefined,
+    status: 'success' | 'failed', userId?: string, failReason?: string,
+  ) {
+    try {
+      const log = this.loginLogRepo.create({
+        email, ip,
+        userAgent: ua ?? null,
+        status, userId: userId ?? null,
+        failReason: failReason ?? null,
+      });
+      await this.loginLogRepo.save(log);
+    } catch { /* non-critical — never block login flow */ }
+  }
 
   async register(dto: RegisterDto) {
     const existing = await this.userRepo.findOne({ where: { email: dto.email } });
@@ -48,14 +65,28 @@ export class AuthService {
     return { message: 'Registration successful. Please verify your email.' };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, ip = '0.0.0.0', ua?: string) {
     const user = await this.userRepo.findOne({ where: { email: dto.email } });
-    if (!user || !user.password) throw new UnauthorizedException('Invalid credentials');
-    if (!user.isVerified) throw new UnauthorizedException('Email not verified');
+    if (!user || !user.password) {
+      await this.writeLoginLog(dto.email, ip, ua, 'failed', undefined, 'Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    if (!user.isVerified) {
+      await this.writeLoginLog(dto.email, ip, ua, 'failed', user.id, 'Email not verified');
+      throw new UnauthorizedException('Email not verified');
+    }
+    if (!user.enabled) {
+      await this.writeLoginLog(dto.email, ip, ua, 'failed', user.id, 'Account disabled');
+      throw new UnauthorizedException('Account has been disabled');
+    }
 
     const valid = await bcrypt.compare(dto.password, user.password);
-    if (!valid) throw new UnauthorizedException('Invalid credentials');
+    if (!valid) {
+      await this.writeLoginLog(dto.email, ip, ua, 'failed', user.id, 'Wrong password');
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
+    await this.writeLoginLog(dto.email, ip, ua, 'success', user.id);
     return this.generateTokens(user);
   }
 
@@ -101,7 +132,7 @@ export class AuthService {
         secret: this.config.get('JWT_SECRET'),
       });
       const user = await this.userRepo.findOne({ where: { id: payload.sub } });
-      if (!user) throw new UnauthorizedException();
+      if (!user || !user.enabled) throw new UnauthorizedException('Account has been disabled');
       return this.generateTokens(user);
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
@@ -126,6 +157,9 @@ export class AuthService {
       await this.userRepo.save(user);
     }
 
+    if (!user.enabled) throw new UnauthorizedException('Account has been disabled');
+
+    await this.writeLoginLog(user.email, '0.0.0.0', undefined, 'success', user.id);
     return this.generateTokens(user);
   }
 

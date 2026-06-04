@@ -21,7 +21,7 @@ export class BookmarksController {
   @ApiOperation({ summary: 'Tạo bookmark từ lịch sử xem (backfill)' })
   @ApiParam({ name: 'userId', description: 'ID người dùng' })
   async backfill(@Param('userId') userId: string, @CurrentUser() me: any) {
-    if (userId !== me.id) throw new ForbiddenException('Access denied');
+    if (userId !== String(me.id)) throw new ForbiddenException('Access denied');
     const data = await this.service.backfillFromProgress(userId);
     return ApiRes.ok(data, `Đã thêm ${data.added} bookmark từ lịch sử xem`);
   }
@@ -43,7 +43,7 @@ export class BookmarksController {
   @ApiOperation({ summary: 'Lấy danh sách bookmark kèm tiến độ xem mới nhất' })
   @ApiParam({ name: 'userId', description: 'ID người dùng' })
   async getBookmarks(@Param('userId') userId: string, @CurrentUser() me: any) {
-    if (userId !== me.id) throw new ForbiddenException('Access denied');
+    if (userId !== String(me.id)) throw new ForbiddenException('Access denied');
     const data = await this.service.getBookmarks(userId);
     return ApiRes.ok(data);
   }
@@ -53,7 +53,7 @@ export class BookmarksController {
   @ApiBody({ type: AddBookmarkDto })
   @ApiResponse({ status: 201, description: 'Bookmark đã được tạo với movieId lấy từ OPhim' })
   async addBookmark(@Body() dto: AddBookmarkDto, @CurrentUser() me: any) {
-    const data = await this.service.addBookmark(me.id, dto);
+    const data = await this.service.addBookmark(String(me.id), dto);
     return ApiRes.ok(data, 'Bookmark added');
   }
 
@@ -66,7 +66,7 @@ export class BookmarksController {
     @Param('movieId') movieId: string,
     @CurrentUser() me: any,
   ) {
-    const data = await this.service.removeBookmark(userId, movieId, me.id);
+    const data = await this.service.removeBookmark(userId, movieId, String(me.id));
     return ApiRes.ok(data, data.message);
   }
 }

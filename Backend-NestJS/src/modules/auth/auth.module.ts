@@ -8,10 +8,11 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { User } from '../../entities/user.entity';
+import { LoginLog } from '../../entities/login-log.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, LoginLog]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

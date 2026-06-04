@@ -76,6 +76,10 @@ export async function apiGetMe(accessToken: string): Promise<AuthUser> {
   const res = await fetch(`${AUTH_BASE_URL}/auth/me`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
+  if (res.status === 401) {
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("auth:unauthorized"));
+    throw new Error("Tài khoản không hợp lệ hoặc đã bị khoá");
+  }
   const json = (await res.json()) as ApiResponse<AuthUser>;
   if (!json.status)
     throw new Error(json.message || "Không thể lấy thông tin người dùng");
