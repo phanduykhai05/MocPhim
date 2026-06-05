@@ -11,6 +11,7 @@ async function bootstrap() {
       'http://localhost:3000',
       'http://localhost:5173',
       /\.vercel\.app$/,
+      /\.onrender\.com$/,
     ],
     credentials: true,
   });
