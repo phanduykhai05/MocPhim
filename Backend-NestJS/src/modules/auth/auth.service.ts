@@ -47,7 +47,7 @@ export class AuthService {
         existing.verifyToken = uuidv4();
         existing.verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await this.userRepo.save(existing);
-        await this.mailService.sendVerificationEmail(existing.email, existing.name, existing.verifyToken);
+        this.mailService.sendVerificationEmail(existing.email, existing.name, existing.verifyToken);
         return { message: 'Verification email resent. Please check your inbox.' };
       }
       throw new BadRequestException('Email already registered');
@@ -65,7 +65,7 @@ export class AuthService {
       verifyExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
     await this.userRepo.save(user);
-    await this.mailService.sendVerificationEmail(user.email, user.name, verifyToken);
+    this.mailService.sendVerificationEmail(user.email, user.name, verifyToken);
 
     return { message: 'Registration successful. Please verify your email.' };
   }
@@ -114,7 +114,7 @@ export class AuthService {
     user.resetToken = uuidv4();
     user.resetExpires = new Date(Date.now() + 15 * 60 * 1000);
     await this.userRepo.save(user);
-    await this.mailService.sendResetPasswordEmail(user.email, user.name, user.resetToken);
+    this.mailService.sendResetPasswordEmail(user.email, user.name, user.resetToken);
 
     return { message: 'Password reset link sent to your email.' };
   }
