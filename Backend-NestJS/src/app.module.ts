@@ -43,11 +43,8 @@ import { ViewsModule } from './modules/views/views.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        host: config.get('DB_HOST', 'localhost'),
-        port: config.get<number>('DB_PORT', 5432),
-        username: config.get('DB_USERNAME', 'postgres'),
-        password: config.get('DB_PASSWORD', '12345678'),
-        database: config.get('DB_DATABASE', 'mocphim'),
+        url: config.get('DATABASE_URL'),
+        ssl: config.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
         entities: [User, MovieSync, Bookmark, WatchProgress, SearchHistory, Comment, CommentVote, MovieViewCount, SeoConfig, LoginLog, SecurityConfig, BackupRecord],
         synchronize: true,
         logging: config.get('NODE_ENV') === 'development',
