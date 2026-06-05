@@ -107,3 +107,9 @@ export async function apiResetPassword(
 ): Promise<void> {
   await apiPost<null>("/auth/reset-password", { token, newPassword });
 }
+
+export async function apiVerifyEmail(token: string): Promise<void> {
+  const res = await fetch(`${AUTH_BASE_URL}/auth/verify-email?token=${token}`);
+  const json = (await res.json()) as ApiResponse<null>;
+  if (!json.status) throw new Error(json.message || "Xác nhận thất bại");
+}

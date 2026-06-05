@@ -12,6 +12,7 @@ import { User, AuthProvider, Role } from '../../entities/user.entity';
 import { LoginLog } from '../../entities/login-log.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,7 @@ export class AuthService {
     @InjectRepository(LoginLog) private loginLogRepo: Repository<LoginLog>,
     private jwtService: JwtService,
     private config: ConfigService,
+    private mailService: MailService,
   ) {}
 
   private async writeLoginLog(
@@ -45,22 +47,25 @@ export class AuthService {
         existing.verifyToken = uuidv4();
         existing.verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await this.userRepo.save(existing);
+        await this.mailService.sendVerificationEmail(existing.email, existing.name, existing.verifyToken);
         return { message: 'Verification email resent. Please check your inbox.' };
       }
       throw new BadRequestException('Email already registered');
     }
 
     const hashed = await bcrypt.hash(dto.password, 10);
+    const verifyToken = uuidv4();
     const user = this.userRepo.create({
       email: dto.email,
       password: hashed,
       name: dto.name,
       provider: AuthProvider.LOCAL,
       roles: [Role.USER],
-      verifyToken: uuidv4(),
+      verifyToken,
       verifyExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
     await this.userRepo.save(user);
+    await this.mailService.sendVerificationEmail(user.email, user.name, verifyToken);
 
     return { message: 'Registration successful. Please verify your email.' };
   }
@@ -109,6 +114,7 @@ export class AuthService {
     user.resetToken = uuidv4();
     user.resetExpires = new Date(Date.now() + 15 * 60 * 1000);
     await this.userRepo.save(user);
+    await this.mailService.sendResetPasswordEmail(user.email, user.name, user.resetToken);
 
     return { message: 'Password reset link sent to your email.' };
   }
