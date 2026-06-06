@@ -65,6 +65,7 @@ export interface GetUsersParams {
   pageSize?: number;
   name?: string;
   enabled?: boolean;
+  verified?: boolean;
 }
 
 export async function apiGetAdminUsers(
@@ -76,6 +77,7 @@ export async function apiGetAdminUsers(
   if (params.pageSize) query.set("size", String(params.pageSize));
   if (params.name) query.set("name", params.name);
   if (params.enabled !== undefined) query.set("enabled", String(params.enabled));
+  if (params.verified !== undefined) query.set("verified", String(params.verified));
 
   const { data, pagination } = await adminFetch<AdminUser[]>(
     `/api/v1/admin/users?${query.toString()}`,
@@ -145,4 +147,18 @@ export async function apiToggleUserStatus(id: string, enabled: boolean): Promise
 
 export async function apiDeleteUser(id: string): Promise<void> {
   await adminFetch(`/api/v1/admin/users/${id}`, { method: "DELETE" });
+}
+
+// ─── Verify user ──────────────────────────────────────────────────────────────
+
+export async function apiVerifyUser(id: string): Promise<void> {
+  await adminFetch(`/api/v1/admin/users/${id}/verify`, { method: "PATCH" });
+}
+
+export async function apiBulkVerifyUsers(ids: string[]): Promise<{ verified: number }> {
+  const { data } = await adminFetch<{ verified: number }>(
+    "/api/v1/admin/users/bulk-verify",
+    { method: "POST", body: JSON.stringify({ ids }) },
+  );
+  return data;
 }

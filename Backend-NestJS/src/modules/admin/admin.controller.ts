@@ -2,12 +2,12 @@ import {
   Controller, Get, Post, Patch, Delete,
   Query, Param, Body, UseGuards,
   ParseIntPipe, DefaultValuePipe,
-  NotFoundException, ConflictException, ForbiddenException,
+  NotFoundException, ConflictException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, FindOptionsWhere } from 'typeorm';
+import { Repository, Like, FindOptionsWhere, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -30,18 +30,22 @@ export class AdminController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'size', required: false })
   @ApiQuery({ name: 'name', required: false })
-  @ApiQuery({ name: 'enabled', required: false, description: 'true | false — lọc theo trạng thái' })
+  @ApiQuery({ name: 'enabled', required: false, description: 'true | false' })
+  @ApiQuery({ name: 'verified', required: false, description: 'true | false — lọc email đã xác minh' })
   async getUsers(
     @Query('page', new DefaultValuePipe(0), ParseIntPipe) page: number,
     @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
     @Query('name') name?: string,
     @Query('enabled') enabledStr?: string,
+    @Query('verified') verifiedStr?: string,
   ) {
     const skip = Math.max(0, page) * size;
     const where: FindOptionsWhere<User> = {};
     if (name) where.name = Like(`%${name}%`);
-    if (enabledStr === 'true')  where.enabled = true;
-    if (enabledStr === 'false') where.enabled = false;
+    if (enabledStr === 'true')   where.enabled = true;
+    if (enabledStr === 'false')  where.enabled = false;
+    if (verifiedStr === 'true')  where.isVerified = true;
+    if (verifiedStr === 'false') where.isVerified = false;
 
     const [rawUsers, total] = await this.userRepo.findAndCount({
       where,
@@ -162,6 +166,43 @@ export class AdminController {
 
     await this.userRepo.remove(user);
     return ApiResponse.ok(null, 'Đã xoá tài khoản');
+  }
+
+  @Patch('users/:id/verify')
+  @ApiOperation({ summary: '[Admin] Xác minh email thủ công cho 1 người dùng' })
+  async verifyUser(@Param('id') id: string) {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('Không tìm thấy người dùng');
+    if (user.isVerified) return ApiResponse.ok({ id, isVerified: true }, 'Tài khoản đã được xác minh từ trước');
+
+    user.isVerified = true;
+    user.verifyToken = null;
+    user.verifyExpires = null;
+    await this.userRepo.save(user);
+    return ApiResponse.ok({ id, isVerified: true }, 'Đã xác minh email thành công');
+  }
+
+  @Post('users/bulk-verify')
+  @ApiOperation({ summary: '[Admin] Xác minh hàng loạt người dùng theo danh sách ID' })
+  async bulkVerifyUsers(@Body() body: { ids: string[] }) {
+    if (!Array.isArray(body.ids) || body.ids.length === 0)
+      throw new BadRequestException('Danh sách IDs không được để trống');
+    if (body.ids.length > 200)
+      throw new BadRequestException('Tối đa 200 người dùng mỗi lần');
+
+    const users = await this.userRepo.findBy({ id: In(body.ids), isVerified: false });
+    if (users.length === 0)
+      return ApiResponse.ok({ verified: 0 }, 'Không có tài khoản nào cần xác minh');
+
+    await this.userRepo.update(
+      { id: In(users.map((u) => u.id)) },
+      { isVerified: true, verifyToken: null, verifyExpires: null },
+    );
+
+    return ApiResponse.ok(
+      { verified: users.length, ids: users.map((u) => u.id) },
+      `Đã xác minh ${users.length} tài khoản`,
+    );
   }
 
   @Get('roles/stats')

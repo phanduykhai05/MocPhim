@@ -12,15 +12,17 @@ import {
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import {
   Button, Tag, Space, Popconfirm, Avatar, App,
-  Drawer, Form, Input, Select, Tooltip,
+  Drawer, Form, Input, Select, Tooltip, Badge,
 } from "antd";
 import {
   PlusOutlined, EditOutlined, DeleteOutlined,
   StopOutlined, UnlockOutlined, UserOutlined,
+  CheckCircleOutlined, SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import {
   apiGetAdminUsers, apiCreateUser, apiUpdateUser,
   apiToggleUserStatus, apiDeleteUser,
+  apiVerifyUser, apiBulkVerifyUsers,
   type AdminUser,
 } from "@/lib/api/admin";
 
@@ -49,13 +51,13 @@ export default function NguoiDungPage() {
   const [editLoading, setEditLoading] = useState(false);
   const [editForm] = Form.useForm();
 
+  // ── Row selection for bulk actions ───────────────────────────────────────────
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
+
   function openEdit(record: AdminUser) {
     setEditUser(record);
-    editForm.setFieldsValue({
-      name: record.name,
-      email: record.email,
-      roles: record.roles,
-    });
+    editForm.setFieldsValue({ name: record.name, email: record.email, roles: record.roles });
   }
 
   async function handleEditSave() {
@@ -63,11 +65,7 @@ export default function NguoiDungPage() {
     try {
       const values = await editForm.validateFields();
       setEditLoading(true);
-      await apiUpdateUser(editUser.id, {
-        name: values.name,
-        email: values.email,
-        roles: values.roles,
-      });
+      await apiUpdateUser(editUser.id, { name: values.name, email: values.email, roles: values.roles });
       message.success("Đã cập nhật thông tin người dùng");
       setEditUser(null);
       actionRef.current?.reload();
@@ -75,6 +73,33 @@ export default function NguoiDungPage() {
       if (err instanceof Error) message.error(err.message);
     } finally {
       setEditLoading(false);
+    }
+  }
+
+  // ── Verify single ─────────────────────────────────────────────────────────────
+  async function handleVerify(record: AdminUser) {
+    try {
+      await apiVerifyUser(record.id);
+      message.success(`Đã xác minh tài khoản ${record.name}`);
+      actionRef.current?.reload();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Xác minh thất bại");
+    }
+  }
+
+  // ── Bulk verify ───────────────────────────────────────────────────────────────
+  async function handleBulkVerify() {
+    if (selectedKeys.length === 0) return;
+    try {
+      setBulkLoading(true);
+      const result = await apiBulkVerifyUsers(selectedKeys);
+      message.success(`Đã xác minh ${result.verified} tài khoản`);
+      setSelectedKeys([]);
+      actionRef.current?.reload();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Xác minh hàng loạt thất bại");
+    } finally {
+      setBulkLoading(false);
     }
   }
 
@@ -138,14 +163,19 @@ export default function NguoiDungPage() {
       ),
     },
     {
-      title: "Xác thực",
+      title: "Xác thực email",
       dataIndex: "isVerified",
-      search: false,
-      render: (_, record) => (
-        <Tag color={record.isVerified ? "blue" : "default"}>
-          {record.isVerified ? "Đã xác thực" : "Chưa xác thực"}
-        </Tag>
-      ),
+      valueType: "select",
+      valueEnum: {
+        true: { text: "Đã xác thực" },
+        false: { text: "Chưa xác thực" },
+      },
+      render: (_, record) =>
+        record.isVerified ? (
+          <Tag icon={<CheckCircleOutlined />} color="blue">Đã xác thực</Tag>
+        ) : (
+          <Tag color="warning">Chưa xác thực</Tag>
+        ),
     },
     {
       title: "Provider",
@@ -157,20 +187,38 @@ export default function NguoiDungPage() {
       dataIndex: "createdAt",
       search: false,
       render: (_, record) =>
-        record.createdAt
-          ? new Date(record.createdAt).toLocaleDateString("vi-VN")
-          : "—",
+        record.createdAt ? new Date(record.createdAt).toLocaleDateString("vi-VN") : "—",
     },
     {
       title: "Thao tác",
       valueType: "option",
-      width: 130,
+      width: 160,
       render: (_, record) => {
         const isSelf = !!me?.id && String(me.id) === String(record.id);
         const isSuperAdmin = record.email === "admin@mocphim.com";
         const isLocked = isSelf || isSuperAdmin;
         return (
           <Space>
+            {/* Verify — chỉ hiện khi chưa xác thực */}
+            {!record.isVerified && (
+              <Tooltip title="Xác minh email thủ công">
+                <Popconfirm
+                  title="Xác minh tài khoản này?"
+                  description="Người dùng sẽ có thể đăng nhập ngay sau khi xác minh."
+                  okText="Xác minh"
+                  cancelText="Huỷ"
+                  onConfirm={() => handleVerify(record)}
+                >
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<SafetyCertificateOutlined />}
+                    style={{ color: "#52c41a" }}
+                  />
+                </Popconfirm>
+              </Tooltip>
+            )}
+
             <Tooltip title={isSuperAdmin ? "Tài khoản superadmin được bảo vệ" : isSelf ? "Không thể tự sửa tài khoản" : "Chỉnh sửa"}>
               <Button
                 type="link"
@@ -231,20 +279,56 @@ export default function NguoiDungPage() {
         columns={columns}
         request={async (params) => {
           try {
+            const verifiedParam =
+              params.isVerified === "true" ? true :
+              params.isVerified === "false" ? false : undefined;
             const result = await apiGetAdminUsers({
               page: params.current,
               pageSize: params.pageSize,
               name: params.name as string | undefined,
+              verified: verifiedParam,
             });
             return { data: result.data, success: true, total: result.total };
           } catch (err) {
-            message.error(
-              err instanceof Error ? err.message : "Không thể tải danh sách người dùng",
-            );
+            message.error(err instanceof Error ? err.message : "Không thể tải danh sách người dùng");
             return { data: [], success: false, total: 0 };
           }
         }}
-        rowSelection={{}}
+        rowSelection={{
+          selectedRowKeys: selectedKeys,
+          onChange: (keys) => setSelectedKeys(keys as string[]),
+          preserveSelectedRowKeys: true,
+        }}
+        tableAlertRender={({ selectedRowKeys }) =>
+          selectedRowKeys.length > 0 ? (
+            <Space>
+              <span>Đã chọn <Badge count={selectedRowKeys.length} style={{ backgroundColor: "#1677ff" }} /> người dùng</span>
+            </Space>
+          ) : false
+        }
+        tableAlertOptionRender={() =>
+          selectedKeys.length > 0 ? (
+            <Space>
+              <Popconfirm
+                title={`Xác minh ${selectedKeys.length} tài khoản đã chọn?`}
+                description="Chỉ các tài khoản chưa xác thực mới được xử lý."
+                okText="Xác minh tất cả"
+                cancelText="Huỷ"
+                onConfirm={handleBulkVerify}
+              >
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<SafetyCertificateOutlined />}
+                  loading={bulkLoading}
+                >
+                  Xác minh hàng loạt
+                </Button>
+              </Popconfirm>
+              <Button size="small" onClick={() => setSelectedKeys([])}>Bỏ chọn</Button>
+            </Space>
+          ) : null
+        }
         toolBarRender={() => [
           <Button
             key="create"
@@ -330,28 +414,17 @@ export default function NguoiDungPage() {
         }
       >
         <Form form={editForm} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Họ và tên"
-            rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
-          >
+          <Form.Item name="name" label="Họ và tên" rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}>
             <Input />
           </Form.Item>
           <Form.Item
             name="email"
             label="Email"
-            rules={[
-              { required: true, message: "Vui lòng nhập email" },
-              { type: "email", message: "Email không hợp lệ" },
-            ]}
+            rules={[{ required: true, message: "Vui lòng nhập email" }, { type: "email", message: "Email không hợp lệ" }]}
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name="roles"
-            label="Vai trò"
-            rules={[{ required: true, message: "Chọn ít nhất một vai trò" }]}
-          >
+          <Form.Item name="roles" label="Vai trò" rules={[{ required: true, message: "Chọn ít nhất một vai trò" }]}>
             <Select mode="multiple" options={ROLE_OPTIONS} />
           </Form.Item>
         </Form>

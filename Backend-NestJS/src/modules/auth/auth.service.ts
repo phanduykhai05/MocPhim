@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Injectable, NotFoundException,
+  BadRequestException, Injectable, Logger, NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +16,12 @@ import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
+  private sendMail(promise: Promise<any>, label: string) {
+    promise.catch((err) => this.logger.error(`${label}: ${err.message}`));
+  }
+
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(LoginLog) private loginLogRepo: Repository<LoginLog>,
@@ -47,27 +53,24 @@ export class AuthService {
         existing.verifyToken = uuidv4();
         existing.verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await this.userRepo.save(existing);
-        this.mailService.sendVerificationEmail(existing.email, existing.name, existing.verifyToken);
+        this.sendMail(this.mailService.sendVerificationEmail(existing.email, existing.name, existing.verifyToken!), 'resend verify');
         return { message: 'Verification email resent. Please check your inbox.' };
       }
       throw new BadRequestException('Email already registered');
     }
 
     const hashed = await bcrypt.hash(dto.password, 10);
-    const verifyToken = uuidv4();
     const user = this.userRepo.create({
       email: dto.email,
       password: hashed,
       name: dto.name,
       provider: AuthProvider.LOCAL,
       roles: [Role.USER],
-      verifyToken,
-      verifyExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      isVerified: true,
     });
     await this.userRepo.save(user);
-    this.mailService.sendVerificationEmail(user.email, user.name, verifyToken);
 
-    return { message: 'Registration successful. Please verify your email.' };
+    return { message: 'Registration successful.' };
   }
 
   async login(dto: LoginDto, ip = '0.0.0.0', ua?: string) {
@@ -114,7 +117,7 @@ export class AuthService {
     user.resetToken = uuidv4();
     user.resetExpires = new Date(Date.now() + 15 * 60 * 1000);
     await this.userRepo.save(user);
-    this.mailService.sendResetPasswordEmail(user.email, user.name, user.resetToken);
+    this.sendMail(this.mailService.sendResetPasswordEmail(user.email, user.name, user.resetToken!), 'send reset');
 
     return { message: 'Password reset link sent to your email.' };
   }
