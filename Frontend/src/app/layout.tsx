@@ -3,6 +3,7 @@ import { Roboto, Sora, Geist } from "next/font/google";
 import "@/styles/globals.css";
 import ScrollToTop from "@/components/ScrollToTop";
 import ThemeInitializer from "@/components/ThemeInitializer";
+import NavigationScrollFix from "@/components/NavigationScrollFix";
 import SecurityGuard from "@/components/SecurityGuard";
 import AntdProvider from "@/components/AntdProvider";
 import { cn } from "@/lib/utils";
@@ -86,13 +87,14 @@ export default function RootLayout({
     return (
         <html lang="vi" className={cn(sora.variable, roboto.variable, "font-sans", geist.variable)} suppressHydrationWarning>
             <head>
-                {/* Chạy trước render để tránh flash trắng — mặc định dark nếu chưa chọn light */}
+                {/* Runs before first paint to avoid dark/light flash */}
                 <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('theme')!=='light'){document.documentElement.classList.add('dark')}}catch(e){}})()` }} />
             </head>
             <body className="antialiased">
                 <ThemeInitializer />
                 <SecurityGuard />
                 <ScrollToTop />
+                <NavigationScrollFix />
                 <AntdProvider>
                     <AuthProvider>
                         {children}

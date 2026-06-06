@@ -33,13 +33,20 @@ export const MovieMainContent = ({ movie, images, keywords, initialTap, initialS
     apiIncrementView(movie.slug).catch(() => {});
   }, [movie.slug]);
 
+  const isTrailer = movie.episode_current?.toLowerCase() === 'trailer';
+
   const servers = movie.episodes ?? [];
   const currentServer = servers[selectedServerIdx];
   const currentEp = currentServer?.server_data?.[selectedEpIdx];
   const currentEmbedSrc = currentEp?.link_embed?.trim() || null;
-  const trailerEmbedSrc = movie.trailer_url?.trim()
-    ? movie.trailer_url.replace('watch?v=', 'embed/')
-    : null;
+
+  const trailerEmbedSrc = (() => {
+    const url = movie.trailer_url?.trim();
+    if (!url) return null;
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0&rel=0`;
+    return url.replace('watch?v=', 'embed/');
+  })();
 
   return (
     <div className="flex-grow flex flex-col bg-gray-100 dark:bg-[#191b24]/60 backdrop-blur-[20px] rounded-r-2xl rounded-l-none lg:rounded-[0_1.25rem_1.25rem_0] overflow-hidden lg:ml-[-33px] ml-0">
@@ -69,7 +76,16 @@ export const MovieMainContent = ({ movie, images, keywords, initialTap, initialS
         {activeTab === 'episodes' && (
           <div className="px-6 lg:px-10 py-8">
             {/* iframe player */}
-            {currentEp && currentEmbedSrc ? (
+            {isTrailer && trailerEmbedSrc ? (
+              <div className="w-full aspect-video rounded-xl overflow-hidden bg-black mb-8">
+                <iframe
+                  src={trailerEmbedSrc}
+                  allowFullScreen
+                  className="w-full h-full border-0"
+                  title={`${movie.name} - Trailer`}
+                />
+              </div>
+            ) : currentEp && currentEmbedSrc ? (
               <div className="w-full aspect-video rounded-xl overflow-hidden bg-black mb-8">
                 <iframe
                   src={currentEmbedSrc}

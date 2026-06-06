@@ -18,7 +18,9 @@ import { SeoConfig } from './entities/seo-config.entity';
 import { LoginLog } from './entities/login-log.entity';
 import { SecurityConfig } from './entities/security-config.entity';
 import { BackupRecord } from './entities/backup-record.entity';
+import { ActorPhoto } from './entities/actor-photo.entity';
 
+import { AppCacheModule } from './modules/cache/cache.module';
 import { OphimModule } from './modules/ophim/ophim.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { SecurityModule } from './modules/security/security.module';
@@ -34,6 +36,7 @@ import { SyncModule } from './modules/sync/sync.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { ViewsModule } from './modules/views/views.module';
+import { ActorsModule } from './modules/actors/actors.module';
 
 @Module({
   imports: [
@@ -45,12 +48,13 @@ import { ViewsModule } from './modules/views/views.module';
         type: 'postgres',
         url: config.get('DATABASE_URL'),
         ssl: config.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
-        entities: [User, MovieSync, Bookmark, WatchProgress, SearchHistory, Comment, CommentVote, MovieViewCount, SeoConfig, LoginLog, SecurityConfig, BackupRecord],
+        entities: [User, MovieSync, Bookmark, WatchProgress, SearchHistory, Comment, CommentVote, MovieViewCount, SeoConfig, LoginLog, SecurityConfig, BackupRecord, ActorPhoto],
         synchronize: true,
         logging: config.get('NODE_ENV') === 'development',
       }),
     }),
     ScheduleModule.forRoot(),
+    AppCacheModule,
     OphimModule,
     AuthModule,
     MoviesModule,
@@ -66,6 +70,7 @@ import { ViewsModule } from './modules/views/views.module';
     SecurityModule,
     CommentsModule,
     ViewsModule,
+    ActorsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },

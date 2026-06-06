@@ -39,6 +39,9 @@ export class CountriesController {
     const params: Record<string, string> = { page: String(page), limit: String(size) };
     if (sort_field) params.sort_field = sort_field;
     if (sort_type)  params.sort_type  = sort_type;
-    return ApiResponse.ok(await this.ophim.getCountryMovies(slug, params));
+    const data = await this.ophim.getCountryMovies(slug, params);
+    const p = data?.data?.params?.pagination ?? data?.params?.pagination;
+    const pagination = p ? { currentPage: Number(p.currentPage), totalPages: Number(p.totalPages), totalItems: Number(p.totalItems), itemsPerPage: Number(p.totalItemsPerPage) } : undefined;
+    return ApiResponse.ok(data, 'Success', pagination);
   }
 }

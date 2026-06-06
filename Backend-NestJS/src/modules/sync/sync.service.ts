@@ -18,6 +18,7 @@ export class SyncService {
   async scheduledSync() {
     this.logger.log('Running scheduled movie sync...');
     const result = await this.syncMovies(1, 50);
+    await this.ophim.invalidateAll();
     this.logger.log(`Sync done: added=${result.added}, skipped=${result.skipped}`);
   }
 
@@ -90,6 +91,8 @@ export class SyncService {
         movie.year           = item.year;
         movie.category       = item.category;
         movie.country        = item.country;
+        movie.actor          = Array.isArray(item.actor) ? item.actor : [];
+        movie.director       = Array.isArray(item.director) ? item.director : [];
         await this.repo.save(movie);
         updated++;
       } catch {
@@ -98,6 +101,42 @@ export class SyncService {
     }
 
     return { updated, notFound };
+  }
+
+  /** Fetch actor/director data for movies that don't have it yet */
+  async syncActors(limit = 200): Promise<{ updated: number; failed: number }> {
+    const movies = await this.repo
+      .createQueryBuilder('m')
+      .where('m.actor IS NULL')
+      .orderBy('m.createdAt', 'DESC')
+      .take(limit)
+      .getMany();
+
+    let updated = 0;
+    let failed = 0;
+
+    // Process in small concurrent batches to avoid OPhim rate-limit
+    const BATCH = 5;
+    for (let i = 0; i < movies.length; i += BATCH) {
+      const batch = movies.slice(i, i + BATCH);
+      await Promise.all(
+        batch.map(async (movie) => {
+          try {
+            const res = await this.ophim.getMovieDetail(movie.slug);
+            const item = res?.data?.item ?? res?.movie ?? res?.item;
+            if (!item) { failed++; return; }
+            movie.actor    = Array.isArray(item.actor)    ? item.actor    : [];
+            movie.director = Array.isArray(item.director) ? item.director : [];
+            await this.repo.save(movie);
+            updated++;
+          } catch {
+            failed++;
+          }
+        }),
+      );
+    }
+
+    return { updated, failed };
   }
 
   async resyncAll(): Promise<{ message: string }> {
@@ -109,7 +148,7 @@ export class SyncService {
     // page is 0-based from frontend
     const skip = Math.max(0, page) * size;
     const [items, total] = await this.repo.findAndCount({
-      order: { createdAt: 'DESC' },
+      order: { year: 'DESC', modifiedAt: 'DESC' },
       skip,
       take: size,
     });
@@ -124,7 +163,7 @@ export class SyncService {
   }
 
   async getSyncedAll() {
-    return this.repo.find({ order: { createdAt: 'DESC' }, take: 500 });
+    return this.repo.find({ order: { year: 'DESC', modifiedAt: 'DESC' }, take: 500 });
   }
 
   async getSyncedCount(): Promise<number> {

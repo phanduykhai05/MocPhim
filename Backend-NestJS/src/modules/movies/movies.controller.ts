@@ -84,7 +84,9 @@ export class MoviesController {
     const safeSize = Math.min(Math.max(Number(size), 1), 100);
     const params = this.buildParams(Number(page), safeSize, sort_field, sort_type, category, country, year, type);
     const data = await this.ophim.getMovieList(list ?? 'phim-moi', params);
-    return ApiResponse.ok(data);
+    const p = data?.data?.params?.pagination ?? data?.params?.pagination;
+    const pagination = p ? { currentPage: Number(p.currentPage), totalPages: Number(p.totalPages), totalItems: Number(p.totalItems), itemsPerPage: Number(p.totalItemsPerPage) } : undefined;
+    return ApiResponse.ok(data, 'Success', pagination);
   }
 
   @Get('movies/:slug/images')

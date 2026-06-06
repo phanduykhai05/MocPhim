@@ -58,6 +58,12 @@ export class MovieSync {
   country: any;
 
   @Column({ type: 'jsonb', nullable: true })
+  actor: string[] | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  director: string[] | null;
+
+  @Column({ type: 'jsonb', nullable: true })
   tmdb: any;
 
   @Column({ type: 'jsonb', nullable: true })

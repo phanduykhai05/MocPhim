@@ -119,8 +119,8 @@ const Navigation = () => {
 
       <DropdownMenu label="Quốc gia" items={countries} basePath="quoc-gia" loading={cntLoading} />
 
-      {/* <Link href="/dien-vien" className="hover:text-gray-300 transition-colors capitalize">Diễn Viên</Link>
-      <Link href="/lich-chieu" className="hover:text-gray-300 transition-colors capitalize">Lịch Chiếu</Link> */}
+      <Link href="/dien-vien" className="text-white no-underline hover:text-gray-300 transition-colors capitalize">Diễn Viên</Link>
+      {/* <Link href="/lich-chieu" className="hover:text-gray-300 transition-colors capitalize">Lịch Chiếu</Link> */}
     </nav>
   );
 };

@@ -15,8 +15,8 @@ import {
   StatisticCard,
 } from "@ant-design/pro-components";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
-import { Alert, App, Badge, Button, Descriptions, Divider, Progress, Space, Tag, Tabs, Typography } from "antd";
-import { ReloadOutlined, ThunderboltOutlined, SyncOutlined } from "@ant-design/icons";
+import { Alert, App, Badge, Button, Descriptions, Divider, Popconfirm, Progress, Space, Tag, Tabs, Typography } from "antd";
+import { ReloadOutlined, ThunderboltOutlined, SyncOutlined, TeamOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 
@@ -199,7 +199,33 @@ function SyncManagementTab() {
   const [resyncLoading, setResyncLoading] = useState(false);
   const [resyncResult, setResyncResult] = useState<ResyncResult | null>(null);
   const [resyncError, setResyncError] = useState<string | null>(null);
+
+  const [syncAllLoading, setSyncAllLoading] = useState(false);
+  const [syncAllResult, setSyncAllResult] = useState<{ message?: string } | null>(null);
+  const [syncAllError, setSyncAllError] = useState<string | null>(null);
+
+  const [clearPhotosLoading, setClearPhotosLoading] = useState(false);
+
   const [tableError, setTableError] = useState<string | null>(null);
+
+  const handleClearActorPhotos = async () => {
+    setClearPhotosLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_BASE}/actors/photos`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const json = await res.json();
+      if (!res.ok || !json?.status) throw new Error(json?.message ?? `HTTP ${res.status}`);
+      message.success("Đã xóa toàn bộ ảnh diễn viên");
+      setSyncAllResult(null);
+    } catch (e: unknown) {
+      message.error(`Xóa ảnh thất bại: ${e instanceof Error ? e.message : "Lỗi không xác định"}`);
+    } finally {
+      setClearPhotosLoading(false);
+    }
+  };
 
   const tableRef = useRef<ActionType>();
 
@@ -275,6 +301,29 @@ function SyncManagementTab() {
     }
   };
 
+  const handleSyncAll = async (values: { actorLimit: number; photoLimit: number }) => {
+    setSyncAllLoading(true);
+    setSyncAllResult(null);
+    setSyncAllError(null);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(
+        `${API_BASE}/actors/sync-all?actorLimit=${values.actorLimit}&photoLimit=${values.photoLimit}`,
+        { method: "POST", headers: token ? { Authorization: `Bearer ${token}` } : {} },
+      );
+      const json = await res.json();
+      if (!res.ok || !json?.status) throw new Error(json?.message ?? `HTTP ${res.status}`);
+      setSyncAllResult(json.data);
+      message.success(json.data?.message ?? "Đang sync trong nền...");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Lỗi không xác định";
+      setSyncAllError(msg);
+      message.error(`Sync thất bại: ${msg}`);
+    } finally {
+      setSyncAllLoading(false);
+    }
+  };
+
   return (
     <ProCard ghost gutter={[16, 16]} direction="column">
       {/* Stats */}
@@ -313,7 +362,7 @@ function SyncManagementTab() {
       {/* Action cards */}
       <ProCard ghost gutter={[16, 0]}>
         {/* Trigger */}
-        <ProCard colSpan={12} title="Kích hoạt Sync thủ công" bordered extra={<ThunderboltOutlined style={{ color: "#faad14" }} />}>
+        <ProCard colSpan={6} title="Kích hoạt Sync thủ công" bordered extra={<ThunderboltOutlined style={{ color: "#faad14" }} />}>
           <ProForm
             layout="vertical"
             onFinish={handleTrigger}
@@ -371,8 +420,79 @@ function SyncManagementTab() {
         </ProCard>
 
         {/* Resync */}
-        <ProCard colSpan={12} title="Resync record cũ (thiếu metadata)" bordered extra={<SyncOutlined style={{ color: "#1677ff" }} />}>
+        <ProCard colSpan={6} title="Resync record cũ (thiếu metadata)" bordered extra={<SyncOutlined style={{ color: "#1677ff" }} />}>
           <ResyncPanel onResync={handleResync} loading={resyncLoading} result={resyncResult} error={resyncError} />
+        </ProCard>
+
+        {/* Sync Actors + Photos (combined) */}
+        <ProCard colSpan={12} title="Sync Diễn Viên & Ảnh" bordered extra={<TeamOutlined style={{ color: "#722ed1" }} />}>
+          <ProForm
+            layout="vertical"
+            onFinish={handleSyncAll}
+            submitter={{
+              render: (_props, _dom) => (
+                <Space>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    icon={<TeamOutlined />}
+                    loading={syncAllLoading}
+                    style={{ background: "#722ed1", borderColor: "#722ed1" }}
+                  >
+                    Sync Diễn Viên & Ảnh
+                  </Button>
+                  <Popconfirm
+                    title="Xóa toàn bộ diễn viên & ảnh?"
+                    description="Sẽ xóa hết ảnh và reset toàn bộ dữ liệu actor trong DB. Phải sync lại từ đầu."
+                    onConfirm={handleClearActorPhotos}
+                    okText="Xóa tất cả"
+                    okButtonProps={{ danger: true }}
+                    cancelText="Hủy"
+                  >
+                    <Button danger icon={<DeleteOutlined />} loading={clearPhotosLoading}>
+                      Xóa tất cả diễn viên & ảnh
+                    </Button>
+                  </Popconfirm>
+                </Space>
+              ),
+            }}
+            initialValues={{ actorLimit: 500, photoLimit: 100 }}
+          >
+            <Space style={{ width: "100%" }} size={16}>
+              <ProFormDigit
+                name="actorLimit"
+                label="Số phim lấy actor"
+                min={1}
+                max={5000}
+                fieldProps={{ style: { width: 180 } }}
+                tooltip="Số phim chưa có actor sẽ được fetch detail từ OPhim để lấy tên diễn viên."
+              />
+              <ProFormDigit
+                name="photoLimit"
+                label="Số diễn viên lấy ảnh"
+                min={1}
+                max={500}
+                fieldProps={{ style: { width: 180 } }}
+                tooltip="Sau khi lấy xong actor, sẽ tìm ảnh TMDB cho số diễn viên này (chưa có ảnh)."
+              />
+            </Space>
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginTop: 4 }}
+              message="Quy trình"
+              description="Bước 1: Fetch detail phim → lấy danh sách diễn viên. Bước 2: Tìm ảnh TMDB cho diễn viên qua OPhim peoples API. Cả 2 bước chạy nền liên tiếp."
+            />
+          </ProForm>
+          {syncAllError && <Alert type="error" message={syncAllError} showIcon style={{ marginTop: 12 }} />}
+          {syncAllResult && (
+            <Alert
+              type="success"
+              showIcon
+              style={{ marginTop: 12 }}
+              message={syncAllResult.message ?? "Đang sync trong nền..."}
+            />
+          )}
         </ProCard>
       </ProCard>
 

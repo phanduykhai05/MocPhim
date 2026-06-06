@@ -44,7 +44,9 @@ export class SyncController {
     @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
   ) {
     const data = await this.service.getSynced(page, size);
-    return ApiRes.ok(data);
+    const safeSize = Math.max(1, size);
+    const totalPages = Math.max(1, Math.ceil(data.total / safeSize));
+    return ApiRes.ok(data, 'Success', { currentPage: page + 1, totalPages, totalItems: data.total, itemsPerPage: safeSize });
   }
 
   @Patch('movies/:slug')
@@ -91,6 +93,22 @@ export class SyncController {
   ) {
     const data = await this.service.resync(limit);
     return ApiRes.ok(data, 'Resync completed');
+  }
+
+  @Post('movies/sync-actors')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: '[Admin] Lấy actor/director cho phim chưa có (bất đồng bộ nền)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Số phim xử lý', example: 200 })
+  @ApiResponse({ status: 201, description: '{ message: string }' })
+  async syncActors(
+    @Query('limit', new DefaultValuePipe(200), ParseIntPipe) limit: number,
+  ) {
+    setImmediate(() => this.service.syncActors(limit).catch((err) => {
+      console.error('[syncActors background] Failed:', err?.message);
+    }));
+    return ApiRes.ok({ message: `Đang sync actors cho ${limit} phim trong nền...` });
   }
 
   @Post('movies/resync-all')

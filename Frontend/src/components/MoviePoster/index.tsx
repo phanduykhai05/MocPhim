@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 
 interface MoviePosterProps {
@@ -21,10 +21,42 @@ export default function MoviePoster({
   alt,
   className = "absolute inset-0 w-full h-full object-cover",
   style,
+  priority,
+  loading,
   ...props
 }: MoviePosterProps) {
+  const eager = priority || loading === "eager";
+  const [inView, setInView] = useState(eager);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const skeletonRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (inView) return;
+
+    const el = skeletonRef.current;
+    if (!el) return;
+
+    // If already in (or near) viewport on mount, load immediately.
+    // This handles back-navigation where scroll is already at image position.
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 400) {
+      setInView(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [inView]);
 
   if (error) {
     return (
@@ -42,18 +74,25 @@ export default function MoviePoster({
   return (
     <>
       {!loaded && (
-        <div className="absolute inset-0 animate-pulse bg-gray-300 dark:bg-white/10 rounded-[inherit]" />
+        <div
+          ref={skeletonRef}
+          className="absolute inset-0 animate-pulse bg-gray-300 dark:bg-white/10 rounded-[inherit]"
+        />
       )}
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        className={`${className} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
-        style={style}
-        onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
-        {...props}
-      />
+      {inView && (
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          priority={!!priority}
+          loading="eager"
+          className={`${className} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+          style={style}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+          {...props}
+        />
+      )}
     </>
   );
 }

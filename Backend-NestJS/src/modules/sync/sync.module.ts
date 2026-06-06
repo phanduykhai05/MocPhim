@@ -8,5 +8,6 @@ import { MovieSync } from '../../entities/movie-sync.entity';
   imports: [TypeOrmModule.forFeature([MovieSync])],
   controllers: [SyncController],
   providers: [SyncService],
+  exports: [SyncService],
 })
 export class SyncModule {}

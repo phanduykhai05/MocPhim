@@ -14,21 +14,22 @@ export class ViewsService {
   }
 
   async increment(slug: string): Promise<{ viewCount: number; viewCountToday: number }> {
-    let record = await this.repo.findOne({ where: { slug } });
-    if (!record) {
-      record = this.repo.create({ slug, viewCount: 0, viewCountToday: 0 });
-    }
-
     const today = this.todayStr();
-    if (record.lastResetDate !== today) {
-      record.viewCountToday = 0;
-      record.lastResetDate = today;
-    }
-
-    record.viewCount++;
-    record.viewCountToday++;
-    await this.repo.save(record);
-    return { viewCount: record.viewCount, viewCountToday: record.viewCountToday };
+    const rows: { viewCount: number; viewCountToday: number }[] = await this.repo.query(
+      `INSERT INTO movie_view_count (slug, "viewCount", "viewCountToday", "lastResetDate", "updatedAt")
+       VALUES ($1, 1, 1, $2, NOW())
+       ON CONFLICT (slug) DO UPDATE SET
+         "viewCount"      = movie_view_count."viewCount" + 1,
+         "viewCountToday" = CASE
+           WHEN movie_view_count."lastResetDate" = $2 THEN movie_view_count."viewCountToday" + 1
+           ELSE 1
+         END,
+         "lastResetDate"  = $2,
+         "updatedAt"      = NOW()
+       RETURNING "viewCount", "viewCountToday"`,
+      [slug, today],
+    );
+    return { viewCount: rows[0]?.viewCount ?? 1, viewCountToday: rows[0]?.viewCountToday ?? 1 };
   }
 
   async getCount(slug: string): Promise<{ viewCount: number; viewCountToday: number }> {

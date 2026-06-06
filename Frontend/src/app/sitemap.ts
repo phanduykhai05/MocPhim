@@ -4,8 +4,6 @@ import { fetchCategories, fetchCountries, fetchYears, fetchMovieList } from '@/l
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'https://moc-phim.vercel.app';
 const MOVIES_PER_PAGE = 200;
 
-// id=0 → trang tĩnh + danh mục + quốc gia + năm
-// id=1..N → phim trang 1..N
 export async function generateSitemaps() {
   const data = await fetchMovieList({ page: 1, size: 1, sort_field: 'modified_time', sort_type: 'desc' });
   const totalPages = Math.max(1, Math.ceil((data?.totalItems ?? 0) / MOVIES_PER_PAGE));
@@ -56,10 +54,8 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     return [...staticRoutes, ...categoryRoutes, ...countryRoutes, ...yearRoutes];
   }
 
-  // id >= 1 → trang phim
-  const page = id; // id=1 → page 1
   const data = await fetchMovieList({
-    page,
+    page: id,
     size: MOVIES_PER_PAGE,
     sort_field: 'modified_time',
     sort_type: 'desc',

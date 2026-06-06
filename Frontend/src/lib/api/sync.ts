@@ -127,10 +127,11 @@ export async function fetchSyncMovies(
             : Array.isArray(rawData?.items)
               ? rawData.items
               : [];
+        const totalCount = rawData?.totalElements ?? rawData?.total ?? rawData?.totalItems;
         const pagination =
           json.pagination ??
-          (rawData?.totalElements != null
-            ? buildPagination(rawData.totalElements, page, size)
+          (totalCount != null
+            ? buildPagination(totalCount, page, size)
             : buildPagination(items.length, page, size));
         return { items, pagination };
       }
