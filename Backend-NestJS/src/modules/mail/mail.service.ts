@@ -12,7 +12,8 @@ export class MailService {
     this.transporter = nodemailer.createTransport({
       host: this.config.get('MAIL_HOST', 'smtp.gmail.com'),
       port,
-      secure: port !== 587, // port 465 = SSL, port 587 = STARTTLS
+      secure: port !== 587,
+      family: 4, // Force IPv4 — Render blocks IPv6 outbound (not in @types/nodemailer)
       auth: {
         user: this.config.get('MAIL_USER'),
         pass: this.config.get('MAIL_PASS'),
@@ -20,7 +21,7 @@ export class MailService {
       connectionTimeout: 15000,
       greetingTimeout: 15000,
       socketTimeout: 20000,
-    });
+    } as any);
   }
 
   async sendVerificationEmail(email: string, name: string, token: string) {
