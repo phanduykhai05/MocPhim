@@ -1,0 +1,11 @@
+{
+  "version": "0.2",
+  "language": "en,vi",
+  "words": [
+    "antd", "auth", "accesstoken", "refreshtoken", "pnpm", "nextjs",
+    "tailwindcss", "shadcn", "framer", "swiper", "lucide", "radix",
+    "resync", "phim", "moc", "ophim", "vietsub", "mockjobs",
+    "slugify", "sitemap", "docquyen", "crawl"
+  ],
+  "ignorePaths": ["node_modules", ".next", "*.lock"]
+}

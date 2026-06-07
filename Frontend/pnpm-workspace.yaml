@@ -1,0 +1,5 @@
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - msw
+  - sharp
+  - unrs-resolver
