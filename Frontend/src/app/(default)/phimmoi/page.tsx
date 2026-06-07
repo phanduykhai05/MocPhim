@@ -6,8 +6,8 @@ import { TopSeriesList } from "@/app/(default)/phimmoi/components/TopseriCard";
 import { DottedMap, type Marker } from "@/components/ui/dotted-map";
 import { NewUpdateList } from "@/app/(default)/phimmoi/components/MovieUpdate";
 import HappyMovie from "@/app/(default)/phimmoi/components/HappyMovie";
-import { fetchHomeData, getThumbUrl, type ApiMovie } from "@/lib/api/home";
-import { fetchMovieList, type MovieListItem, fetchCountryMovies } from "@/lib/api/movie";
+import { fetchHomeData, getThumbUrl } from "@/lib/api/home";
+import { fetchMovieList, fetchYearMovies, type MovieListItem, fetchCountryMovies } from "@/lib/api/movie";
 import CountryMovieSection, { type CountryMovie } from "@/app/(default)/phimmoi/components/CountryMovies";
 import type { Movie } from "@/app/(default)/phimmoi/components/Banner/components/data/movie";
 import type { MovieHorizontal } from "@/app/(default)/phimmoi/components/HappyMovie/components/types/movie";
@@ -20,7 +20,7 @@ type VietnamMarker = Marker & {
   };
 };
 
-function toBannerMovies(items: ApiMovie[], cdn: string): Movie[] {
+function toBannerMovies(items: MovieListItem[], cdn: string): Movie[] {
   return items.slice(0, 8).map((item) => ({
     id: item._id,
     title: item.name,
@@ -29,15 +29,14 @@ function toBannerMovies(items: ApiMovie[], cdn: string): Movie[] {
     quality: item.quality,
     subtitle: item.lang,
     status: item.episode_current,
-    genres: item.category.map((c) => c.name),
+    genres: [],
     description: "",
-    poster: getThumbUrl(item.poster_url || item.thumb_url, cdn),
+    poster: getThumbUrl(item.thumb_url, cdn),
     slug: item.slug,
-    imdbScore: item.imdb?.vote_average || item.tmdb?.vote_average || undefined,
   }));
 }
 
-function toUpdateMovies(items: ApiMovie[], cdn: string) {
+function toUpdateMovies(items: MovieListItem[], cdn: string) {
   return items.map((item) => {
     const epShort = parseEpisodeShort(item.episode_current);
     const lang = item.lang.toLowerCase();
@@ -65,9 +64,12 @@ function parseEpisodeShort(ep: string): string {
   return ep.slice(0, 4);
 }
 
-function toTopSeriesMovies(items: ApiMovie[], cdn: string) {
+function toTopSeriesMovies(items: MovieListItem[], cdn: string, minYear?: number) {
   return items
-    .filter((item) => item.type === "series" || item.type === "tvshows")
+    .filter((item) =>
+      (item.type === "series" || item.type === "tvshows") &&
+      (!minYear || item.year >= minYear)
+    )
     .slice(0, 10)
     .map((item) => {
       const epShort = parseEpisodeShort(item.episode_current);
@@ -126,8 +128,10 @@ function toCountryMovies(items: MovieListItem[], cdn: string): CountryMovie[] {
 }
 
 export default async function PhimMoi() {
-  const [homeData, theaterData, vnData, krData, cnData] = await Promise.all([
+  const currentYear = new Date().getFullYear();
+  const [homeData, bannerData, theaterData, vnData, krData, cnData] = await Promise.all([
     fetchHomeData(),
+    fetchYearMovies(currentYear, { size: 10, sort_field: 'modified.time', sort_type: 'desc' }),
     fetchMovieList({ list: 'phim-chieu-rap', sort_field: 'year', sort_type: 'desc' }),
     fetchCountryMovies('viet-nam', { sort_field: 'year', sort_type: 'desc', size: 12 }),
     fetchCountryMovies('han-quoc',  { sort_field: 'year', sort_type: 'desc', size: 12 }),
@@ -135,8 +139,9 @@ export default async function PhimMoi() {
   ]);
   const items = homeData?.items ?? [];
   const cdn = homeData?.cdnImage ?? process.env.NEXT_PUBLIC_CDN_IMAGE!;
+  const bannerCdn = bannerData?.cdnImage ?? cdn;
 
-  const bannerMovies = toBannerMovies(items, cdn);
+  const bannerMovies = toBannerMovies(bannerData?.items ?? [], bannerCdn);
   const updateMovies = toUpdateMovies(items, cdn);
   const topSeriesMovies = toTopSeriesMovies(items, cdn);
   const theaterCdn = theaterData?.cdnImage ?? cdn;
