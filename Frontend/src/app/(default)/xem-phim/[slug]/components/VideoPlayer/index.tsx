@@ -8,6 +8,7 @@ import { ArrowLeft, Flag, Heart, ListVideo, Maximize, Plus, Share2 } from "lucid
 import { useAuth } from "@/contexts/AuthContext";
 import { apiAddBookmark, apiDeleteBookmark, apiIsBookmarked } from "@/lib/api/bookmarks";
 import { apiUpdateProgress, apiGetAllProgress } from "@/lib/api/progress";
+import { apiRecordView } from "@/lib/api/views";
 import { useEffect, useCallback } from "react";
 
 type VideoPlayerProps = {
@@ -28,6 +29,7 @@ export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, s
 
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const viewRecordedRef = useRef(false);
   const elapsedRef = useRef(0);
   const isSavingRef = useRef(false);
   const savedKeyRef = useRef(""); // tránh React StrictMode double-invoke
@@ -86,6 +88,12 @@ export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, s
 
     return () => clearInterval(interval);
   }, [user, movieId, episode, saveProgress]);
+
+  function handleIframeLoad() {
+    if (viewRecordedRef.current) return;
+    viewRecordedRef.current = true;
+    apiRecordView(movieSlug).catch(() => {});
+  }
 
   async function handleBookmark() {
     if (!user) {
@@ -169,6 +177,7 @@ export default function VideoPlayer({ movieSlug, movieId, movieTitle, episode, s
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
               src={embedUrl}
+              onLoad={handleIframeLoad}
               className="absolute inset-0 h-full w-full border-0"
             />
           ) : (

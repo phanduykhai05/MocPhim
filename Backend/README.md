@@ -1005,6 +1005,413 @@ Click tập khác
 
 ---
 
+## Endpoints — Comments (Bình luận)
+
+> Prefix: `/api/v1/comments`
+
+### Flow tổng quan
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        COMMENT FLOW                          │
+│                                                             │
+│  1. Vào trang phim → load bình luận (public, không cần login)│
+│     GET /api/v1/comments/{slug}?page=0&size=10              │
+│     Có token → truyền Bearer → server trả thêm userVote     │
+│                                                             │
+│  2. Đăng bình luận (cần đăng nhập)                          │
+│     POST /api/v1/comments/{slug}                            │
+│     Top-level: không có parentId                            │
+│     Reply: có parentId = id của comment cha                 │
+│                                                             │
+│  3. Vote bình luận (cần đăng nhập)                          │
+│     POST /api/v1/comments/{id}/vote                         │
+│     Gọi lại cùng loại vote → undo                           │
+│     Gọi khác loại → đổi vote                                │
+│                                                             │
+│  4. Xóa bình luận (cần đăng nhập)                           │
+│     DELETE /api/v1/comments/{id}                            │
+│     Chỉ chủ comment hoặc Admin mới được xóa                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### GET `/api/v1/comments/{slug}` — Lấy bình luận theo phim
+
+**Public** — không cần token. Nếu có token → server trả thêm `userVote` của người dùng đó.
+
+```
+GET /api/v1/comments/one-piece?page=0&size=10
+Authorization: Bearer <accessToken>   (tuỳ chọn)
+```
+
+| Param | Mặc định | Mô tả |
+|---|---|---|
+| `page` | `0` | Trang (bắt đầu từ 0) |
+| `size` | `10` | Số comment mỗi trang |
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "data": [
+    {
+      "id": 1,
+      "movieSlug": "one-piece",
+      "userId": 3,
+      "userName": "Nguyễn Văn A",
+      "userAvatar": "https://lh3.googleusercontent.com/...",
+      "content": "Phim hay quá!",
+      "isSpoiler": false,
+      "parentId": null,
+      "upvotes": 5,
+      "downvotes": 1,
+      "status": "approved",
+      "createdAt": "2026-06-01T10:00:00",
+      "updatedAt": "2026-06-01T10:00:00",
+      "userVote": "up",
+      "replies": [
+        {
+          "id": 2,
+          "userId": 4,
+          "userName": "Trần Thị B",
+          "userAvatar": null,
+          "content": "Đồng ý!",
+          "isSpoiler": false,
+          "parentId": 1,
+          "upvotes": 2,
+          "downvotes": 0,
+          "status": "approved",
+          "createdAt": "2026-06-01T10:05:00",
+          "updatedAt": "2026-06-01T10:05:00",
+          "userVote": null,
+          "replies": []
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 3,
+    "totalItems": 25,
+    "itemsPerPage": 10
+  }
+}
+```
+
+| Field | Mô tả |
+|---|---|
+| `status` | `"approved"` — chỉ comment đã duyệt mới hiển thị |
+| `userVote` | `"up"`, `"down"`, hoặc `null` — `null` nếu chưa vote hoặc chưa đăng nhập |
+| `replies` | Tối đa **5 reply** đầu tiên, sắp xếp theo `createdAt` tăng dần |
+| `parentId` | `null` = comment gốc; có giá trị = reply |
+
+> **Lưu ý FE:** `replies` chỉ trả 5 cái đầu. Nếu muốn "Xem thêm reply" thì cần gọi riêng (hiện chưa có endpoint riêng — load thêm khi cần).
+
+---
+
+### POST `/api/v1/comments/{slug}` — Đăng bình luận
+
+**Yêu cầu:** `Authorization: Bearer <accessToken>`
+
+**Request (comment gốc):**
+```json
+{
+  "content": "Phim hay lắm!",
+  "isSpoiler": false
+}
+```
+
+**Request (reply một comment):**
+```json
+{
+  "content": "Mình đồng ý!",
+  "isSpoiler": false,
+  "parentId": 1
+}
+```
+
+| Field | Bắt buộc | Mô tả |
+|---|---|---|
+| `content` | Có | Nội dung, tối đa 1000 ký tự |
+| `isSpoiler` | Không | Mặc định `false` |
+| `parentId` | Không | `null` = comment gốc; id comment cha = reply |
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "message": "Bình luận đã được đăng",
+  "data": {
+    "id": 10,
+    "movieSlug": "one-piece",
+    "userId": 3,
+    "userName": "Nguyễn Văn A",
+    "userAvatar": null,
+    "content": "Phim hay lắm!",
+    "isSpoiler": false,
+    "parentId": null,
+    "upvotes": 0,
+    "downvotes": 0,
+    "status": "approved",
+    "createdAt": "2026-06-07T09:00:00",
+    "updatedAt": "2026-06-07T09:00:00",
+    "userVote": null,
+    "replies": []
+  }
+}
+```
+
+> Comment mới có `status: "approved"` ngay — không cần duyệt. Admin có thể đổi trạng thái sau.
+
+---
+
+### POST `/api/v1/comments/{id}/vote` — Vote bình luận
+
+**Yêu cầu:** `Authorization: Bearer <accessToken>`
+
+```
+POST /api/v1/comments/10/vote
+```
+
+**Request:**
+```json
+{ "voteType": "up" }
+```
+
+| `voteType` | Mô tả |
+|---|---|
+| `"up"` | Upvote |
+| `"down"` | Downvote |
+
+**Hành vi:**
+
+| Trạng thái hiện tại | Gửi lên | Kết quả |
+|---|---|---|
+| Chưa vote | `"up"` | +1 upvote, `userVote: "up"` |
+| Đang `"up"` | `"up"` | Undo → upvote -1, `userVote: null` |
+| Đang `"up"` | `"down"` | Đổi → upvote -1, downvote +1, `userVote: "down"` |
+
+**Response `200`:** Trả về `CommentResponse` với `upvotes`, `downvotes`, `userVote` đã cập nhật.
+
+---
+
+### DELETE `/api/v1/comments/{id}` — Xóa bình luận
+
+**Yêu cầu:** `Authorization: Bearer <accessToken>`
+
+```
+DELETE /api/v1/comments/10
+```
+
+| Người gọi | Kết quả |
+|---|---|
+| Chủ comment | Xóa thành công |
+| Admin | Xóa thành công |
+| User khác | `403 Forbidden` |
+| Chưa đăng nhập | `401 Unauthorized` |
+
+**Response `200`:**
+```json
+{ "status": true, "data": "Đã xóa bình luận" }
+```
+
+---
+
+### Admin — GET `/api/v1/comments/admin/all` — Tất cả bình luận
+
+**Yêu cầu:** `ROLE_ADMIN`
+
+```
+GET /api/v1/comments/admin/all?page=0&size=20&status=pending
+```
+
+| Param | Mô tả |
+|---|---|
+| `status` | Lọc theo trạng thái: `pending`, `approved`, `spam`. Bỏ trống = tất cả |
+
+---
+
+### Admin — PATCH `/api/v1/comments/admin/{id}/status` — Duyệt / xử lý bình luận
+
+**Yêu cầu:** `ROLE_ADMIN`
+
+```
+PATCH /api/v1/comments/admin/10/status
+```
+
+**Request:**
+```json
+{ "status": "approved" }
+```
+
+| `status` | Ý nghĩa |
+|---|---|
+| `"approved"` | Hiển thị công khai |
+| `"pending"` | Chờ duyệt (ẩn khỏi public) |
+| `"spam"` | Đánh dấu spam (ẩn khỏi public) |
+
+---
+
+## Endpoints — Views (Lượt xem)
+
+> Prefix: `/api/v1/views`  
+> Tất cả endpoint đều **public**.
+
+### Flow tổng quan
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         VIEW FLOW                            │
+│                                                             │
+│  1. User bắt đầu xem video → gọi 1 lần duy nhất            │
+│     POST /api/v1/views/{slug}                               │
+│     → Cộng 1 view (chỉ lần đầu trong 24h)                  │
+│     → Thoát ra vào lại trong 24h: KHÔNG cộng thêm          │
+│                                                             │
+│  2. Lấy view count một phim                                  │
+│     GET /api/v1/views/{slug}                                │
+│                                                             │
+│  3. Lấy view count nhiều phim cùng lúc (cho trang listing)  │
+│     GET /api/v1/views/batch?slugs=one-piece,vincenzo        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Cơ chế chống buff view:**
+- Đã đăng nhập → dedup theo `userId` (đổi IP vẫn không buff được)
+- Chưa đăng nhập → dedup theo `IP address`
+- Cooldown: **24 giờ** — sau 24h xem lại mới cộng thêm 1 view
+- Lưu trữ trong Redis key: `view:{slug}:u:{userId}` hoặc `view:{slug}:ip:{ip}`
+
+---
+
+### POST `/api/v1/views/{slug}` — Ghi nhận lượt xem
+
+Gọi **một lần duy nhất** khi user bắt đầu xem video (không cần auth).
+
+```
+POST /api/v1/views/one-piece
+Authorization: Bearer <accessToken>   (tuỳ chọn — nếu có sẽ dedup theo userId)
+```
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "data": {
+    "viewCount": 1024,
+    "viewCountToday": 38
+  }
+}
+```
+
+> Nếu đã xem trong 24h → response vẫn trả `200` với count hiện tại, không tăng thêm.
+
+**FE nên gọi khi:**
+```javascript
+// Gọi khi HLS bắt đầu phát (MANIFEST_PARSED hoặc playing event)
+player.on('playing', () => {
+  if (!viewRecorded) {
+    viewRecorded = true
+    axios.post(`/api/v1/views/${slug}`)
+  }
+})
+```
+
+---
+
+### GET `/api/v1/views/{slug}` — Lấy view count một phim
+
+```
+GET /api/v1/views/one-piece
+```
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "data": {
+    "viewCount": 1024,
+    "viewCountToday": 38
+  }
+}
+```
+
+| Field | Mô tả |
+|---|---|
+| `viewCount` | Tổng view từ trước đến nay |
+| `viewCountToday` | View trong ngày hôm nay (reset lúc 00:00 theo lần xem tiếp theo) |
+
+---
+
+### GET `/api/v1/views/batch` — Lấy view count nhiều phim
+
+Dùng cho trang listing (homepage, thể loại, tìm kiếm) để lấy view count của nhiều phim trong 1 request.
+
+```
+GET /api/v1/views/batch?slugs=one-piece,vincenzo,naruto
+```
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "data": {
+    "one-piece": 1024,
+    "vincenzo": 5832,
+    "naruto": 9201
+  }
+}
+```
+
+> Phim nào chưa có lượt xem sẽ không xuất hiện trong map — FE xử lý bằng `data[slug] ?? 0`.
+
+**FE ví dụ:**
+```javascript
+const slugs = movies.map(m => m.slug).join(',')
+const { data } = await axios.get(`/api/v1/views/batch?slugs=${slugs}`)
+const viewCounts = data.data  // { [slug]: number }
+
+movies.forEach(movie => {
+  movie.viewCount = viewCounts[movie.slug] ?? 0
+})
+```
+
+---
+
+### GET `/api/v1/views/stats/today` — Tổng view toàn site hôm nay
+
+```
+GET /api/v1/views/stats/today
+```
+
+**Response `200`:**
+```json
+{ "status": true, "data": { "total": 4821 } }
+```
+
+---
+
+### GET `/api/v1/views/top` — Top phim nhiều view nhất
+
+```
+GET /api/v1/views/top?limit=10
+```
+
+**Response `200`:**
+```json
+{
+  "status": true,
+  "data": [
+    { "slug": "naruto", "viewCount": 9201, "viewCountToday": 120 },
+    { "slug": "vincenzo", "viewCount": 5832, "viewCountToday": 88 }
+  ]
+}
+```
+
+---
+
 ## Admin Endpoints (yêu cầu ROLE_ADMIN)
 
 Tất cả endpoint dưới đây yêu cầu header `Authorization: Bearer <accessToken>` của tài khoản có `ROLE_ADMIN`.

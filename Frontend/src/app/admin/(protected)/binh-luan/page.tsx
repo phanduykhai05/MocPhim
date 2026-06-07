@@ -1,56 +1,83 @@
 "use client";
 
 import React, { useRef } from "react";
-import {
-  PageContainer,
-  ProTable,
-} from "@ant-design/pro-components";
+import { PageContainer, ProTable } from "@ant-design/pro-components";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
-import { Button, Tag, Space, Popconfirm, Avatar, App, Typography } from "antd";
+import { Button, Tag, Space, Popconfirm, Avatar, App, Typography, Tooltip } from "antd";
 import { DeleteOutlined, CheckCircleOutlined, StopOutlined } from "@ant-design/icons";
+import {
+  apiAdminGetComments,
+  apiAdminUpdateCommentStatus,
+  apiDeleteComment,
+  type AdminCommentItem,
+} from "@/lib/api/comments";
 
 const { Text } = Typography;
 
-type Comment = {
-  id: number;
-  user: string;
-  avatar: string;
-  movie: string;
-  movieSlug: string;
-  content: string;
-  status: "approved" | "pending" | "spam";
-  createdAt: string;
-};
-
-const mockComments: Comment[] = [
-  { id: 1, user: "Nguyễn Văn A", avatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=1", movie: "One Piece", movieSlug: "one-piece", content: "Phim hay quá, xem mãi không chán!", status: "approved", createdAt: "05/05/2026 09:12" },
-  { id: 2, user: "Trần Thị B", avatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=2", movie: "Huyền Thoại Aang", movieSlug: "huyen-thoai-aang", content: "Nhân vật Aang trong bản này rất đáng yêu, cốt truyện bám sát nguyên tác.", status: "approved", createdAt: "05/05/2026 08:44" },
-  { id: 3, user: "Lê Văn C", avatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=3", movie: "MF GHOST (Phần 3)", movieSlug: "mf-ghost-phan-3", content: "Phụ đề bị lỗi ở tập 10, mong admin fix sớm.", status: "pending", createdAt: "04/05/2026 22:30" },
-  { id: 4, user: "Phạm Thị D", avatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=4", movie: "Nguyệt Lân Ỷ Kỷ", movieSlug: "nguyet-lan-y-ky", content: "Mua acc vip giá rẻ liên hệ zalo 0123456789", status: "spam", createdAt: "04/05/2026 18:05" },
-  { id: 5, user: "Hoàng Văn E", avatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=5", movie: "Trục Ngọc", movieSlug: "truc-ngoc", content: "Diễn xuất của dàn diễn viên xuất sắc, đặc biệt là cảnh kết phim.", status: "approved", createdAt: "04/05/2026 14:22" },
-  { id: 6, user: "Đỗ Thị F", avatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=6", movie: "Bất hòa (Phần 2)", movieSlug: "bat-hoa-phan-2", content: "Phần này có vẻ không hay bằng phần 1 nhỉ?", status: "pending", createdAt: "03/05/2026 20:18" },
-  { id: 7, user: "Vũ Văn G", avatar: "https://api.dicebear.com/7.x/miniavs/svg?seed=7", movie: "One Piece", movieSlug: "one-piece", content: "Click vào link này để nhận gift code: bit.ly/abc123", status: "spam", createdAt: "03/05/2026 16:00" },
-];
+function formatDateTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" });
+  } catch {
+    return iso;
+  }
+}
 
 const statusMap: Record<string, { text: string; color: string }> = {
   approved: { text: "Đã duyệt", color: "success" },
-  pending: { text: "Chờ duyệt", color: "warning" },
-  spam: { text: "Spam", color: "error" },
+  pending:  { text: "Chờ duyệt", color: "warning" },
+  spam:     { text: "Spam",      color: "error" },
 };
 
 export default function BinhLuanPage() {
   const actionRef = useRef<ActionType>();
   const { message } = App.useApp();
 
-  const columns: ProColumns<Comment>[] = [
+  async function handleApprove(id: number) {
+    const ok = await apiAdminUpdateCommentStatus(id, "approved");
+    if (ok) {
+      message.success("Đã duyệt bình luận");
+      actionRef.current?.reload();
+    } else {
+      message.error("Không thể duyệt bình luận");
+    }
+  }
+
+  async function handleSpam(id: number) {
+    const ok = await apiAdminUpdateCommentStatus(id, "spam");
+    if (ok) {
+      message.warning("Đã đánh dấu spam");
+      actionRef.current?.reload();
+    } else {
+      message.error("Không thể cập nhật trạng thái");
+    }
+  }
+
+  async function handleDelete(id: number) {
+    const ok = await apiDeleteComment(id);
+    if (ok) {
+      message.success("Đã xoá bình luận");
+      actionRef.current?.reload();
+    } else {
+      message.error("Không thể xoá bình luận");
+    }
+  }
+
+  const columns: ProColumns<AdminCommentItem>[] = [
     {
       title: "Người dùng",
-      dataIndex: "user",
+      dataIndex: "userName",
       width: 160,
+      search: false,
       render: (_, record) => (
         <Space>
-          <Avatar src={record.avatar} size="small" />
-          <Text>{record.user}</Text>
+          <Avatar
+            src={record.userAvatar ?? undefined}
+            size="small"
+            style={{ backgroundColor: "#1677ff", flexShrink: 0 }}
+          >
+            {!record.userAvatar && record.userName?.[0]?.toUpperCase()}
+          </Avatar>
+          <Text>{record.userName}</Text>
         </Space>
       ),
     },
@@ -65,8 +92,11 @@ export default function BinhLuanPage() {
           <Text type="secondary" style={{ fontSize: 12 }}>
             Phim:{" "}
             <a href={`/phim/${record.movieSlug}`} target="_blank" rel="noreferrer">
-              {record.movie}
+              {record.movieSlug}
             </a>
+            {record.parentId && (
+              <Tag style={{ marginLeft: 6 }} color="blue">Reply</Tag>
+            )}
           </Text>
         </div>
       ),
@@ -77,50 +107,54 @@ export default function BinhLuanPage() {
       width: 120,
       valueEnum: {
         approved: { text: "Đã duyệt" },
-        pending: { text: "Chờ duyệt" },
-        spam: { text: "Spam" },
+        pending:  { text: "Chờ duyệt" },
+        spam:     { text: "Spam" },
       },
-      render: (_, record) => (
-        <Tag color={statusMap[record.status].color}>
-          {statusMap[record.status].text}
-        </Tag>
-      ),
+      render: (_, record) => {
+        const s = statusMap[record.status] ?? { text: record.status, color: "default" };
+        return <Tag color={s.color}>{s.text}</Tag>;
+      },
     },
     {
       title: "Thời gian",
       dataIndex: "createdAt",
       search: false,
       width: 150,
+      render: (v) => formatDateTime(v as string),
     },
     {
       title: "Thao tác",
       key: "action",
       search: false,
-      width: 110,
+      width: 120,
       render: (_, record) => (
         <Space>
           {record.status !== "approved" && (
-            <Button
-              type="link"
-              icon={<CheckCircleOutlined />}
-              size="small"
-              style={{ color: "#52c41a" }}
-              onClick={() => message.success(`Đã duyệt bình luận của ${record.user}`)}
-            />
+            <Tooltip title="Duyệt">
+              <Button
+                type="link"
+                icon={<CheckCircleOutlined />}
+                size="small"
+                style={{ color: "#52c41a" }}
+                onClick={() => handleApprove(record.id)}
+              />
+            </Tooltip>
           )}
           {record.status !== "spam" && (
-            <Button
-              type="link"
-              icon={<StopOutlined />}
-              size="small"
-              style={{ color: "#faad14" }}
-              onClick={() => message.warning(`Đã đánh dấu spam`)}
-            />
+            <Tooltip title="Đánh dấu spam">
+              <Button
+                type="link"
+                icon={<StopOutlined />}
+                size="small"
+                style={{ color: "#faad14" }}
+                onClick={() => handleSpam(record.id)}
+              />
+            </Tooltip>
           )}
           <Popconfirm
             title="Xoá bình luận?"
             description="Hành động này không thể hoàn tác."
-            onConfirm={() => message.success("Đã xoá bình luận")}
+            onConfirm={() => handleDelete(record.id)}
             okText="Xoá"
             cancelText="Huỷ"
             okButtonProps={{ danger: true }}
@@ -134,14 +168,21 @@ export default function BinhLuanPage() {
 
   return (
     <PageContainer title="Bình luận" subTitle="Quản lý bình luận người dùng">
-      <ProTable<Comment>
+      <ProTable<AdminCommentItem>
         actionRef={actionRef}
         rowKey="id"
         columns={columns}
-        dataSource={mockComments}
-        request={async () => ({ data: mockComments, success: true })}
+        request={async (params) => {
+          const { current = 1, pageSize = 20, status } = params as {
+            current?: number;
+            pageSize?: number;
+            status?: string;
+          };
+          const res = await apiAdminGetComments(current - 1, pageSize, status);
+          return { data: res.comments, success: true, total: res.total };
+        }}
         search={{ labelWidth: "auto" }}
-        pagination={{ pageSize: 10 }}
+        pagination={{ pageSize: 20, showSizeChanger: true }}
         toolBarRender={false}
       />
     </PageContainer>

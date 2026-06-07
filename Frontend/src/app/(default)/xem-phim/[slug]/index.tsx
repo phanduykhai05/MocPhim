@@ -107,7 +107,7 @@ const WatchMovieTemplate = ({
                 episodes={activeServer?.episodes ?? []}
                 sectionLabel={activeServer?.name || 'Danh sách tập'}
               />
-              <CommentSection />
+              <CommentSection slug={slug} />
             </div>
 
             <div className="lg:border-l lg:border-gray-300 dark:lg:border-white/5 lg:pl-6">

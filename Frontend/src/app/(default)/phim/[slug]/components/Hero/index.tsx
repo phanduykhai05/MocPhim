@@ -238,7 +238,7 @@ export const MovieMainContent = ({ movie, images, keywords, initialTap, initialS
         )}
 
         <hr className="border-white/5 mx-6 lg:mx-10" />
-        <CommentSection />
+        <CommentSection slug={movie.slug} />
       </div>
     </div>
   );

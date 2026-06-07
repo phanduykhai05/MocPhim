@@ -11,6 +11,8 @@ import {
 import { Table, Tag, Avatar, Progress, Spin } from "antd";
 import { fetchSyncMovies, fetchSyncMoviesAll, fetchSyncCount, type MovieSyncItem } from "@/lib/api/sync";
 import { apiGetAdminUsers, type AdminUser } from "@/lib/api/admin";
+import { apiGetViewStatsToday } from "@/lib/api/views";
+import { apiAdminGetComments } from "@/lib/api/comments";
 
 const TYPE_LABEL: Record<string, string> = {
   single: "Phim lẻ",
@@ -111,9 +113,19 @@ export default function DashboardPage() {
   const [userGrowth, setUserGrowth]   = useState<{ value: number; trend: "up" | "down" } | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
+  const [viewsToday, setViewsToday] = useState<number | null>(null);
+  const [totalComments, setTotalComments] = useState<number | null>(null);
 
   useEffect(() => {
     fetchSyncCount().then((n) => setTotalMovies(n));
+  }, []);
+
+  useEffect(() => {
+    apiGetViewStatsToday().then(setViewsToday);
+  }, []);
+
+  useEffect(() => {
+    apiAdminGetComments(0, 1).then((res) => setTotalComments(res.total));
   }, []);
 
   useEffect(() => {
@@ -222,18 +234,10 @@ export default function DashboardPage() {
           <StatisticCard
             statistic={{
               title: "Lượt xem hôm nay",
-              value: 84290,
+              value: viewsToday ?? "-",
               icon: (
                 <EyeOutlined
                   style={{ color: "#faad14", fontSize: 24, background: "#fffbe6", borderRadius: 8, padding: 8 }}
-                />
-              ),
-              description: (
-                <StatisticCard.Statistic
-                  title="So với hôm qua"
-                  value={3.1}
-                  suffix="%"
-                  trend="down"
                 />
               ),
             }}
@@ -243,20 +247,15 @@ export default function DashboardPage() {
         <ProCard colSpan={{ xs: 24, sm: 12, md: 6 }} bordered>
           <StatisticCard
             statistic={{
-              title: "Bình luận mới",
-              value: 0,
+              title: "Tổng bình luận",
+              value: totalComments ?? "-",
               icon: (
                 <CommentOutlined
                   style={{ color: "#722ed1", fontSize: 24, background: "#f9f0ff", borderRadius: 8, padding: 8 }}
                 />
               ),
               description: (
-                <StatisticCard.Statistic
-                  title="So với hôm qua"
-                  value={0}
-                  suffix="%"
-                  trend="up"
-                />
+                <a href="/admin/binh-luan" style={{ fontSize: 12 }}>Quản lý bình luận →</a>
               ),
             }}
           />
