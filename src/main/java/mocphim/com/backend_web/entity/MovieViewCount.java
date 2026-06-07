@@ -22,6 +22,13 @@ public class MovieViewCount {
     @Column(name = "view_count")
     private Long viewCount = 0L;
 
+    @Column(name = "view_count_today")
+    private Long viewCountToday = 0L;
+
+    // "YYYY-MM-DD" — used to reset viewCountToday daily
+    @Column(name = "last_reset_date")
+    private String lastResetDate;
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
