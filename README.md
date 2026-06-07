@@ -13,7 +13,7 @@
 
 Ứng dụng xem phim trực tuyến full-stack với giao diện hiện đại, hỗ trợ tìm kiếm nâng cao, bookmark, theo dõi tiến độ xem, đăng nhập Google OAuth2 và đồng bộ dữ liệu phim tự động.
 
-**Demo:** [https://moc-phim.vercel.app](https://moc-phim.vercel.app)
+**Demo:** [PhimHayy](https://phimhayy.vercel.app/)
 
 ---
 
