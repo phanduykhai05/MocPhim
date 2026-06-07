@@ -1,0 +1,86 @@
+.panel {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 15%, #2a2a2a 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, #1a1a1a 0%, transparent 55%),
+    #111111;
+  overflow: hidden;
+  contain: strict;
+}
+
+/* ── Background glow orbs ─────────────────────────────── */
+.orb1,
+.orb2 {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(40px);
+  will-change: transform;
+}
+
+.orb1 {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(200, 200, 200, 0.15) 0%, transparent 70%);
+  top: -90px;
+  left: -70px;
+  animation: floatOrb 13s ease-in-out infinite;
+}
+
+.orb2 {
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(120, 120, 120, 0.12) 0%, transparent 70%);
+  bottom: -60px;
+  right: -40px;
+  animation: floatOrb 16s ease-in-out infinite reverse;
+  animation-delay: -8s;
+}
+
+/* ── 3-D floating balls ───────────────────────────────── */
+.ball {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  animation: ballFloat ease-in-out infinite;
+}
+
+/* Trắng bóng */
+.white {
+  background: radial-gradient(circle at 34% 30%, #ffffff, #ffd875 48%, #888888 86%);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* Xám sáng */
+.silver {
+  background: radial-gradient(circle at 34% 30%, #e8e8e8, #aaaaaa 48%, #666666 86%);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* Xám trung */
+.gray {
+  background: radial-gradient(circle at 34% 30%, #cccccc, #888888 48%, #444444 86%);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* Xám tối */
+.dark {
+  background: radial-gradient(circle at 34% 30%, #999999, #555555 48%, #222222 86%);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Animations ───────────────────────────────────────── */
+@keyframes floatOrb {
+  0%,  100% { transform: translate3d(0, 0, 0); }
+  50%        { transform: translate3d(14px, -22px, 0); }
+}
+
+@keyframes ballFloat {
+  0%,  100% { transform: translate3d(0, 0, 0); }
+  50%        { transform: translate3d(0, -16px, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb1, .orb2, .ball { animation: none !important; }
+}

@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm lint *)",
+      "Bash(pnpm eslint *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm exec *)",
+      "Bash(sed -n '140,165p' src/app/\\\\\\(default\\\\\\)/components/MoviesByListClient.tsx)",
+      "Bash(sed -n '185,215p' src/app/\\\\\\(default\\\\\\)/phimmoi/full-movies/FullMoviesClient.tsx)",
+      "Bash(sed -n '185,210p' src/app/\\\\\\(default\\\\\\)/tim-kiem/SearchResultsClient.tsx)",
+      "Bash(sed -n '128,145p' \"src/app/admin/\\(protected\\)/layout.tsx\")",
+      "Bash(sed -n '10,25p' \"src/components/Preloader/Preloader.tsx\")",
+      "Bash(sed -n '30,45p' \"src/components/SecurityGuard/index.tsx\")",
+      "Bash(sed -n '130,145p' \"src/app/admin/\\(protected\\)/bao-mat-log/page.tsx\")",
+      "Bash(sed -n '55,70p' \"src/layouts/Header/components/SearchBar.tsx\")",
+      "Bash(dir Frontend\\\\src /s /b)",
+      "Bash(Get-ChildItem -Path \"k:\\\\MocPhim\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "PowerShell(Head -20)",
+      "Bash(pnpm list *)",
+      "Bash(grep -rn 'href={`/' k:/MocPhim/Frontend/src --include=\"*.tsx\")",
+      "Bash(xargs grep -l \"ExceptionHandler\\\\|ControllerAdvice\")",
+      "Bash(git cherry-pick *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(pnpm build *)",
+      "PowerShell(Get-ChildItem -Path \"k:\\\\MocPhim\\\\Backend\" -Depth 1 -File | Where-Object { $_.Name -match \"\\\\.\\(json|ts|js|yaml|yml|env|toml\\)$\" })",
+      "PowerShell(Get-ChildItem -Path \"k:\\\\MocPhim\\\\Frontend\\\\src\\\\app\" -Recurse | Where-Object { $_.Name -match \"\\\\.\\(tsx|ts|js\\)$\" } | Select-Object -First 30)",
+      "PowerShell(Get-ChildItem -Path \"k:\\\\MocPhim\\\\Backend\\\\src\\\\main\\\\java\\\\mocphim\\\\com\\\\backend_web\" -Recurse -File | Where-Object { $_.Name -match \"\\\\.java$\" } | Select-Object -First 40 | ForEach-Object { $_.FullName.Replace\\(\"k:\\\\MocPhim\\\\Backend\\\\src\\\\main\\\\java\\\\mocphim\\\\com\\\\backend_web\\\\\", \"\"\\) })",
+      "Bash(ls -la k:\\\\\\\\MocPhim\\\\\\\\Backend\\\\\\\\src\\\\\\\\main\\\\\\\\java\\\\\\\\mocphim\\\\\\\\com\\\\\\\\backend_web\\\\\\\\controller\\\\\\\\)"
+    ]
+  }
+}
